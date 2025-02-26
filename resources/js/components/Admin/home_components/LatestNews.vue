@@ -1,0 +1,3 @@
+<template>
+    Latest News
+</template>

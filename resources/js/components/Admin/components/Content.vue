@@ -1,0 +1,3 @@
+<template>
+    table info
+</template>

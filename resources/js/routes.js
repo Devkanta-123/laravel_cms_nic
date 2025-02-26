@@ -1,0 +1,141 @@
+import Dashboard from './components/Dashboard.vue';
+import Admin from './pages/admin/Admin.vue';
+import UpdateSetting from './pages/settings/UpdateSetting.vue';
+import Menu from './pages/menu/Menu.vue';
+import Website from './pages/website/Website.vue';
+import Pages from './pages/pages/Pages.vue';
+import PagesForm from './pages/pages/PagesForm.vue';
+import Login from './pages/auth/Login.vue';
+import MainComponent from './pages/main_component/MainComponent.vue';
+import Theme from './pages/theme/Theme.vue';
+import PageSectionMaster from './pages/page_section_master/PageSectionMaster.vue';
+import CategoryMaster from './pages/category_master/CategoryMaster.vue';
+
+
+// import PageContent from './smb/layout/PageContent.vue';
+// import Page from './smb/layout/Page.vue';
+// import Home from './smb/Home.vue';
+import Roles from './pages/admin/Roles.vue';
+const folderPath = window.folderPath;
+console.log(folderPath);
+export default [
+
+    {
+        path: '/admin/manage',
+        name: 'admin.manage',
+        component: Admin,
+
+    },
+    {
+        path: '/admin/roles',
+        name: 'admin.roles',
+        component: Roles,
+
+    },
+    {
+        path: '/admin/dashboard',
+        name: 'admin.dashboard',
+        component: Dashboard,
+
+    },
+    {
+        path: '/admin/main_components',
+        name: 'admin.main_components',
+        component: MainComponent,
+
+    },
+    {
+        path: '/admin/website',
+        name: 'admin.website',
+        component: Website,
+
+    },
+    {
+        path: '/admin/theme',
+        name: 'admin.theme',
+        component: Theme,
+
+    },
+    {
+        path: '/admin/menu',
+        name: 'admin.menu',
+        component: Menu,
+
+    },
+    {
+        path: '/admin/pages',
+        name: 'admin.pages',
+        component: Pages,
+
+    },
+    {
+        path: '/admin/page_section_master',
+        name: 'admin.page_section_master',
+        component: PageSectionMaster
+    },
+    //category_master
+    {
+        path: '/admin/category_master',
+        name: 'admin.category_master',
+        component: CategoryMaster
+    },
+
+    {
+        path: '/pages-form/:menuId/:menuName',
+        name: 'PagesForm',
+        component: PagesForm,
+        props: true
+
+    },
+    {
+        path: '/admin/settings',
+        name: 'admin.settings',
+        component: UpdateSetting,
+
+    },
+
+
+    //FRONT END 
+
+    //HOMEPAGE
+    // {
+    //     path: '/',
+    //     name: 'PageContent',
+    //     component: () => import(`./${folderPath}/layout/PageContent.vue`),
+    //     props: { id: '1' }
+    // },
+    {
+        path: '/',
+        name: 'PageContent',
+        component: () => import(`./${folderPath}/layout/PageContent.vue`),
+        props: route => ({
+            id: route.params.id || '1', // Default to '1' if no ID is provided
+        }),
+    },
+    //Other Pages
+    //Other Pages
+    // {
+    //     path: '/page/:id',
+    //     name: 'Page',
+    //     component: () => import(`./${folderPath}/layout/Page.vue`),
+    //     props: true,
+    // },
+    {
+        path: '/page/:id',
+        name: 'Page',
+        component: () => import(`./${folderPath}/layout/Page.vue`),
+        props: route => ({
+            id: route.params.id,
+            newsId: route.query.newsid || null, // This will pass the newsid from the query parameter (e.g., 3)
+            cardId: route.query.cardid || null,
+            carddetailsId: route.query.carddetailsid || null,
+        }),
+    },
+
+    {
+        path: '/login',
+        name: 'admin.login',
+        component: Login,
+
+    }
+]
