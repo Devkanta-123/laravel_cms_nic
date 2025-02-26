@@ -10,6 +10,7 @@
 
     <div v-else class="container">
         <!-- Render Page Content if available -->
+        <h5 class="m-0">{{ pageName }}</h5>
         <div v-if="pageContent" v-html="pageContent"></div>
 
         <!-- Show Photo Gallery only if pageContent is unavailable -->
@@ -18,11 +19,12 @@
         </div>
 
         <div v-if="noticeboarddata.length > 0">
-            <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" />
+            <!-- <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" /> -->
+            <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" :pageName="route.query.page_name" />
         </div>
 
         <div v-else-if="notificationdata.length > 0">
-            <NoticeBoard :notification="notificationdata" :key="refreshKey" />
+            <NoticeBoard :notification="notificationdata" :key="refreshKey" :pageName="route.query.page_name" />
         </div>
 
 
@@ -30,12 +32,12 @@
         <!-- <NoticeBoard v-else :noticeboard="noticeboarddata" :notification="notificationdata" /> -->
 
         <!-- If nothing is available, show a message -->
-        <p v-else style="color: red;">Data not available</p>
+        <!-- <p v-else style="color: red;">Data not available</p> -->
     </div>
 
 </template>
 <script setup>
-import { ref, onMounted, inject, watch, nextTick } from 'vue';
+import { ref, onMounted, inject, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Carousel from '../components/Carousel.vue';
 import LatestNews from '../components/LatestNews.vue';
@@ -43,7 +45,6 @@ import Footer from './Footer.vue';
 import Loader from '../../components/Loader.vue';
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
-import NoticeBoardCategory from '../components/NoticeBoardCategory.vue';
 const route = useRoute();
 const isLoading = ref(true);
 const props = defineProps({
@@ -51,7 +52,7 @@ const props = defineProps({
     id: {
         type: String,
         required: true
-    },
+    }
 });
 
 
@@ -62,11 +63,11 @@ const gallerydata = ref('');
 const noticeboarddata = ref('');
 const notificationdata = ref('');
 const refreshKey = ref(0); // This will force Vue to re-render the component
-
+let pageName = ref('');
 const fetchPageContent = async () => {
     try {
         debugger;
-        const pageName = route.query.page_name; // Get page_name from query params
+         pageName = route.query.page_name; // Get page_name from query params
         console.log("Page Name:", pageName);
 
         // Reset all data before fetching new content
@@ -86,24 +87,26 @@ const fetchPageContent = async () => {
             case "Notice Board":
                 response = await axios.get(`/api/getallnotifications`);
                 noticeboarddata.value = response.data;
+                console.log("Notice Board Data:", noticeboarddata.value);
                 break;
 
             case "Newsletter":
             case "Recruitments":
-            case "Tenders":
-            case "Notifications":
+            case "Tender":
+            case "Notification":
                 response = await axios.get(`/api/getnotificationsbycategory/${pageName}`);
                 notificationdata.value = response.data;
+                console.log("Notification Data:", notificationdata.value);
                 break;
 
             default:
                 response = await axios.get(`/get_page_content/${route.params.id}`);
 
-                if (response.data && (response.data.content || response.data.hindi_content)) {
-                    pageTitle.value = response.data.title;
-                    pageContent.value = currentLanguage.value === 'English'
-                        ? response.data.content
-                        : response.data.hindi_content;
+                if (response.data) {
+                    debugger;
+                    pageContent.value = response.data.title
+                        ? response.data.title
+                        : response.data.title;
                 }
         }
     } catch (error) {
