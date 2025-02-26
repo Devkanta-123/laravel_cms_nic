@@ -11,7 +11,7 @@
     <div v-else class="container">
         <!-- Render Page Content if available -->
         <h5 class="m-0">{{ pageName }}</h5>
-        <div v-if="pageContent" v-html="pageContent"></div>
+        <p v-if="pageContent" v-html="pageContent" class="aos-init aos-animate" style="color: #f7a400;"></p>
 
         <!-- Show Photo Gallery only if pageContent is unavailable -->
         <div v-else-if="gallerydata.length > 0">
@@ -143,4 +143,5 @@ watch(
 .content {
     padding: 20px;
 }
+
 </style>
