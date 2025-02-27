@@ -60,7 +60,7 @@
   
   const images =ref([]);
   const isDragging =ref(false);
-  const fileInput = ref(null);
+  fileInput.value = null;
   const slides = ref([]);
   const toastr = useToastr(); 
   const props = defineProps(['menu']);
