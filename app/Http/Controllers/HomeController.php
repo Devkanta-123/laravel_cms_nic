@@ -199,7 +199,7 @@ class HomeController extends Controller
             'content' => 'required|string',
             'menu' => 'required|integer',
             'page_section' => 'required|integer',
-            'files.*' => 'file|mimes:jpeg,png,jpg,gif,pdf,docx|max:2048', // Validate each file
+            'files.*' => 'file|mimes:jpeg,png,jpg,gif,pdf,docx|max:2048',
         ]);
 
         // Extract content from the request
@@ -207,26 +207,41 @@ class HomeController extends Controller
 
         // Use regex to extract the first <p>...</p> as the title
         preg_match('/<p>(.*?)<\/p>/is', $content, $matches);
-        $title = $matches[1] ?? ''; // Extract the content inside the first <p> tag or default to an empty string
+        $title = $matches[1] ?? '';
 
-        // Remove the extracted <p>...</p> from the content for the description
-        $description = preg_replace('/<p>(.*?)<\/p>/is', '', $content, 1); // Replace only the first match
+        // Description remains the same
+        $description = trim($content);
 
-        // Save the data to the database
-        $paragraph = Paragraph::create([
-            'menu_id' => $validatedData['menu'],
-            'page_section_id' => $validatedData['page_section'],
-            'title' => trim($title),
-            'description' => trim($description),
-            'hindi_description' => '',
-            'khasi_description' => '',
-            'status' => "1",
-        ]);
+        // Check if paragraph exists
+        $para_exist = Paragraph::where('menu_id', $validatedData['menu'])
+            ->where('page_section_id', $validatedData['page_section'])
+            ->first();
 
-        // Define the folder path for file uploads
+        if ($para_exist) {
+            // Update existing paragraph
+            $para_exist->update([
+                'title' => trim($title),
+                'description' => $description,
+                'hindi_description' => '',
+                'khasi_description' => '',
+                'status' => "1",
+            ]);
+            $paragraph = $para_exist;
+        } else {
+            // Create a new paragraph
+            $paragraph = Paragraph::create([
+                'menu_id' => $validatedData['menu'],
+                'page_section_id' => $validatedData['page_section'],
+                'title' => trim($title),
+                'description' => $description,
+                'hindi_description' => '',
+                'khasi_description' => '',
+                'status' => "1",
+            ]);
+        }
+
+        // Define folder path for file uploads
         $folderPath = 'latest_new';
-
-        // Ensure the folder exists
         Storage::disk('public')->makeDirectory($folderPath);
 
         // Handle multiple file uploads
@@ -235,10 +250,10 @@ class HomeController extends Controller
 
         if ($uploadedFiles) {
             foreach ($uploadedFiles as $file) {
-                // Store each file in the 'latest_new' directory and get the file path
+                // Store each file in the 'latest_new' directory
                 $filePath = $file->store($folderPath, 'public');
 
-                // Save file information to prepare for database insertion
+                // Save file information
                 $fileData[] = [
                     'paragraph_id' => $paragraph->id,
                     'file_name' => $file->getClientOriginalName(),
@@ -248,22 +263,19 @@ class HomeController extends Controller
                 ];
             }
 
-            // Insert file data into the files table (if applicable)
+            // Insert file data into the files table
             if (!empty($fileData)) {
-                File::insert($fileData); // Ensure you have a `File` model for managing files
+                File::insert($fileData);
             }
         }
 
-        // Return a JSON response
         return response()->json([
             'success' => true,
-            'message' => 'Content saved successfully!',
+            'message' => $para_exist ? 'Content updated successfully!' : 'Content saved successfully!',
             'data' => $paragraph,
             'files' => $fileData,
         ]);
     }
-
-
 
 
     public function saveContentWebsite(Request $request)
