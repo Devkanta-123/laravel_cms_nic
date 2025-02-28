@@ -8,10 +8,11 @@
         <LatestNews :menu="props.id" />
     </div>
 
-    <div v-else class="container">
+    <div v-else class="container" style="margin-top: -70px;">
         <!-- Render Page Content if available -->
         <h5 class="m-0">{{ pageName }}</h5>
-        <p v-if="pageContent" v-html="pageContent" class="aos-init aos-animate" style="color: #f7a400;"></p>
+        <br>
+        <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate"></div>
 
         <!-- Show Photo Gallery only if pageContent is unavailable -->
         <div v-else-if="gallerydata.length > 0">
@@ -55,9 +56,6 @@ const props = defineProps({
     }
 });
 
-
-const currentLanguage = inject('language');
-const pageTitle = ref('');
 const pageContent = ref('');
 const gallerydata = ref('');
 const noticeboarddata = ref('');
@@ -104,9 +102,9 @@ const fetchPageContent = async () => {
 
                 if (response.data) {
                     debugger;
-                    pageContent.value = response.data.title
-                        ? response.data.title
-                        : response.data.title;
+                    pageContent.value = response.data.content
+                        ? response.data.content
+                        : response.data.content;
                 }
         }
     } catch (error) {

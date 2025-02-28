@@ -194,89 +194,62 @@ class HomeController extends Controller
     // }
     public function saveContent(Request $request)
     {
-        // Validate the request
+        // Validate request
         $validatedData = $request->validate([
-            'content' => 'required|string',
-            'menu' => 'required|integer',
-            'page_section' => 'required|integer',
-            'files.*' => 'file|mimes:jpeg,png,jpg,gif,pdf,docx|max:2048',
+            'content' => 'nullable|string', // Make content optional (nullable)
+            'menu' => 'required',
+            'page_section' => 'required',
+            'files.*' => 'file|mimes:jpeg,png,jpg,gif,pdf,docx|max:6144', // Max 6MB
         ]);
 
-        // Extract content from the request
-        $content = $validatedData['content'];
+        $content = $request->content ?? '';
 
-        // Use regex to extract the first <p>...</p> as the title
-        preg_match('/<p>(.*?)<\/p>/is', $content, $matches);
-        $title = $matches[1] ?? '';
-
-        // Description remains the same
-        $description = trim($content);
-
-        // Check if paragraph exists
-        $para_exist = Paragraph::where('menu_id', $validatedData['menu'])
-            ->where('page_section_id', $validatedData['page_section'])
-            ->first();
-
-        if ($para_exist) {
-            // Update existing paragraph
-            $para_exist->update([
-                'title' => trim($title),
-                'description' => $description,
+        // Save or update paragraph details
+        $paragraph = Paragraph::updateOrCreate(
+            [
+                'menu_id' => $request->menu,
+                'page_section_id' => $request->page_section,
+            ],
+            [
+                'title' => '',
+                'description' =>$content, // Store default content
                 'hindi_description' => '',
                 'khasi_description' => '',
-                'status' => "1",
-            ]);
-            $paragraph = $para_exist;
-        } else {
-            // Create a new paragraph
-            $paragraph = Paragraph::create([
-                'menu_id' => $validatedData['menu'],
-                'page_section_id' => $validatedData['page_section'],
-                'title' => trim($title),
-                'description' => $description,
-                'hindi_description' => '',
-                'khasi_description' => '',
-                'status' => "1",
-            ]);
-        }
+                'status' => "1"
+            ]
+        );
 
-        // Define folder path for file uploads
-        $folderPath = 'latest_new';
+        // Define storage folder
+        $folderPath = 'paragraph_component'; // Storage in storage/app/public/paragraph_component/
+
+        // Ensure the folder exists
         Storage::disk('public')->makeDirectory($folderPath);
 
         // Handle multiple file uploads
         $uploadedFiles = $request->file('files');
-        $fileData = [];
+        $filePaths = [];
 
         if ($uploadedFiles) {
             foreach ($uploadedFiles as $file) {
-                // Store each file in the 'latest_new' directory
+                // Store file and get the path
                 $filePath = $file->store($folderPath, 'public');
-
-                // Save file information
-                $fileData[] = [
-                    'paragraph_id' => $paragraph->id,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $filePath,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                $filePaths[] = $filePath; // Store only the file path
             }
+        }
 
-            // Insert file data into the files table
-            if (!empty($fileData)) {
-                File::insert($fileData);
-            }
+        // Append file paths to description if files exist
+        if (!empty($filePaths)) {
+            $existingContent = $paragraph->description ? $paragraph->description . ',' : '';
+            $paragraph->description = $existingContent . implode(',', $filePaths);
+            $paragraph->save();
         }
 
         return response()->json([
             'success' => true,
-            'message' => $para_exist ? 'Content updated successfully!' : 'Content saved successfully!',
-            'data' => $paragraph,
-            'files' => $fileData,
+            'message' => 'Content saved successfully!',
+            'data' => $paragraph
         ]);
     }
-
 
     public function saveContentWebsite(Request $request)
     {

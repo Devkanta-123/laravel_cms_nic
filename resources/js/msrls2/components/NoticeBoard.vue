@@ -3,39 +3,46 @@
         <div class="row justify-content-center gy-4">
             <!-- Show Notice Board if data exists, otherwise show Notifications -->
             <template v-if="hasNoticeboard">
-                <div class="col-12">
-                    <h2 class="section-title">Notice Board</h2>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-8" v-for="notice in noticeboard" :key="notice.id">
-                    <div class="notice-item">
-                        <div class="notice-content">
-                            <h3>{{ notice.title }}</h3>
-                            <p>{{ notice.description }}</p>
-                            <a :href="notice.file" target="_blank">View Notice</a>
-                        </div>
+                <div class="about__content-inner-four">
+                    <div class="about__list-box">
+                        <ul class="list-wrap">
+                            <h5 class="m-0">{{ pageName }}</h5>
+                            <br>
+                            <li v-for="notice in props.noticeboard" :key="notice.id" style="margin-left:4px;">
+                                <i class="fa fa-arrow-right"></i>
+                                <a href="#" @click.prevent="openfile(notice)">{{ notice.title }} ({{
+                                    formatDate(notice.date) }})</a>
+                                <span v-if="isNewNotice(notice.date)" class="new-badge">New</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </template>
 
+
             <template v-else-if="hasNotification">
-                <div class="col-12">
-                    <h2 class="section-title">Notifications</h2>
+                <div class="about__content-inner-four">
+                    <div class="about__list-box">
+                        <ul class="list-wrap">
+                            <h5 class="m-0">{{ pageName }}</h5>
+                            <br>
+                            <li v-for="notify in notification" :key="notify.id" style="margin-left:4px;">
+                                <i class="fa fa-arrow-right"></i>
+                                <a href="#" @click.prevent="openfile(notify)">{{ notify.title }} ({{
+                                    formatDate(notify.date) }})</a>
+                                <span v-if="isNewNotice(notify.date)" class="new-badge">New</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="col-12">
-                    <ul class="notification-list">
-                        <li v-for="notify in notification" :key="notify.id">
-                            <span class="badge">New</span>
-                            <strong>{{ notify.title }}</strong>
-                        </li>
-                    </ul>
-                </div>
+
             </template>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed, defineProps, watch } from 'vue';
+import { computed, defineProps } from 'vue';
 
 const props = defineProps({
     noticeboard: {
@@ -49,16 +56,52 @@ const props = defineProps({
 });
 
 // Debugging
-watch(() => props.noticeboard, (newVal) => {
-    debugger;
-    console.log("Noticeboard Updated:", newVal);
-}, { deep: true });
-
-watch(() => props.notification, (newVal) => {
-    debugger;
-    console.log("Notification Updated:", newVal);
-}, { deep: true });
-
 const hasNoticeboard = computed(() => props.noticeboard?.length > 0);
 const hasNotification = computed(() => !hasNoticeboard.value && props.notification?.length > 0);
+const openfile = (item) => {
+    const filePath = '/storage/' + item.file.replace('public/', '');  // Build file URL based on Laravel's storage path
+    window.open(filePath, '_blank');  // Open the file in a new tab
+
+};
+const formatDate = (dateString) => {
+    if (!dateString) return "Unknown Date";
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-GB', options);
+};
+
+const isNewNotice = (noticeDate) => {
+    const today = new Date();
+    const noticeDateObj = new Date(noticeDate);
+    const diffTime = today - noticeDateObj;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24); // Convert milliseconds to days
+    return diffDays <= 10;
+};
+
+
 </script>
+<style scoped>
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.new-badge {
+    background: linear-gradient(90deg, #c8ff00, #ee0979);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 5px;
+    margin-left: 8px;
+    animation: blink 1s infinite;
+}
+</style>
