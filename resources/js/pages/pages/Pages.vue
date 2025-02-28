@@ -30,66 +30,42 @@
                 </div>
                 <div class="card-body">
                     <table class="table table-responsive-lg mb-0">
-  <thead>
-    <tr>
-      <th><strong> S.NO. </strong></th>
-      <th><strong> TITLE <i class="fa fa-sort asc"></i></strong></th>
-      <th><strong> MENU NAME </strong></th>
-      <th><strong> ORDER <i class="fa fa-sort asc"></i></strong></th>
-      <th><strong> ACTIONS </strong></th>
-    </tr>
-  </thead>
-  <tbody>
-    <template v-for="(menu, index) in menus" :key="menu.id">
-      <!-- Main Menu -->
-      <tr>
-        <td>{{ index + 1 }}</td>
-        <td><strong>{{ menu.menu_name }}</strong></td>
-        <td>{{ menu.menu_name }}</td>
-        <td>{{ menu.order }}</td>
-        <td>
-          <a href="#" @click.prevent="editMenu(menu)" class="btn btn-primary shadow btn-xs me-1">
-            <i class="fas fa-pencil-alt"></i>
-          </a>
-        </td>
-      </tr>
+                        <thead>
+                            <tr>
+                                <th> <strong> S.NO. </strong> </th>
+                                <th> <strong> MENU NAME <i class="fa fa-sort asc"></i> </strong> </th>
+                                <th> <strong> MENU TYPE <i class="fa fa-sort asc"></i> </strong> </th>
+                                <th> <strong> ORDER <i class="fa fa-sort asc"></i> </strong> </th>
+                                <th class=""> <strong> ACTIONS </strong> </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(menu, index) in menus" :key="menu.id">
+                                <td>
+                                    {{ index + 1 }}
+                                </td>
+                                <td>
+                                    {{ menu.menu_name }}
+                                </td>
+                                <td>
+                                    {{ menu.menu_master.menu_name }}
+                                    <span v-if="menu.parent_name">->
+                                        {{ menu.parent_name }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ menu.order }}
+                                </td>
 
-      <!-- Submenus (First Level) -->
-      <template v-if="menu.submenus && menu.submenus.length > 0">
-        <template v-for="(subMenu, subIndex) in menu.submenus" :key="subMenu.id">
-          <tr>
-            <td>{{ index + 1 }}.{{ subIndex + 1 }}</td>
-            <td>{{ menu.menu_name }}</td>
-            <td>{{ menu.menu_name }} -> {{ subMenu.menu_name }}</td>
-            <td>{{ subMenu.order }}</td>
-            <td>
-              <a href="#" @click.prevent="editMenu(subMenu)" class="btn btn-primary shadow btn-xs me-1">
-                <i class="fas fa-pencil-alt"></i>
-              </a>
-            </td>
-          </tr>
-
-          <!-- Third-Level Menus -->
-          <template v-if="subMenu.submenus && subMenu.submenus.length > 0">
-            <template v-for="(thirdMenu, thirdIndex) in subMenu.submenus" :key="thirdMenu.id">
-              <tr>
-                <td>{{ index + 1 }}.{{ subIndex + 1 }}.{{ thirdIndex + 1 }}</td>
-                <td>{{ menu.menu_name }}</td>
-                <td>{{ menu.menu_name }} -> {{ subMenu.menu_name }} -> {{ thirdMenu.menu_name }}</td>
-                <td>{{ thirdMenu.order }}</td>
-                <td>
-                  <a href="#" @click.prevent="editMenu(thirdMenu)" class="btn btn-primary shadow btn-xs me-1">
-                    <i class="fas fa-pencil-alt"></i>
-                  </a>
-                </td>
-              </tr>
-            </template>
-          </template>
-        </template>
-      </template>
-    </template>
-  </tbody>
-</table>
+                                <td class="">
+                                    <a href="#" @click.prevent="editMenu(menu)"
+                                        class="btn btn-primary shadow btn-xs me-1">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
 
 
                 </div>
@@ -117,65 +93,65 @@
                                                             <template v-for="thirdMenu in subMenu.submenus" :key="thirdMenu.id">
                                                                 <option :value="thirdMenu.id">{{ '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;> ' + thirdMenu.menu_name }}</option>
                                                             </template>
-                                                        </template>
-                                                    </template>
-                                                </template>
-                                            </template>
-                                        </Field>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+</template>
+</template>
+</template>
+</template>
+</Field>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-12 mr-5">
+    <div class="page-sections">
+        <div class="content">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-bordered table-striped">
+                            <thead class="">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="10%">Section Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(section, index) in pageSections" :key="section.id">
+                                    <td>
+                                        {{ ++index }}
+                                    </td>
+                                    <td>
+                                        {{section.page_section_name}}
+                                    </td>
+
+                                    <td>
+                                        <a href="#" @click="openModal(section)"><i class="fa fa-edit"></i></a>
+                                        <a href=""><i class="fa fa-trash text-danger ml-2"></i></a>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td colspan=4 align="center">
+                                        <button type="button" class="btn btn-primary mb-2">
+                                            <i class="fa fa-plus-circle mr-1"></i>
+                                            Add New Section
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="col-12 mr-5">
-                        <div class="page-sections" >
-                                <div class="content">
-                                        <div class="container-fluid">              
-                                            <div class="card">
-                                                    <div class="card-body">
-                                                    <table class="table table-bordered table-striped">
-                                                        <thead class="">
-                                                            <tr>
-                                                                <th width="5%">#</th>
-                                                                <th width="10%">Section Name</th>
-                                                                <th>Actions</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <tr v-for="(section, index) in pageSections" :key="section.id">
-                                                                <td>
-                                                                    {{ ++index }}
-                                                                </td>
-                                                                <td>
-                                                                    {{section.page_section_name}}
-                                                                </td>
-
-                                                                <td>
-                                                                    <a href="#" @click="openModal(section)"><i class="fa fa-edit"></i></a>
-                                                                    <a href=""><i class="fa fa-trash text-danger ml-2"></i></a>
-                                                                </td>
-
-                                                        </tr>
-                                                        <tr >
-                                                            <td colspan=4 align="center">    
-                                                                <button type="button" class="btn btn-primary mb-2" >
-                                                                    <i class="fa fa-plus-circle mr-1"></i>
-                                                                        Add New Section
-                                                                </button>
-                                                            </td>   
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                            </div>
-                                        </div>
-                                </div>
-                            </div> 
-                        </div>
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
+</div>
+</div>
+</div>
+</div> -->
 
     <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection"
         :menu="menu_id" @close="isModalOpen = false" />
@@ -215,11 +191,13 @@ const isLoading = ref(true);
 
 const getPageSection = () => {
     debugger;
+    menus.value = '';
+    sub_menus.value = '';
     axios.get('/api/get_menus')
         .then((response) => {
-            menus.value = response.data[1];
-            sub_menus.value = response.data[0];
-            console.log("menus ", menus.value);
+            menus.value = response.data[0];
+            sub_menus.value = response.data[1];
+            console.log(menus.value);
         })
         .catch((error) => {
             console.error('Error:', error);

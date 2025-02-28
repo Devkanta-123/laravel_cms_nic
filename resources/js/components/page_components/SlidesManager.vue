@@ -62,7 +62,7 @@ import { useToastr } from '../../toaster.js';
 
 const images =ref([]);
 const isDragging =ref(false);
-fileInput.value = null;
+// fileInput.value = null;
 const slides = ref([]);
 const toastr = useToastr(); 
 
@@ -116,6 +116,7 @@ const onDrop = (e) => {
 
 
 const uploadImages = () => {
+  debugger;
   const formData = new FormData();
   images.value.forEach((image) => {
     formData.append('images[]', image.file, image.name);
