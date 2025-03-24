@@ -1,31 +1,22 @@
 <template>
   <section class="slider__area">
-    <div class="swiper-container slider_baner__active slider_baner_home6">
-      <div class="swiper-wrapper">
-        <!-- Display only the slide at the current index -->
-        <div class="swiper-slide slider__single" v-for="(slide, index) in slides" :key="index"
-          v-show="index === currentIndex">
-          <div class="slider__bg" :style="{ backgroundImage: `url(${slide})` }"></div>
+    <div class="slider-container">
+      <div class="slider-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+        <div v-for="(slide, index) in slides" :key="index" class="slider-item">
+          <div class="card">
+            <img :src="slide" alt="Slide Image" />
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Navigation buttons -->
     <div class="box-button-slider-bottom">
-      <div class="container">
-        <div class="testimonial__nav-four">
-          <div class="testimonial-two-button-prev button-swiper-prev" @click="prevImage">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-          <div class="testimonial-two-button-next button-swiper-next" @click="nextImage">
-            <i class="fas fa-arrow-right"></i>
-          </div>
-        </div>
-      </div>
+      <button @click="prevImage" class="slider-button prev">❮</button>
+      <button @click="nextImage" class="slider-button next">❯</button>
     </div>
   </section>
 </template>
-
 
 
 <script setup>
@@ -36,6 +27,7 @@ const slides = ref([]); // Holds the image data
 const currentIndex = ref(0); // Tracks the index of the current slide
 // const cacheDuration = 24 * 60 * 60 * 1000; // Cache duration (1 day)
 const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
+const gap = ref(3); // Define gap
 
 
 // Fetch the carousel slides
@@ -116,4 +108,78 @@ onUnmounted(() => {
 
 
 
-<style scoped></style>
+<style scoped>
+/* Slider Container */
+.slider__area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Main Slider Container */
+.slider-container {
+  width: 90%;
+  height: 500px;
+  /* Adjust height as needed */
+  overflow: hidden;
+  position: relative;
+}
+
+/* Slider Wrapper */
+.slider-wrapper {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  width: 100%;
+}
+
+/* Individual Slide */
+.slider-item {
+  flex: 0 0 100%;
+  /* Full width for one image at a time */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card Styling */
+.card {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Ensures image covers the full card */
+}
+
+/* Navigation Buttons */
+.box-button-slider-bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.slider-button {
+  background: #014e4e;
+  color: white;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 22px;
+  margin: 0 10px;
+}
+
+.slider-button:hover {
+  background: #012f2f;
+}
+</style>

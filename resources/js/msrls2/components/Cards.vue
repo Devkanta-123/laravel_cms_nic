@@ -5,19 +5,17 @@
         <div v-for="(card, index) in cards" :key="card.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-8">
           <div class="services-item shine-animate-item">
             <div class="services-thumb">
-              <router-link :to="`/page/${card.page_section_id}?cardsid=${card.menu_id}`" class="shine-animate">
-                <img :src="card.image" alt="cards">
-              </router-link>
+              <img :src="card.image" alt="cards">
             </div>
             <div class="services-content">
               <h4 class="title">
-                <router-link :to="`/page/${card.page_section_id}?cardid=${card.menu_id}`">
-                  {{ getCardsTitle(card) }}
-                </router-link>
+
+                {{ getCardsTitle(card) }}
               </h4>
-              <router-link :to="`/page/${card.page_section_id}?cardid=${card.menu_id}`" class="btn">
+              <router-link :to="`/page/query?page_name=${card.card_title}&cardid=${card.menu_id}`" class="btn">
                 Read More
               </router-link>
+
             </div>
           </div>
         </div>
@@ -137,8 +135,17 @@ onMounted(() => {
 
 <style scoped>
 /* Add styles specific to cards here */
-.services-bottom.btn::after,
 .services-content .btn::after {
   content: none !important;
 }
+
+
+.services-thumb img {
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* Smoother animation */
+}
+
+.services-thumb:hover img {
+  transform: scale(1.15); /* Slightly more zoom for better effect */
+}
+
 </style>

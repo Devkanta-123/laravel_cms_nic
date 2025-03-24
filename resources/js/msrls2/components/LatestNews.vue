@@ -8,7 +8,7 @@
           <!-- Fixed label -->
           <!-- Iterate over the news data and render the items -->
           <li v-for="(item, index) in newsData" :key="item.id">
-            <a href="#" @click.prevent="openNews(item)" style="color: aliceblue;">
+            <a href="#" @click.prevent="openNews(item)" style="color: #014E4E;">
               {{ getLatestNewsTitle(item) }}
             </a>
             <span v-if="index < newsData.length - 1"> | </span>
@@ -89,15 +89,11 @@ const getLatestNewsTitle = (newsItem) => {
 
 // Method to open the news item based on its type (link or file)
 const openNews = (item) => {
-  if (item.page) {
-    const routeUrl = router.resolve({ name: 'Page', params: { id: item.page } }).href;
-    
-    // Open in new tab
-    window.open(routeUrl, '_blank');
-  } else {
-    console.error('No menu_id found for the item', item);
+  if (item.file) {
+    const filePath = '/storage/' + item.file.replace('public/', '');  // Build file URL based on Laravel's storage path
+    window.open(filePath, '_blank');  // Open the file in a new tab
   }
-};
+}
 
 // Fetch news data when the component is mounted
 onMounted(() => {
@@ -111,6 +107,7 @@ onMounted(() => {
   overflow: hidden;
   white-space: nowrap;
 }
+
 .list-wrap {
   display: flex;
   animation: marquee 20s linear infinite;
@@ -119,7 +116,8 @@ onMounted(() => {
 }
 
 .list-wrap:hover {
-  animation-play-state: paused; /* Stop animation on hover */
+  animation-play-state: paused;
+  /* Stop animation on hover */
 }
 
 
@@ -131,7 +129,7 @@ onMounted(() => {
   /* Necessary for transform adjustments */
   transform: translateY(40px);
   /* Move label downward */
-  color: aliceblue;
+  color: #014E4E;
 }
 
 

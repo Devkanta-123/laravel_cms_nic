@@ -11,6 +11,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PageSectionMasterController;
 use App\Http\Controllers\CategoryMasterController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\FAQController;
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -41,6 +42,13 @@ Route::get('/get_newsletter_detail/{newsId}', [HomeController::class, 'getNewsLe
 
 Route::get('/get_card_detail/{cardId}', [HomeController::class, 'getCardDetail']);
 Route::get('/get_paragraph_ByCardID/{cardId}', [HomeController::class, 'getparagraphByCardID']);
+Route::get('/get_notifications', action: [NotificationsController::class, 'getAllNotifications']);
+Route::get('/get_notificationsforcurrentmonth', action: [NotificationsController::class, 'getNotificationsForCurrentMonth']);
+Route::get('/get_recruitmentsforcurrentmonth', action: [NotificationsController::class, 'getRecruitmentsForCurrentMonth']);
+Route::get('/get_notificationbycategory/{pagename}', action: [NotificationsController::class, 'getNotificationsByCategory']);
+Route::get('/get_faq', action: [FAQController::class, 'getFAQData']); //added by dev on 19/11/24
+
+
 
 
 
@@ -96,8 +104,7 @@ Route::middleware(('auth'))->group(function () {
     //EDIT CATEGORY MASTER MENU
     Route::post('/api/editCategoryMaster', [CategoryMasterController::class, 'editCategoryMaster']); //added by Dev on 18/02/2025
     Route::post('/api/submitNotificationsData', [NotificationsController::class, 'submitNotificationsData']); //added by Dev on 24/02/2025
-    Route::get('/api/getallnotifications', [NotificationsController::class, 'getAllNotifications']); //added by Dev on 25/02/2025
-    Route::get('/api/getnotificationsbycategory/{pagename}', [NotificationsController::class, 'getNotificationsByCategory']); //added by Dev on 25/02/2025
+    Route::post('/api/submitFAQData', [FAQController::class, 'submitFAQData']); //added by Dev on 03/03/2025
 
 
 

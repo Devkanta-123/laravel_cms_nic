@@ -212,7 +212,7 @@ class HomeController extends Controller
             ],
             [
                 'title' => '',
-                'description' =>$content, // Store default content
+                'description' => $content, // Store default content
                 'hindi_description' => '',
                 'khasi_description' => '',
                 'status' => "1"
@@ -471,7 +471,7 @@ class HomeController extends Controller
 
         if ($request->hasFile('file')) {
             $request->validate([
-                'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240', // 10 MB max
+                'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480', // 20 MB max
             ]);
         }
         if ($request->file) {
@@ -789,6 +789,6 @@ class HomeController extends Controller
 
     }
 
-
+   
 
 }

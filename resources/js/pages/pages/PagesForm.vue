@@ -170,6 +170,8 @@ import Banner from '../../components/page_components/Banner.vue';
 import Gallery from '@/components/page_components/Gallery.vue';
 import Paragraph from '../../components/page_components/Paragraph.vue';
 import Content from '@/components/page_components/Content.vue';
+import FAQ from "../../components/page_components/FAQ.vue";
+import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
 
@@ -246,6 +248,13 @@ const openModal = (section) => {
         case 'Banner':
             modalComponent.value = Paragraph;
             break;
+        case 'Frequently Asked questions':
+            modalComponent.value = FAQ;
+            break;
+        case 'Whos Who':
+            modalComponent.value = WhosWho;
+            break;
+
 
         default:
             modalComponent.value = null;

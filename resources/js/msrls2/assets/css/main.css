@@ -8,10 +8,10 @@
   --tg-body-line-height: 1.5;
   --tg-heading-line-height: 1.2;
   --tg-body-color: black;
-  --tg-heading-color: #40A578;
-  --tg-theme-primary: #F7A400;
-  --tg-theme-secondary: #40A578;
-  --tg-color-dark-blue: #40A578;
+  --tg-heading-color: #014E4E;
+  --tg-theme-primary: #ddbb64;
+  --tg-theme-secondary: #014E4E;
+  --tg-color-dark-blue: #014E4E;
   --tg-color-yellow-light: #FEF6E6;
   --tg-color-yellow-light-2: #FFFBF3;
   --tg-color-yellow-light-3: #F5EACD;
@@ -1961,7 +1961,7 @@ textarea {
   border-radius: 0 0 6px 6px;
 }
 .sticky-menu .logo a svg:first-child path:last-child {
-  fill: #f7a400;
+  fill: #ddbb64;
 }
 .sticky-menu .logo a svg path {
   fill: #191d88;
@@ -3289,7 +3289,7 @@ textarea {
   padding: 120px 0;
 }
 .brand__area-eight {
-  background: var(--tg-heading-color);
+  background: white;
   padding: 55px 0;
 }
 .brand-item {
@@ -14944,7 +14944,7 @@ blockquote p {
 }
 .business__area-home-9 .business__tag-icon {
   border-radius: 8px;
-  background: var(--secondary-color-secondary-color-500, #f7a400);
+  background: var(--secondary-color-secondary-color-500, #ddbb64);
 }
 .business__area-home-9 .business__tag-1 {
   position: absolute;

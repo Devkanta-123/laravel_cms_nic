@@ -21,8 +21,8 @@ class PagesController extends Controller
 
     public function get_page_details(Request $request, Menu $menu)
     {
-        
-        $pageSections = PageSection::with('pageSectionMaster')->where('menu_id',$menu->id)->get();
+
+        $pageSections = PageSection::with('pageSectionMaster')->where('menu_id', $menu->id)->get();
         return $pageSections;
         // if($menu->id == 1)
         // {
@@ -34,7 +34,7 @@ class PagesController extends Controller
         //     //Website logos
         //     //gallery
 
-           
+
         // }
         // else  if($menu->id == 2)
         //     dd('About Us');
@@ -43,15 +43,15 @@ class PagesController extends Controller
         // else
         //     dd('Others');
 
-       
-       
+
+
         // $gallery = Gallery::with('parentGallery')->get();
 
         // $getGallery = Gallery::getGallery();
-        
+
         // return array($gallery, $getGallery);
     }
-        public function create()
+    public function create()
     {
         //
     }
@@ -66,30 +66,30 @@ class PagesController extends Controller
             ]);
 
             $existingSection = PageSection::where('menu_id', $validatedData['menu_id'])
-            ->where('page_section_id', $validatedData['component_id'])
-            ->first();
+                ->where('page_section_id', $validatedData['component_id'])
+                ->first();
 
             if ($existingSection) {
                 return response()->json([
-                'error' => 'Duplicate Entry',
-                'message' => 'This component is already added to the menu.'
+                    'error' => 'Duplicate Entry',
+                    'message' => 'This component is already added to the menu.'
                 ], 409);
             }
 
 
             DB::select("SELECT setval(pg_get_serial_sequence('page_section', 'id'), MAX(id)) FROM page_section");
-    
+
             $pageSection = new PageSection();
             $pageSection->menu_id = $validatedData['menu_id'];
             $pageSection->page_section_name = $validatedData['component_name'];
-            $pageSection->order = 1; 
-            $pageSection->status = 1; 
+            $pageSection->order = 1;
+            $pageSection->status = 1;
             $pageSection->page_section_id = $validatedData['component_id'];
-    
+
             $pageSection->save();
 
-           
-    
+
+
             return response()->json(['success' => true, 'data' => $pageSection], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => 'Validation Error', 'messages' => $e->errors()], 422);
@@ -108,23 +108,21 @@ class PagesController extends Controller
             ]);
 
             $existingSection = PageSection::where('menu_id', $validatedData['menu_id'])
-            ->where('id', $validatedData['component_id'])
-            ->first();
+                ->where('id', $validatedData['component_id'])
+                ->first();
 
-            dd($validatedData['menu_id'],$validatedData['component_id'], $existingSection);
+            dd($validatedData['menu_id'], $validatedData['component_id'], $existingSection);
 
             if ($existingSection) {
 
-            
-                
+
+
                 return response()->json(['success' => true, 'data' => $existingSection], 201);
-            }
-            else
-            {
+            } else {
                 return response()->json(['error' => 'An unexpected error occurred', 'message' => 'Component does not exist'], 500);
             }
 
-            
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => 'Validation Error', 'messages' => $e->errors()], 422);
         } catch (\Exception $e) {

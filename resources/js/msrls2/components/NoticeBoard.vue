@@ -10,7 +10,7 @@
                             <br>
                             <li v-for="notice in props.noticeboard" :key="notice.id" style="margin-left:4px;">
                                 <i class="fa fa-arrow-right"></i>
-                                <a href="#" @click.prevent="openfile(notice)">{{ notice.title }} ({{
+                                <a href="#"  style="color: #2A3335;" @click.prevent="openfile(notice)">{{ notice.title }} ({{
                                     formatDate(notice.date) }})</a>
                                 <span v-if="isNewNotice(notice.date)" class="new-badge">New</span>
                             </li>
@@ -28,7 +28,7 @@
                             <br>
                             <li v-for="notify in notification" :key="notify.id" style="margin-left:4px;">
                                 <i class="fa fa-arrow-right"></i>
-                                <a href="#" @click.prevent="openfile(notify)">{{ notify.title }} ({{
+                                <a href="#"  style="color: #2A3335;"  @click.prevent="openfile(notify)">{{ notify.title }} ({{
                                     formatDate(notify.date) }})</a>
                                 <span v-if="isNewNotice(notify.date)" class="new-badge">New</span>
                             </li>

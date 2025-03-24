@@ -5,9 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Notifications;
 use App\Models\CategoryMaster;
-
+use Auth;
 class NotificationsController extends Controller
 {
+    public function index()
+    {
+        $user = Auth::user();
+    }
+
+
+
     public function submitNotificationsData(Request $request)
     {
         $request->validate([
@@ -55,7 +62,6 @@ class NotificationsController extends Controller
         $notifications = Notifications::all();
         return response()->json($notifications, 200);
     }
-
     public function getNotificationsByCategory($category_name)
     {
         // First, check if the category name exists and get its ID
@@ -69,6 +75,18 @@ class NotificationsController extends Controller
             return response()->json(['message' => 'Data for this Category not found'], 404);
         }
     }
+
+    public function getNotificationsForCurrentMonth()
+    {
+        $notifications = Notifications::whereMonth('date', date('m'))->get();
+        return response()->json($notifications, 200);
+    }
+    public function getRecruitmentsForCurrentMonth()
+    {
+        $notifications = Notifications::where('category_id', 3)->whereMonth('date', date('m'))->get();
+        return response()->json($notifications, 200);
+    }
+
 
 
 }

@@ -15,7 +15,7 @@
                 <li>Government Of India</li>
                 <li><i class="fa-solid fa-arrow-down"></i><a href="#" @click="scrollToBottom">Skip to main content</a>
                 </li>
-                <li><i class="fa-solid fa-eye-slash"></i><a href="#">Screen Reader Access</a></li>
+                <!-- <li><i class="fa-solid fa-eye-slash"></i><a href="#">Screen Reader Access</a></li> -->
               </ul>
             </div>
             <div class="col-lg-6">
@@ -27,10 +27,11 @@
                     <option value="Khasi">Khasi</option>
                   </select>
                 </li>
-                <li><a href="#" @click="increaseFontSize">A+</a></li>
-                <li><a href="#" @click="decreaseFontSize">A-</a></li>
-                <li><a href="#" @click="resetFontSize">A</a></li>
-                <li><a href="#" @click="toggleContrastMode">Contrast</a></li>
+                <li class="header-btn">
+                  <a href="#">
+                    <Accessibility></Accessibility>
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
@@ -48,8 +49,7 @@
               <!-- Hide logo when mobile view is active -->
               <div v-if="!isMobileView">
                 <a href="page/1">
-                  <img :src="getLogoUrl()" alt="Logo" class="logo-img"  style="margin-left: auto;"/>
-                </a>
+                  <img :src="getLogoUrl()" alt="Logo" class="logo-img" style="margin-left: auto;" /> </a>
               </div>
 
               <!-- Menu Wrapper -->
@@ -73,7 +73,8 @@
                     <!-- Submenus -->
                     <ul v-if="item.submenus && item.submenus.length" class="sub-menu">
                       <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id">
-                        <router-link :to="{ name: 'Page', params: { id: subItem.id },query: { page_name: subItem.menu_name }  }"
+                        <router-link
+                          :to="{ name: 'Page', params: { id: subItem.id }, query: { page_name: subItem.menu_name } }"
                           :style="{ fontSize: menuFontSize + 'px' }">
                           {{ getMenuItemName(subItem) }}
                         </router-link>
@@ -81,7 +82,8 @@
                         <!-- Nested Submenus -->
                         <ul v-if="subItem.submenus && subItem.submenus.length" class="sub-menu">
                           <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id">
-                            <router-link :to="{ name: 'Page', params: { id: subSubItem.id },query: { page_name: subItem.menu_name }  }"
+                            <router-link
+                              :to="{ name: 'Page', params: { id: subSubItem.id }, query: { page_name: subItem.menu_name } }"
                               :style="{ fontSize: menuFontSize + 'px' }">
                               {{ getMenuItemName(subSubItem) }}
                             </router-link>
@@ -89,7 +91,8 @@
                             <!-- Further Nested Submenus -->
                             <ul v-if="subSubItem.submenus && subSubItem.submenus.length" class="sub-menu">
                               <li v-for="subSubSubItem in sortedSubmenus(subSubItem)" :key="subSubSubItem.id">
-                                <router-link :to="{ name: 'Page', params: { id: subSubSubItem.id },query: { page_name: subItem.menu_name }  }"
+                                <router-link
+                                  :to="{ name: 'Page', params: { id: subSubSubItem.id }, query: { page_name: subItem.menu_name } }"
                                   :style="{ fontSize: menuFontSize + 'px' }">
                                   {{ getMenuItemName(subSubSubItem) }}
                                 </router-link>
@@ -146,11 +149,39 @@
       <div v-if="currentId == '1'" class="content">
         <Carousel></Carousel>
       </div>
-      <div class="brand__area-eight col-12 mb-300" v-if="currentId == '1'">
+      <div class="brand__area-eight col-12 mb-300" v-if="currentId == '1'" style="margin-top: -60px;">
         <div class="container">
           <LatestNews :language="language" />
         </div>
       </div>
+
+
+      <!-- HomeParagraph start here  -->
+      <section class="about__area-five" v-if="currentId == '1'">
+        <div class="container">
+          <div class="row align-items-start">
+            <!-- About Content -->
+            <div class="col-lg-12">
+              <div v-if="homepragraphdata" v-html="homepragraphdata" class="aos-init aos-animate"
+                style="color: #2A3335;"></div>
+
+              <br>
+              <a href="/page/2?page_name=About+Us" class="btn btn-two custom-btn">
+                Read More
+              </a>
+            </div>
+
+            <!-- Notice Board -->
+
+          </div> <!-- End .row -->
+        </div> <!-- End .container -->
+      </section>
+
+      <section class="about__area-five" v-if="currentId == '1'">
+        <Notifications :language="language" />
+      </section>
+      <!-- HomeParagraph end here  -->
+
 
 
       <section class="counter-area" v-if="currentId == '1'">
@@ -256,12 +287,15 @@
         <router-view></router-view>
         <br>
       </div>
-      <section class="features__area-two">
-        <Documentation :language="language" />
-      </section>
+
       <section class="services-area services-bg position-relative" v-if="currentId == '1'">
         <Cards :language="language" />
       </section>
+      <!-- FAQ'S -->
+      <!-- <section class="services__area-seven pt-120 pb-120" v-if="currentId == '1'">
+        <FAQS  :language="language"/>
+      </section> -->
+
       <div class="brand__area-two">
         <Banner />
       </div>
@@ -271,8 +305,11 @@
       <div class="footer-bottom">
         <Footer>
         </Footer>
-
+        <div style="display: none;">
+          <Page :language="language" />
+        </div>
       </div>
+
 
     </div>
   </div>
@@ -285,9 +322,11 @@ import Footer from './Footer.vue';
 import Carousel from '../components/Carousel.vue';
 import LatestNews from '../components/LatestNews.vue';
 import Loader from '../../components/Loader.vue';
-import Documentation from '../components/Documentation.vue';
+import Notifications from '../components/Notifications.vue';
 import Cards from '../components/Cards.vue';
 import Banner from '../components/Banner.vue';
+import Accessibility from '../settings/Accessibility.vue';
+import Page from './Page.vue';
 import { useRoute } from "vue-router";
 import '../assets/css/bootstrap.min.css';
 import '../assets/css/animate.min.css';
@@ -304,11 +343,10 @@ const highContrastMode = ref(false);
 const language = ref('English');
 const isLoading = ref(true);
 const route = useRoute();
-const menuFontSize = ref(17); // Example font size
-
+const menuFontSize = ref(14); // Example font size
+const homepragraphdata = ref([]);
 const isMobileMenuOpen = ref(false);
 const windowWidth = ref(window.innerWidth);
-
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
@@ -360,7 +398,7 @@ watchEffect(() => {
 const props = defineProps({
   id: {
     type: String,
-  },
+  }
 });
 
 
@@ -393,6 +431,7 @@ const fetchMenuItems = async () => {
       return;
     }
 
+
     // Fetch fresh data from API
     const response = await axios.get('/get_mainmenus');
     menuItems.value = response.data;
@@ -406,6 +445,18 @@ const fetchMenuItems = async () => {
     console.error('Failed to fetch menu items:', error);
   }
 };
+
+
+const fetchPageContent = async () => {
+  debugger;
+  const response = await axios.get(`/get_page_content/${currentId.value}`);
+  if (response.data) {
+    debugger;
+    homepragraphdata.value = response.data.content
+      ? response.data.content
+      : response.data.content;
+  }
+}
 
 
 const scrollToTop = () => {
@@ -454,7 +505,7 @@ const decreaseFontSize = () => {
 };
 
 const resetFontSize = () => {
-  menuFontSize.value = 17; // Reset to default font size
+  menuFontSize.value = 14; // Reset to default font size
 };
 const toggleContrastMode = () => {
   highContrastMode.value = !highContrastMode.value;
@@ -478,7 +529,7 @@ const isMobileView = computed(() => windowWidth.value <= 991);
 
 onMounted(async () => {
   try {
-    await Promise.all([fetchMenuItems(), fetchHeader(), window.addEventListener('resize', updateWindowWidth)]);
+    await Promise.all([fetchMenuItems(), fetchHeader(), fetchPageContent(), window.addEventListener('resize', updateWindowWidth)]);
   } finally {
     isLoading.value = false;
   }
@@ -533,7 +584,7 @@ ul::after {
 .font-size-controls {
   list-style: none;
   display: flex;
-  gap: 10px;
+  gap: 1px;
   padding: 0;
   margin-bottom: 15px;
 }
@@ -622,7 +673,7 @@ ul::after {
 
 .navigation {
   display: flex;
-  gap: 20px;
+  gap: 3px;
   flex-wrap: nowrap;
   /* Prevent wrapping */
   justify-content: center;
@@ -643,13 +694,6 @@ ul::after {
   margin: 0;
 }
 
-.navigation {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-  padding: 0;
-  margin: 0;
-}
 
 .navigation li {
   position: relative;
@@ -670,11 +714,6 @@ ul::after {
     align-items: stretch;
   }
 
-  .navigation {
-    flex-direction: column;
-    width: 100%;
-    gap: 0;
-  }
 
   .navigation li {
     width: 100%;
@@ -734,7 +773,7 @@ ul::after {
 @media (min-width: 992px) {
   .tgmenu__main-menu .navigation {
     display: flex;
-    gap: 9px;
+    gap: 4px;
     /* Adjust the spacing between menu items */
   }
 
@@ -749,7 +788,8 @@ ul::after {
   }
 }
 
-
-
-/* Show submenu when hovering over parent */
+.btn::before,
+.btn::after {
+  content: none !important;
+}
 </style>

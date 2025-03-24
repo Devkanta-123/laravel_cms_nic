@@ -7,83 +7,115 @@
         <br><br><br>
         <LatestNews :menu="props.id" />
     </div>
-
-    <div v-else class="container" style="margin-top: -70px;">
-        <!-- Render Page Content if available -->
-        <h5 class="m-0">{{ pageName }}</h5>
-        <br>
-        <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate"></div>
-
-        <!-- Show Photo Gallery only if pageContent is unavailable -->
-        <div v-else-if="gallerydata.length > 0">
-            <PhotoGallery :galleries="gallerydata" />
+    <section class="breadcrumb__area breadcrumb__bg" data-background="assets/img/bg/breadcrumb_bg.jpg"
+        style="background-image: url(&quot;assets/img/bg/breadcrumb_bg.jpg&quot;);">
+        <div class="container" style="margin-top: -130px;">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="breadcrumb__content">
+                        <h2 class="title">{{ pageName }}</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <router-link to="/page/1">Home</router-link>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">{{ pageName }}</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
+    <br>
+    <section class="about__area-five" style="margin-top: -180px;">
+        <div class="container">
+            <div v-if="!activeComponent">
+                <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate" style="color: #2A3335;"></div>
 
-        <div v-if="noticeboarddata.length > 0">
-            <!-- <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" /> -->
-            <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" :pageName="route.query.page_name" />
+                <!-- Show Photo Gallery only if pageContent is unavailable -->
+                <div v-else-if="gallerydata.length > 0">
+                    <PhotoGallery :galleries="gallerydata" />
+                </div>
+
+                <div v-if="noticeboarddata.length > 0">
+                    <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" :pageName="route.query.page_name" />
+                </div>
+
+                <div v-else-if="notificationdata.length > 0">
+                    <NoticeBoard :notification="notificationdata" :key="refreshKey" :pageName="route.query.page_name" />
+                </div>
+            </div>
         </div>
-
-        <div v-else-if="notificationdata.length > 0">
-            <NoticeBoard :notification="notificationdata" :key="refreshKey" :pageName="route.query.page_name" />
-        </div>
+    </section>
 
 
-        <!-- Ensure NoticeBoard gets the correct props -->
-        <!-- <NoticeBoard v-else :noticeboard="noticeboarddata" :notification="notificationdata" /> -->
-
-        <!-- If nothing is available, show a message -->
-        <!-- <p v-else style="color: red;">Data not available</p> -->
-    </div>
+    <!-- Dynamically render the component only when activeComponent is set -->
+    <component v-if="activeComponent" :is="activeComponent" :language="language"></component>
 
 </template>
 <script setup>
-import { ref, onMounted, inject, watch, computed } from 'vue';
+import { ref, onMounted, inject, watch, provide, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
+import axios from 'axios';
+
 import Carousel from '../components/Carousel.vue';
 import LatestNews from '../components/LatestNews.vue';
 import Footer from './Footer.vue';
 import Loader from '../../components/Loader.vue';
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
+import FAQS from '../components/FAQ.vue';
+
 const route = useRoute();
 const isLoading = ref(true);
-const props = defineProps({
 
-    id: {
-        type: String,
-        required: true
-    }
+// Accept props
+const props = defineProps({
+    language: String,  // Language prop
+    id: String,        // ID for the page
+    pageName: String   // Page Name for dynamic rendering
 });
 
+// Inject and provide language for child components
+const language = inject("language");
+provide("language", language);
+
+// Reactive state variables
+const activeComponent = shallowRef(null); // Holds the dynamic component
 const pageContent = ref('');
-const gallerydata = ref('');
-const noticeboarddata = ref('');
-const notificationdata = ref('');
-const refreshKey = ref(0); // This will force Vue to re-render the component
-let pageName = ref('');
+const gallerydata = ref([]);
+const noticeboarddata = ref([]);
+const notificationdata = ref([]);
+const refreshKey = ref(0); // Used to force re-render on data change
+
+const pageName = ref(''); // Reactive pageName reference
+
 const fetchPageContent = async () => {
     try {
         debugger;
-         pageName = route.query.page_name; // Get page_name from query params
-        console.log("Page Name:", pageName);
+        isLoading.value = true; // Set loading state
 
-        // Reset all data before fetching new content
+        // Get page_name from query params
+        pageName.value = route.query.page_name || props.pageName || '';
+
+        // Reset dynamic data before fetching new content
         pageContent.value = null;
         gallerydata.value = [];
         noticeboarddata.value = [];
         notificationdata.value = [];
+        activeComponent.value = null; // Reset active component before switching
 
         let response; // Declare response variable
 
-        switch (pageName) {
+        switch (pageName.value) {
             case "Gallery":
                 response = await axios.get(`/get_galleries`);
                 gallerydata.value = response.data.length > 0 ? response.data : [];
                 break;
 
             case "Notice Board":
-                response = await axios.get(`/api/getallnotifications`);
+                response = await axios.get(`/get_notifications`);
                 noticeboarddata.value = response.data;
                 console.log("Notice Board Data:", noticeboarddata.value);
                 break;
@@ -92,28 +124,50 @@ const fetchPageContent = async () => {
             case "Recruitments":
             case "Tender":
             case "Notification":
-                response = await axios.get(`/api/getnotificationsbycategory/${pageName}`);
+                response = await axios.get(`/get_notificationbycategory/${pageName.value}`);
                 notificationdata.value = response.data;
                 console.log("Notification Data:", notificationdata.value);
                 break;
 
+            case "Faq":
+                activeComponent.value = FAQS; // Dynamically load FAQ component
+                break;
+            case "Success Story":
+                activeComponent.value = FAQS; // Dynamically load FAQ component
+                break;
+
+
+
             default:
                 response = await axios.get(`/get_page_content/${route.params.id}`);
-
                 if (response.data) {
                     debugger;
-                    pageContent.value = response.data.content
-                        ? response.data.content
-                        : response.data.content;
+                    pageContent.value = response.data.content || '';
                 }
         }
     } catch (error) {
         console.error('Failed to fetch page content:', error);
         pageContent.value = null; // Set to null on API error
+    } finally {
+        isLoading.value = false; // Stop loading
     }
 };
 
+// Watch for route changes and re-fetch data dynamically
+watch(
+    () => [route.params.id, route.query.page_name, props.language],
+    ([newId, newPage, newLang]) => {
+        console.log('Route changed - ID:', newId, 'Page:', newPage);
+        console.log('Language updated in Page:', newLang);
+        isLoading.value = true;
+        setTimeout(() => {
+            isLoading.value = false;
+        }, 400);
 
+        fetchPageContent();
+    },
+    { immediate: true }
+);
 
 onMounted(() => {
     setTimeout(() => {
@@ -122,24 +176,10 @@ onMounted(() => {
     console.log("On Mounted of Page");
     fetchPageContent();
 });
-
-watch(
-    () => [route.params.id, route.query.page_name], // Watch both ID and page_name
-    () => {
-        isLoading.value = true; // Show loader
-        setTimeout(() => {
-            isLoading.value = false;
-        }, 500);
-
-        fetchPageContent();
-    }
-);
-
 </script>
 
 <style scoped>
 .content {
     padding: 20px;
 }
-
 </style>
