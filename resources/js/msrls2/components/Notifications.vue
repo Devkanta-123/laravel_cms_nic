@@ -12,7 +12,7 @@
                             <div class="marquee-container" @mouseover="pauseScroll" @mouseleave="resumeScroll">
                                 <ul class="list-wrap">
                                     <li v-for="(item, index) in recruitmentsData" :key="item.menu_id">
-                                        <a href="#" @click.prevent="openNews(item)">
+                                        <a href="#" @click.prevent="openNews(item)" style="color: #3c3932;">
                                             {{ getNoticeboardTitle(item) }}
                                         </a>
                                     </li>
@@ -33,8 +33,8 @@
                             <!-- Dynamic List: Scrolling enabled only here -->
                             <div class="marquee-container" @mouseover="pauseScroll" @mouseleave="resumeScroll">
                                 <ul class="list-wrap" ref="newsList">
-                                    <li v-for="(item, index) in newsData" :key="item.menu_id">
-                                        <a href="#" @click.prevent="openNews(item)">
+                                    <li v-for="(item, index) in newsData" :key="item.menu_id" >
+                                        <a href="#" @click.prevent="openNews(item)" style="color: #3c3932;">
                                             {{ getNoticeboardTitle(item) }}
                                         </a>
                                     </li>

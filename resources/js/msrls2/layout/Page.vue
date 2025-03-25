@@ -6,7 +6,9 @@
         <Carousel></Carousel>
         <br><br><br>
         <LatestNews :menu="props.id" />
+
     </div>
+
     <section class="breadcrumb__area breadcrumb__bg" data-background="assets/img/bg/breadcrumb_bg.jpg"
         style="background-image: url(&quot;assets/img/bg/breadcrumb_bg.jpg&quot;);">
         <div class="container" style="margin-top: -130px;">
@@ -28,7 +30,7 @@
         </div>
     </section>
     <br>
-    <section class="about__area-five" style="margin-top: -180px;">
+    <section class="about__area-five" style="margin-top: -140px;">
         <div class="container">
             <div v-if="!activeComponent">
                 <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate" style="color: #2A3335;"></div>
@@ -66,6 +68,7 @@ import Loader from '../../components/Loader.vue';
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
 import FAQS from '../components/FAQ.vue';
+import Accessibility from '../settings/Accessibility.vue';
 
 const route = useRoute();
 const isLoading = ref(true);
@@ -95,6 +98,8 @@ const fetchPageContent = async () => {
     try {
         debugger;
         isLoading.value = true; // Set loading state
+        const cardId = route.query.cardid;
+        console.log(cardId);
 
         // Get page_name from query params
         pageName.value = route.query.page_name || props.pageName || '';
@@ -133,7 +138,11 @@ const fetchPageContent = async () => {
                 activeComponent.value = FAQS; // Dynamically load FAQ component
                 break;
             case "Success Story":
-                activeComponent.value = FAQS; // Dynamically load FAQ component
+                response = await axios.get(`/get_page_content/${route.query.cardid}`);
+                if (response.data) {
+                    debugger;
+                    pageContent.value = response.data.content || '';
+                }
                 break;
 
 

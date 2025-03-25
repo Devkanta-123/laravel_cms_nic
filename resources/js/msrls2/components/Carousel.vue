@@ -27,7 +27,6 @@ const slides = ref([]); // Holds the image data
 const currentIndex = ref(0); // Tracks the index of the current slide
 // const cacheDuration = 24 * 60 * 60 * 1000; // Cache duration (1 day)
 const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
-const gap = ref(3); // Define gap
 
 
 // Fetch the carousel slides

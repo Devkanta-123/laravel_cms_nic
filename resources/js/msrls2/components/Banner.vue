@@ -34,24 +34,49 @@ const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
 let autoSlideInterval = null;
 
 // Fetch banners from API
+
 const fetchBanners = async () => {
   const now = new Date().getTime();
+
+  // Check if cached data exists and is valid
   const cachedData = localStorage.getItem("banners");
   const cachedTimestamp = localStorage.getItem("bannersTimestamp");
 
   if (cachedData && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
-    banners.value = JSON.parse(cachedData);
+    console.log('Using cached banners from localStorage');
+    banners.value = JSON.parse(cachedData); // Use cached banners data
     return;
   }
 
   loadingBanners.value = true;
+
   try {
     const response = await axios.get("/get_banner");
+
     if (response.data && Array.isArray(response.data)) {
-      banners.value = response.data.map((banner) => ({
-        ...banner,
-        image: "/storage/" + banner.image.replace("public/", ""),
+      // Fetch images as base64 encoded strings
+      const bannerData = await Promise.all(response.data.map(async (banner) => {
+        const imageFilePath = "/storage/" + banner.image.replace("public/", ""); // Build the image URL
+
+        // Fetch image as a base64 encoded string
+        const imageResponse = await fetch(imageFilePath);
+        const imageBlob = await imageResponse.blob();
+        const imageBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageBlob);
+        });
+
+        return {
+          ...banner,
+          image: imageBase64 // Store the image as base64
+        };
       }));
+
+      banners.value = bannerData;
+
+      // Cache the banners data and timestamp in localStorage
       localStorage.setItem("banners", JSON.stringify(banners.value));
       localStorage.setItem("bannersTimestamp", now.toString());
     } else {

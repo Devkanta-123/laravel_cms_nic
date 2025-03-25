@@ -682,6 +682,14 @@ ul::after {
 
 .navigation li {
   white-space: nowrap;
+  position: relative;
+  white-space: normal;
+  /* Allow wrapping */
+  word-wrap: break-word;
+  /* Break long words and wrap them to the next line */
+  word-break: break-word;
+  /* Break long words on boundary */
+
   /* Prevent text wrapping */
 }
 
@@ -695,16 +703,17 @@ ul::after {
 }
 
 
-.navigation li {
-  position: relative;
-}
 
 .navigation li a {
-  display: block;
-  padding: 10px 15px;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
+  display: inline-block;
+  /* Ensure links are inline-block so they respect width */
+  max-width: 100%;
+  /* Ensure the link does not exceed its container's width */
+  overflow: hidden;
+  /* Avoid overflow */
+  text-overflow: ellipsis;
+  /* Optional: add ellipsis if text is too long */
+  word-wrap: break-word;
 }
 
 /* Responsive Menu Styles */
