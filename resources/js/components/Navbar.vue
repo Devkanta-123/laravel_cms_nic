@@ -114,6 +114,14 @@
                             </router-link>
                         </li>
 
+                        <li class="nav-item" v-if="role == 2">
+                            <router-link to="/admin/level_master" active-class="active" class="nav-link">
+                                <i class="nav-icon fas fa-list"></i>
+                                <p>
+                                    Level Master </p>
+                            </router-link>
+                        </li>
+
 
 
 

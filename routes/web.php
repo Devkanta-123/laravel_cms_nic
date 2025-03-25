@@ -12,6 +12,8 @@ use App\Http\Controllers\PageSectionMasterController;
 use App\Http\Controllers\CategoryMasterController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\FAQController;
+use App\Http\Controllers\LevelMasterController;
+
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -106,7 +108,8 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/submitNotificationsData', [NotificationsController::class, 'submitNotificationsData']); //added by Dev on 24/02/2025
     Route::post('/api/submitFAQData', [FAQController::class, 'submitFAQData']); //added by Dev on 03/03/2025
 
-
+    //ADD LEVEL MASTER 
+    Route::post('/api/addLevelMaster', [LevelMasterController::class, 'addLevelMaster']); //added by Dev on 25/03/2025
 
     Route::post('/api/menus', [MenuController::class, 'store']);
 

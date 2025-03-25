@@ -10,6 +10,7 @@ import MainComponent from './pages/main_component/MainComponent.vue';
 import Theme from './pages/theme/Theme.vue';
 import PageSectionMaster from './pages/page_section_master/PageSectionMaster.vue';
 import CategoryMaster from './pages/category_master/CategoryMaster.vue';
+import LevelMaster from './pages/level_master/LevelMaster.vue';
 
 
 // import PageContent from './smb/layout/PageContent.vue';
@@ -79,7 +80,13 @@ export default [
         name: 'admin.category_master',
         component: CategoryMaster
     },
+    //level masters
+    {
+        path: '/admin/level_master',
+        name: 'admin.level_master',
+        component: LevelMaster,
 
+    },
     {
         path: '/pages-form/:menuId/:menuName',
         name: 'PagesForm',
