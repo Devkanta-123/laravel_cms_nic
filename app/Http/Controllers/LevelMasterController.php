@@ -15,4 +15,8 @@ class LevelMasterController extends Controller
         $level->save();
         return response()->json(['status' => 'success', 'message' => 'Level added successfully']);
     }
+    public function getAllLevelMaster(){
+        $levels = LevelMaster::all();
+        return response()->json($levels);
+    }
 }

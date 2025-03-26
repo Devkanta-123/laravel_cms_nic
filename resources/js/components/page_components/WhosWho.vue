@@ -4,9 +4,10 @@
         <div class="mb-3">
             <label class="form-label">Level</label>
             <select class="form-control" v-model="selectedLevel">
-                <option value="1">State</option>
-                <option value="2">District</option>
-                <option value="3">Block</option>
+                <option value="" disabled selected>Select the Level</option>
+                <option v-for="level in masterleveldata" :key="level.id" :value="level.id">
+                    {{ level.level_name }}
+                </option>
             </select>
         </div>
 
@@ -67,33 +68,54 @@
 import { onMounted, reactive, ref, watch } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
-const imagePreview = ref(null); // Stores preview URL
 
-// Dynamic fields storage
-const dynamicFields = ref([]);
-const selectedLevel = ref("1"); // Default to State
-// Watch for category changes and update dynamic fields
+// Initialize required references
+const imagePreview = ref(null); // Stores preview URL
+const masterleveldata = ref([]); // Store levels data
+const dynamicFields = ref([]); // Stores dynamic fields based on level
+const selectedLevel = ref(''); // The selected level ID
+
+const formData = ref({
+    name: "",
+    designation: "",
+    email: "",
+    contact: "",
+    profile: null, // For storing profile image file
+    level_id: null, // Store the selected level id
+    dynamicFields: {}, // Store dynamic fields data
+});
+
+// Fetch all levels (Master data)
+const getAllLevelMaster = async () => {
+    try {
+        const response = await axios.get('/api/getAllLevelMaster');
+        masterleveldata.value = response.data; // Update masterleveldata with the response
+    } catch (error) {
+        console.error('Error fetching levels:', error.response || error);
+        toastr.error("Failed to load levels.");
+    }
+};
+
+// Watch for changes in selectedLevel and update dynamic fields accordingly
 watch(selectedLevel, (newVal) => {
-    if (newVal === "2") {
-        // Load District fields
+    debugger;
+    console.log("Selected level changed to:", newVal); // Check if the watch is triggered
+    if (newVal === 2) {
         dynamicFields.value = [
             { key: "district_name", label: "District Name", placeholder: "Enter District Name" },
         ];
-    } else if (newVal === "3") {
-        // Load Block fields
+    } else if (newVal === 3) {
         dynamicFields.value = [
             { key: "block_name", label: "Block Name", placeholder: "Enter Block Name" },
         ];
     } else {
-        // Remove dynamic fields if "State" is selected
+        console.log("Clearing dynamic fields"); // Debugging message
         dynamicFields.value = [];
     }
 });
 
-
 // Handle Image Upload and Preview
 const handleImageUpload = (event) => {
-    debugger;
     const file = event.target.files[0]; // Get selected file
     if (file) {
         formData.value.profile = file; // Store file in formData
@@ -107,74 +129,50 @@ const handleImageUpload = (event) => {
         imagePreview.value = null;
     }
 };
+
+// Toastr for notifications
 const toastr = useToastr();
-const formData = ref({
-    name: "",
-    designation: "",
-    email: "",
-    contact: "",
-    profile: null, // Stores selected file
-});
+
+// Fetch all level data when component is mounted
 onMounted(() => {
-    console.log("Component Mounted");
+    getAllLevelMaster();
 });
 
-// Validate input fields before submission
-const validateFields = () => {
-    if (
-        !formData.english_question.trim() ||
-        !formData.english_answer.trim() ||
-        !formData.hindi_question.trim() ||
-        !formData.hindi_answer.trim() ||
-        !formData.khasi_question.trim() ||
-        !formData.khasi_answer.trim() ||
-        !formData.order.toString().trim()
-    ) {
-        toastr.error("All fields are required!");
-        return false;
-    }
-
-    if (isNaN(parseInt(formData.order))) {
-        toastr.error("Order must be a valid number.");
-        return false;
-    }
-
-    return true;
-};
-
+// Submit the form data to the backend
 const submitData = async () => {
     debugger;
-    console.log("Current Form Data:", JSON.stringify(formData));
+    // Prepare form data to send to the backend
+    const dataToSend = new FormData();
 
-    if (!validateFields()) return;
+    // Append standard form data values
+    dataToSend.append('name', formData.value.name);
+    dataToSend.append('designation', formData.value.designation);
+    dataToSend.append('email', formData.value.email);
+    dataToSend.append('contact', formData.value.contact);
+    dataToSend.append('level_id', selectedLevel.value); // Append selected level id
+    dataToSend.append('profile_image', formData.value.profile); // Add profile image if uploaded
 
-    const dataToSend = {
-        english_question: formData.english_question,
-        english_answer: formData.english_answer,
-        hindi_question: formData.hindi_question,
-        hindi_answer: formData.hindi_answer,
-        khasi_question: formData.khasi_question,
-        khasi_answer: formData.khasi_answer,
-        order: formData.order
-    };
-
-    console.log("Prepared API Data:", dataToSend);
-    let response;
-    try {
-        response = await axios.post("/api/submitFAQData", dataToSend);
-        toastr.success(response.data.message);
-        // Reset form after successful submission
-        Object.keys(formData).forEach(key => formData[key] = "");
-        console.log("Form reset successfully");
-
-    } catch (error) {
-        if (error.message == "Request failed with status code 409") {
-            error.message = "same order number already exists"
-            toastr.warning(error.message);
-        }
+    // Append dynamic fields based on selected level
+    if (dynamicFields.value.length > 0) {
+        dynamicFields.value.forEach(field => {
+            dataToSend.append(field.key, formData.value[field.key] || ''); // Handle dynamic field values
+        });
     }
-    toastr.error(error.message);
 
+    try {
+        const response = await axios.post('/api/addWhosWho', dataToSend, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        // Handle the success response
+        toastr.success(response.data.message);
+    } catch (error) {
+        // Handle error
+        console.error('Error:', error.response.data);
+        toastr.error(error.response.data.message || 'Something went wrong');
+    }
 };
 
 </script>

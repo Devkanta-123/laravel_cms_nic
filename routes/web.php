@@ -13,7 +13,7 @@ use App\Http\Controllers\CategoryMasterController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\LevelMasterController;
-
+use App\Http\Controllers\WhosWhoController;
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -49,6 +49,7 @@ Route::get('/get_notificationsforcurrentmonth', action: [NotificationsController
 Route::get('/get_recruitmentsforcurrentmonth', action: [NotificationsController::class, 'getRecruitmentsForCurrentMonth']);
 Route::get('/get_notificationbycategory/{pagename}', action: [NotificationsController::class, 'getNotificationsByCategory']);
 Route::get('/get_faq', action: [FAQController::class, 'getFAQData']); //added by dev on 19/11/24
+Route::get('/get_whoswho', action: [WhosWhoController::class, 'getWhosWho']); //added by dev on 25/03/25
 
 
 
@@ -110,6 +111,10 @@ Route::middleware(('auth'))->group(function () {
 
     //ADD LEVEL MASTER 
     Route::post('/api/addLevelMaster', [LevelMasterController::class, 'addLevelMaster']); //added by Dev on 25/03/2025
+    //GET LEVEL MASTER MENU
+    Route::get('/api/getAllLevelMaster', [LevelMasterController::class, 'getAllLevelMaster']); //added by Dev on 25/03/2025
+    //add whos who data 
+    Route::post('/api/addWhosWho', [WhosWhoController::class, 'addWhosWho']); //added by Dev on 25/03/2025
 
     Route::post('/api/menus', [MenuController::class, 'store']);
 
