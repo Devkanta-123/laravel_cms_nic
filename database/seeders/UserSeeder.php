@@ -16,21 +16,23 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $user = [
-            ['id' => 1,
-            'name' =>'Lucy',
-            'email' =>'lucy.manisha@nic.in',
-            'password' => Hash::make('lucy.manisha@nic.in'),
-            'role_id' => 1
-           ],
+            [
+                'id' => 1,
+                'name' => 'Lucy',
+                'email' => 'lucy.manisha@nic.in',
+                'password' => Hash::make('lucy.manisha@nic.in'),
+                'role_id' => 1
+            ],
 
-           ['id' => 2,
-            'name' =>'Admin',
-            'email' =>'admin@mail.com',
-            'password' => Hash::make('admin@mail.com'),
-            'role_id' => 2
-           ],
-           
-        
+            [
+                'id' => 2,
+                'name' => 'Admin',
+                'email' => 'admin@mail.com',
+                'password' => Hash::make('admin@mail.com'),
+                'role_id' => 2
+            ],
+
+
         ];
 
         User::insert($user);

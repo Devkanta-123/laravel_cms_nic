@@ -18,6 +18,7 @@ import LevelMaster from './pages/level_master/LevelMaster.vue';
 // import Home from './smb/Home.vue';
 import Roles from './pages/admin/Roles.vue';
 const folderPath = window.folderPath;
+debugger;
 console.log(folderPath);
 export default [
 

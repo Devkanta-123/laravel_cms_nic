@@ -7,7 +7,7 @@ import 'admin-lte/dist/js/adminlte.min.js';
 import './assets/styles.css';
 import CKEditor from '@mayasabha/ckeditor4-vue3';
 
-import { createApp } from 'vue';
+import { createApp} from 'vue';
 import {createRouter, createWebHistory} from 'vue-router';
 import Routes from './routes.js';
 import Login from './pages/auth/Login.vue';

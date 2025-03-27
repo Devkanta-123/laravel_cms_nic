@@ -15,17 +15,31 @@ class ThemeMasterSeeder extends Seeder
     public function run(): void
     {
         $theme = [
-            ['id' => 1,
-            'theme_name' =>'Theme 1',
-            'path' => 'smb',
-            'image' => 'smb.png'
-           ],
+            [
+                'id' => 1,
+                'theme_name' => 'Theme 1',
+                'path' => 'smb',
+                'image' => 'smb.png'
+            ],
 
-           ['id' => 2,
-           'theme_name' =>'Theme 2',
-           'path' => 'theme2',
-           'image' => 'smb.png'
-          ],
+            [
+                'id' => 2,
+                'theme_name' => 'Theme 2',
+                'path' => 'theme2',
+                'image' => 'smb.png'
+            ],
+            [
+                'id' => 3,
+                'theme_name' => 'msrsl',
+                'path' => 'msrsl',
+                'image' => 'smb.png'
+            ],
+            [
+                'id' => 4,
+                'theme_name' => 'msrsl2',
+                'path' => 'msrsl2',
+                'image' => 'smb.png'
+            ],
         ];
 
         ThemeMaster::insert($theme);
