@@ -24,7 +24,7 @@ class NotificationsController extends Controller
             'date' => 'required|array',
             'date.*' => 'required|date',
             'file' => 'required|array',
-            'file.*.*' => 'required|mimes:pdf|max:6144', // 6 MB max file size
+            'file.*.*' => 'required|mimes:pdf', // 6 MB max file size
         ]);
 
         // Process each row

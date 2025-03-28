@@ -37,6 +37,7 @@
           </div>
         </div>
       </div>
+      <br>
       <div id="sticky-header" class="tg-header__area tg-header__area-five">
         <div class="row">
           <div class="col-12">
@@ -47,10 +48,10 @@
               <!-- Navbar Toggle Button for Mobile -->
 
               <!-- Hide logo when mobile view is active -->
-              <div v-if="!isMobileView">
+              <!-- <div v-if="!isMobileView">
                 <a href="page/1">
                   <img :src="getLogoUrl()" alt="Logo" class="logo-img" style="margin-left: auto;" /> </a>
-              </div>
+              </div> -->
 
               <!-- Menu Wrapper -->
               <div

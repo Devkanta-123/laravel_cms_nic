@@ -12,7 +12,7 @@
 
                 {{ getCardsTitle(card) }}
               </h4>
-              <router-link :to="`/page/query?page_name=${card.card_title}&cardid=${card.menu_id}`" class="btn">
+              <router-link :to="`/page/query?page_name=${card.card_title}&cardid=${card.more_link}`" class="btn">
                 Read More
               </router-link>
 
@@ -141,11 +141,12 @@ onMounted(() => {
 
 
 .services-thumb img {
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* Smoother animation */
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  /* Smoother animation */
 }
 
 .services-thumb:hover img {
-  transform: scale(1.15); /* Slightly more zoom for better effect */
+  transform: scale(1.15);
+  /* Slightly more zoom for better effect */
 }
-
 </style>

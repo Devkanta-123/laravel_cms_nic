@@ -99,7 +99,6 @@ const fetchPageContent = async () => {
         debugger;
         isLoading.value = true; // Set loading state
         const cardId = route.query.cardid;
-        console.log(cardId);
 
         // Get page_name from query params
         pageName.value = route.query.page_name || props.pageName || '';
@@ -113,46 +112,51 @@ const fetchPageContent = async () => {
 
         let response; // Declare response variable
 
-        switch (pageName.value) {
-            case "Gallery":
-                response = await axios.get(`/get_galleries`);
-                gallerydata.value = response.data.length > 0 ? response.data : [];
-                break;
+        if (cardId) {
+            // If cardId is present, fetch page content using cardId
+            response = await axios.get(`/get_page_content/${cardId}`);
+            if (response.data) {
+                debugger;
+                pageContent.value = response.data.content || '';
+            }
+        } else {
+            // Otherwise, process based on pageName
+            switch (pageName.value) {
+                case "Gallery":
+                    response = await axios.get(`/get_galleries`);
+                    gallerydata.value = response.data.length > 0 ? response.data : [];
+                    break;
 
-            case "Notice Board":
-                response = await axios.get(`/get_notifications`);
-                noticeboarddata.value = response.data;
-                console.log("Notice Board Data:", noticeboarddata.value);
-                break;
+                case "Notice Board":
+                    response = await axios.get(`/get_notifications`);
+                    noticeboarddata.value = response.data;
+                    console.log("Notice Board Data:", noticeboarddata.value);
+                    break;
 
-            case "Newsletter":
-            case "Recruitments":
-            case "Tender":
-            case "Notification":
-                response = await axios.get(`/get_notificationbycategory/${pageName.value}`);
-                notificationdata.value = response.data;
-                console.log("Notification Data:", notificationdata.value);
-                break;
+                case "Newsletter":
+                case "Recruitments":
+                case "Tender":
+                case "Notification":
+                    response = await axios.get(`/get_notificationbycategory/${pageName.value}`);
+                    notificationdata.value = response.data;
+                    console.log("Notification Data:", notificationdata.value);
+                    break;
 
-            case "Faq":
-                activeComponent.value = FAQS; // Dynamically load FAQ component
-                break;
-            case "Success Story":
-                response = await axios.get(`/get_page_content/${route.query.cardid}`);
-                if (response.data) {
-                    debugger;
-                    pageContent.value = response.data.content || '';
-                }
-                break;
+                case "FAQ":
+                    activeComponent.value = FAQS; // Dynamically load FAQ component
+                    break;
+                case "WhosWho":
+                    activeComponent.value = FAQS; // Dynamically load FAQ component
+                    break;
 
 
-
-            default:
-                response = await axios.get(`/get_page_content/${route.params.id}`);
-                if (response.data) {
-                    debugger;
-                    pageContent.value = response.data.content || '';
-                }
+                default:
+                    response = await axios.get(`/get_page_content/${route.params.id}`);
+                    if (response.data) {
+                        debugger;
+                        pageContent.value = response.data.content || '';
+                    }
+            }
         }
     } catch (error) {
         console.error('Failed to fetch page content:', error);

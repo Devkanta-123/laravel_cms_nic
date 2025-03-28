@@ -167,7 +167,7 @@ import { useToastr } from '../../toaster.js';
 import SlidesManager from '../../components/page_components/SlidesManager.vue';
 import WebsiteDetails from '../../components/page_components/WebsiteDetails.vue';
 import LatestNews from '../../components/page_components/LatestNews.vue';
-import Notification from '../../components/page_components/Notification.vue';
+import Notification from '../../components/page_components/NoticeBoard.vue';
 import Cards from '../../components/page_components/Cards.vue';
 import Banner from '../../components/page_components/Banner.vue';
 import Gallery from '../../components/page_components/Gallery.vue';

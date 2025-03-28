@@ -72,7 +72,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useToastr } from '../../toaster.js';
+const toastr = useToastr();
 
+const items = ref([]);
 const newCard = ref({
   card_title: '',
   card_description: '',
@@ -103,6 +106,7 @@ const handleFileChange = (event) => {
 };
 
 const addCard = async () => {
+  debugger;
   const formData = new FormData();
   for (const key in newCard.value) {
     formData.append(key, newCard.value[key]);

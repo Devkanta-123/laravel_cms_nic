@@ -164,7 +164,7 @@ import ModalComponent from './ModalComponent.vue';
 import SlidesManager from '../../components/page_components/SlidesManager.vue';
 import WebsiteDetails from '../../components/page_components/WebsiteDetails.vue';
 import LatestNews from '@/components/page_components/LatestNews.vue';
-import Notification from '@/components/page_components/Notification.vue';
+import NoticeBoard from '@/components/page_components/NoticeBoard.vue';
 import Cards from '@/components/page_components/Cards.vue';
 import Banner from '../../components/page_components/Banner.vue';
 import Gallery from '@/components/page_components/Gallery.vue';
@@ -230,8 +230,8 @@ const openModal = (section) => {
         case 'Latest News':
             modalComponent.value = LatestNews;
             break;
-        case 'Notification':
-            modalComponent.value = Notification;
+        case 'Notice Board':
+            modalComponent.value = NoticeBoard;
             break;
         case 'Cards':
             modalComponent.value = Cards;
@@ -248,10 +248,10 @@ const openModal = (section) => {
         case 'Banner':
             modalComponent.value = Paragraph;
             break;
-        case 'Frequently Asked questions':
+        case 'FAQ':
             modalComponent.value = FAQ;
             break;
-        case 'Whos Who':
+        case 'WhosWho':
             modalComponent.value = WhosWho;
             break;
 
