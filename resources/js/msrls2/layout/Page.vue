@@ -47,6 +47,11 @@
                 <div v-else-if="notificationdata.length > 0">
                     <NoticeBoard :notification="notificationdata" :key="refreshKey" :pageName="route.query.page_name" />
                 </div>
+                <!-- whoswhodata -->
+                <div v-if="showWhosWho">
+                    <WhosWho />
+                </div>
+
             </div>
         </div>
     </section>
@@ -69,6 +74,7 @@ import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
 import FAQS from '../components/FAQ.vue';
 import Accessibility from '../settings/Accessibility.vue';
+import WhosWho from '../components/WhosWho.vue';
 
 const route = useRoute();
 const isLoading = ref(true);
@@ -90,6 +96,7 @@ const pageContent = ref('');
 const gallerydata = ref([]);
 const noticeboarddata = ref([]);
 const notificationdata = ref([]);
+const showWhosWho = ref(false);
 const refreshKey = ref(0); // Used to force re-render on data change
 
 const pageName = ref(''); // Reactive pageName reference
@@ -145,8 +152,9 @@ const fetchPageContent = async () => {
                 case "FAQ":
                     activeComponent.value = FAQS; // Dynamically load FAQ component
                     break;
+
                 case "WhosWho":
-                    activeComponent.value = FAQS; // Dynamically load FAQ component
+                    showWhosWho.value = true;
                     break;
 
 

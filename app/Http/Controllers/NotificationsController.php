@@ -86,7 +86,8 @@ class NotificationsController extends Controller
         $notifications = Notifications::where('category_id', 3)->whereMonth('date', date('m'))->get();
         return response()->json($notifications, 200);
     }
-
+    
+  
 
 
 }

@@ -45,6 +45,7 @@ const fetchSlides = async () => {
 
   // If the cache is invalid or expired, fetch new data
   try {
+    debugger;
     const response = await axios.get('/get_carousel');
     console.log('Fetched slides:', response.data);
 
