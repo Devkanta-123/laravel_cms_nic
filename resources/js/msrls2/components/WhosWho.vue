@@ -1,6 +1,6 @@
 <template>
     <section class="team__area-four">
-        <div class="container">
+        <div class="container" style="margin-top: -160px;">
             <div v-if="whoswhoData.length === 0">
                 <p>No data available.</p>
             </div>
@@ -8,7 +8,7 @@
             <template v-else>
                 <!-- State Level -->
                 <div v-if="stateLevel.length > 0">
-                    <h2 class="title">State Level</h2>
+                    <h4 class="title">State Level</h4>
                     <div class="row justify-content-center">
                         <WhosWhoCard v-for="person in paginatedStateLevel" :key="person.id" :person="person" />
                     </div>
@@ -16,15 +16,16 @@
 
                 <!-- District Level -->
                 <div v-if="districtLevel.length > 0">
-                    <h2 class="title">District Level</h2>
+                    <h4 class="title">District Level</h4>
                     <div class="row justify-content-center">
                         <WhosWhoCard v-for="person in paginatedDistrictLevel" :key="person.id" :person="person" />
                     </div>
                 </div>
+                <br>
 
                 <!-- Block Level -->
                 <div v-if="blockLevel.length > 0">
-                    <h2 class="title">Block Level</h2>
+                    <h4 class="title">Block Level</h4>
                     <div class="row justify-content-center">
                         <WhosWhoCard v-for="person in paginatedBlockLevel" :key="person.id" :person="person" />
                     </div>
@@ -106,20 +107,27 @@ const categorizeData = () => {
 
 // Pagination logic
 const totalPages = computed(() => {
-    return Math.ceil(stateLevel.value.length / itemsPerPage);
+    const statePages = Math.ceil(stateLevel.value.length / itemsPerPage);
+    const districtPages = Math.ceil(districtLevel.value.length / itemsPerPage);
+    const blockPages = Math.ceil(blockLevel.value.length / itemsPerPage);
+
+    return Math.max(statePages, districtPages, blockPages); // Maximum required pages
 });
 
 const paginatedStateLevel = computed(() => {
+    if ((currentPage.value - 1) * itemsPerPage >= stateLevel.value.length) return [];
     const start = (currentPage.value - 1) * itemsPerPage;
     return stateLevel.value.slice(start, start + itemsPerPage);
 });
 
 const paginatedDistrictLevel = computed(() => {
+    if ((currentPage.value - 1) * itemsPerPage >= districtLevel.value.length) return [];
     const start = (currentPage.value - 1) * itemsPerPage;
     return districtLevel.value.slice(start, start + itemsPerPage);
 });
 
 const paginatedBlockLevel = computed(() => {
+    if ((currentPage.value - 1) * itemsPerPage >= blockLevel.value.length) return [];
     const start = (currentPage.value - 1) * itemsPerPage;
     return blockLevel.value.slice(start, start + itemsPerPage);
 });
@@ -129,6 +137,7 @@ const changePage = (page) => {
         currentPage.value = page;
     }
 };
+
 
 onMounted(fetchWhosWho);
 </script>

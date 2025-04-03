@@ -171,6 +171,8 @@ import Gallery from '@/components/page_components/Gallery.vue';
 import Paragraph from '../../components/page_components/Paragraph.vue';
 import Content from '@/components/page_components/Content.vue';
 import FAQ from "../../components/page_components/FAQ.vue";
+import Map from "../../components/page_components/Map.vue";
+
 import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
@@ -253,6 +255,9 @@ const openModal = (section) => {
             break;
         case 'WhosWho':
             modalComponent.value = WhosWho;
+            break;
+        case 'Map':
+            modalComponent.value = Map;
             break;
 
 

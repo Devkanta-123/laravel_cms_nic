@@ -51,7 +51,10 @@
                 <div v-if="showWhosWho">
                     <WhosWho />
                 </div>
-
+                <!-- contact us  -->
+                <div v-if="contactus">
+                    <ContactUs />
+                </div>
             </div>
         </div>
     </section>
@@ -75,6 +78,7 @@ import NoticeBoard from '../components/NoticeBoard.vue';
 import FAQS from '../components/FAQ.vue';
 import Accessibility from '../settings/Accessibility.vue';
 import WhosWho from '../components/WhosWho.vue';
+import ContactUs from '../components/ContactUs.vue';
 
 const route = useRoute();
 const isLoading = ref(true);
@@ -98,7 +102,7 @@ const noticeboarddata = ref([]);
 const notificationdata = ref([]);
 const showWhosWho = ref(false);
 const refreshKey = ref(0); // Used to force re-render on data change
-
+const contactus = ref(false);
 const pageName = ref(''); // Reactive pageName reference
 
 const fetchPageContent = async () => {
@@ -116,6 +120,8 @@ const fetchPageContent = async () => {
         noticeboarddata.value = [];
         notificationdata.value = [];
         activeComponent.value = null; // Reset active component before switching
+        showWhosWho.value = null; // Set showWhosWho
+        contactus.value = null;
 
         let response; // Declare response variable
 
@@ -156,6 +162,12 @@ const fetchPageContent = async () => {
                 case "WhosWho":
                     showWhosWho.value = true;
                     break;
+
+                case "Contact Us":
+                    contactus.value = true;
+                    break;
+
+
 
 
                 default:

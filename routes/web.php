@@ -14,6 +14,7 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\LevelMasterController;
 use App\Http\Controllers\WhosWhoController;
+use App\Http\Controllers\MapController;
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -50,6 +51,9 @@ Route::get('/get_recruitmentsforcurrentmonth', action: [NotificationsController:
 Route::get('/get_notificationbycategory/{pagename}', action: [NotificationsController::class, 'getNotificationsByCategory']);
 Route::get('/get_faq', action: [FAQController::class, 'getFAQData']); //added by dev on 19/11/24
 Route::get('/get_whoswho', action: [WhosWhoController::class, 'getWhosWho']); //added by dev on 25/03/25
+Route::get('/get_contactus', action: [MapController::class, 'getMapData']); //added by dev on 25/03/25
+
+
 
 
 
@@ -122,7 +126,7 @@ Route::middleware(('auth'))->group(function () {
 
     Route::post('/api/update_menu/{menu}', [MenuController::class, 'update']);
 
-    Route::get('/api/get_page_menu/{id}', [HomeController::class, 'getPageMenu']);//added by dev on 09/12/2024
+    Route::get('/api/get_page_menu/{id}', [HomeController::class, 'getPageMenu']); //added by dev on 09/12/2024
 
     //     //Slides MAnager
     Route::get('/api/fetchSliderImages', [SectionsController::class, 'fetchSliderImages']);
@@ -180,16 +184,10 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/save_component', [PagesController::class, 'saveComponent']);
 
     Route::post('/api/delete_component', [PagesController::class, 'deleteComponent']);
+    //MAP Controller
+
+    Route::post('/api/addMapData', [MapController::class, 'storeMapData']);
 
 
     Route::get('{view}', ApplicationController::class)->where('view', '(.*)');
-
-
-
-
 });
-
-
-
-
-

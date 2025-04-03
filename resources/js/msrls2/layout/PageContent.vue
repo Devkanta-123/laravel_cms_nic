@@ -158,7 +158,7 @@
 
 
       <!-- HomeParagraph start here  -->
-      <section class="about__area-five" v-if="currentId == '1'">
+      <section class="about__area-five" v-if="currentId == '1'" style="margin-top: -80px;">
         <div class="container">
           <div class="row align-items-start">
             <!-- About Content -->
