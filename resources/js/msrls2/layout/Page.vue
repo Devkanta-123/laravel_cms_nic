@@ -30,7 +30,7 @@
         </div>
     </section>
     <br>
-    <section class="about__area-five" style="margin-top: -140px;">
+    <section class="about__area-five" style="margin-top: -160px;">
         <div class="container">
             <div v-if="!activeComponent">
                 <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate" style="color: #2A3335;"></div>
@@ -142,7 +142,7 @@ const fetchPageContent = async () => {
 
                 case "Newsletter":
                 case "Recruitments":
-                case "Tender":
+                case "Tenders":
                 case "Notification":
                     response = await axios.get(`/get_notificationbycategory/${pageName.value}`);
                     notificationdata.value = response.data;

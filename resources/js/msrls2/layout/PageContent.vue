@@ -167,7 +167,7 @@
                 style="color: #2A3335;"></div>
 
               <br>
-              <a href="/page/2?page_name=About+Us" class="btn btn-two custom-btn">
+              <a href="/page/3?page_name=About+Us" class="btn btn-two custom-btn">
                 Read More
               </a>
             </div>
