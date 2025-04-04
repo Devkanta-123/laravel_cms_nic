@@ -59,7 +59,6 @@
                 <img :src="imagePreview" class="img-thumbnail" style="max-width: 150px; height: auto;" />
             </div>
         </div>
-
         <button class="btn btn-success" @click="submitData">Submit</button>
     </div>
 </template>

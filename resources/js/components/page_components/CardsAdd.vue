@@ -1,67 +1,79 @@
 <template>
-  <div class="container mt-4 scrollable-content">
+  <div class="containerscrollable-content">
     <!-- Form for Adding New Card -->
-    <div class="mb-4 ">
+    <div class="card p-4 shadow-sm">
+      <!-- <h4 class="mb-4 text-primary">Add New Card</h4> -->
+      
       <form @submit.prevent="addCard" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="title" class="form-label">Title<span class="text-danger">*</span></label>
-          <input type="text" id="title" v-model="newCard.card_title" class="form-control" required>
+        <div class="row">
+          <!-- Left Column: Basic Info -->
+          <div class="col-md-7">
+            <div class="mb-3">
+              <label class="form-label">Card Title <span class="text-danger">*</span></label>
+              <input type="text" v-model="newCard.card_title" class="form-control" placeholder="Enter Card Title" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Card Description</label>
+              <textarea v-model="newCard.card_description" class="form-control" rows="2" placeholder="Enter Card Description"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Card Logo</label>
+              <input type="file" @change="handleFileChange" class="form-control" accept="image/*">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Link to another page</label>
+              <input type="text" v-model="newCard.more_link" class="form-control" placeholder="Enter Link (optional)">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">External Link</label>
+              <input type="text" v-model="newCard.ex_link" class="form-control" placeholder="Enter Link (optional)">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Card Sort Order<span class="text-danger">*</span></label>
+              <input type="number" v-model="newCard.order" class="form-control" placeholder="Enter Order Number" required>
+            </div>
+          </div>
+
+          <!-- Right Column: Advanced Info (Toggle) -->
+          <div class="col-md-5">
+           <p>More Languages</p>
+
+            <div  class="advanced-fields ">
+              
+              
+              <div class="mb-3">
+                <label class="form-label">Hindi Title</label>
+                <input type="text" v-model="newCard.hindi_title" class="form-control" placeholder="Hindi Title">
+                <textarea v-model="newCard.hindi_description" class="form-control mt-2" rows="2" placeholder="Hindi Description"></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Khasi Title</label>
+                <input type="text" v-model="newCard.khasi_title" class="form-control" placeholder="Khasi Title">
+                <textarea v-model="newCard.khasi_description" class="form-control mt-2" rows="2" placeholder="Khasi Description"></textarea>
+              </div>
+
+              
+            </div>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="description" class="form-label">Description</label>
-          <input type="text" id="description" v-model="newCard.card_description" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="image" class="form-label">Logo</label>
-          <input type="file" id="image" @change="handleFileChange" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="more_link" class="form-label">More Link</label>
-          <input type="text" id="more_link" v-model="newCard.more_link" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="order" class="form-label">Order</label>
-          <input type="text" id="order" v-model="newCard.order" class="form-control" required>
-        </div>
-        <!-- Additional localized fields -->
-        <div class="mb-3">
-          <label for="hindi_title" class="form-label">Hindi Title</label>
-          <input type="text" id="hindi_title" v-model="newCard.hindi_title" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="khasi_title" class="form-label">Khasi Title</label>
-          <input type="text" id="khasi_title" v-model="newCard.khasi_title" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="other_title" class="form-label">Other Title</label>
-          <input type="text" id="other_title" v-model="newCard.other_title" class="form-control">
-        </div>
-        <!-- Additional description fields -->
-        <div class="mb-3">
-          <label for="hindi_description" class="form-label">Hindi Description</label>
-          <input type="text" id="hindi_description" v-model="newCard.hindi_description" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="khasi_description" class="form-label">Khasi Description</label>
-          <input type="text" id="khasi_description" v-model="newCard.khasi_description" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="other_description" class="form-label">Other Description</label>
-          <input type="text" id="other_description" v-model="newCard.other_description" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-primary">Add Card</button>
+
+        <button type="submit" class="btn btn-primary mt-4 w-100">Add Card</button>
       </form>
     </div>
 
     <!-- Display Cards -->
-    <div class="row">
+    <div class="row mt-5">
       <div class="col-md-4" v-for="card in cards" :key="card.id">
-        <div class="card mb-4">
-          <img :src="getAssetUrl(card.image)" class="card-img-top" alt="Logo">
+        <div class="card card-item shadow-lg">
+          <img :src="getAssetUrl(card.image)" class="card-img-top" alt="Card Logo">
           <div class="card-body">
-            <h5 class="card-title">{{ card.card_title }}</h5>
+            <h5 class="card-title">
+              <a :href="card.more_link" target="_blank" class="text-decoration-none text-primary">
+                {{ card.card_title }}
+              </a>
+            </h5>
             <p class="card-text">{{ card.card_description }}</p>
-            <a :href="card.more_link" class="btn btn-primary" target="_blank">Go to Link</a>
           </div>
         </div>
       </div>
@@ -70,17 +82,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, defineProps,  } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
+
+const props = defineProps({
+  menu: String,
+  section: Number,
+});
 const toastr = useToastr();
 
-const items = ref([]);
 const newCard = ref({
   card_title: '',
   card_description: '',
   image: null,
   more_link: '',
+  ex_link:'',
   order: '',
   hindi_title: '',
   khasi_title: '',
@@ -90,28 +107,19 @@ const newCard = ref({
   other_description: ''
 });
 
-// const cards = ref([]);
-
-const fetchCards = async () => {
-  try {
-    const response = await axios.get('/api/get_cards'); // Replace with your API endpoint
-    items.value = response.data.data; // Update with the correct data path
-  } catch (error) {
-    console.error('Error fetching cards:', error);
-  }
-};
-
 const handleFileChange = (event) => {
-  newCard.value.image = event.target.files[0]; // Store the selected file
+  newCard.value.image = event.target.files[0];
 };
 
-const addCard = async () => {
-  debugger;
+const addCard = () => {
+
   const formData = new FormData();
   for (const key in newCard.value) {
     formData.append(key, newCard.value[key]);
   }
-
+  formData.append("menu", props.menu);
+  formData.append("page_section", props.section);
+  console.log(formData);
   try {
     axios.post('/api/save_card', formData, {
       headers: {
@@ -119,19 +127,18 @@ const addCard = async () => {
       },
     })
       .then(response => {
-        console.log('Card saved successfully:', response.data.message);
         toastr.success(response.data.message);
       })
       .catch(error => {
-        console.error('Error saving card:', error);
         toastr.error('An error occurred while saving the card.');
       });
-    items.value.push(response.data); // Add the new card to the list
+
     newCard.value = {
       card_title: '',
       card_description: '',
       image: null,
       more_link: '',
+      ex_link: '',
       order: '',
       hindi_title: '',
       khasi_title: '',
@@ -139,25 +146,86 @@ const addCard = async () => {
       hindi_description: '',
       khasi_description: '',
       other_description: ''
-    }; // Clear the form
+    };
   } catch (error) {
-    console.error('Error adding card:', error);
+    toastr.error('Error adding card.');
   }
 };
-
-onMounted(() => {
-  // fetchCards(); 
-});
 </script>
 
 <style scoped>
 .card-img-top {
   max-height: 150px;
   object-fit: cover;
+  border-radius: 5px;
+}
+
+.card-item {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.card-item:hover {
+  transform: scale(1.05);
+}
+
+.card-body {
+  padding: 1.5rem;
 }
 
 .scrollable-content {
-    max-height: 500px;
-    overflow: auto;
-  }
+  max-height: 600px;
+  overflow: auto;
+}
+
+.advanced-fields {
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.advanced-fields input,
+.advanced-fields textarea {
+  background-color: #f1f1f1;
+}
+
+button[type="submit"] {
+  font-weight: bold;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #3790f0;
+}
+
+button[type="button"]:focus {
+  outline: none;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #555;
+}
+
+button {
+  transition: transform 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+.card-title a {
+  font-weight: bold;
+}
+
+.card-item .card-body p {
+  color: #666;
+  font-size: 0.9rem;
+}
 </style>

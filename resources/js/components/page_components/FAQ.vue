@@ -1,63 +1,55 @@
 <template>
-    <div class="container mt-4">
-        <!-- Category Dropdown -->
-        <!-- English Rows -->
-        <div class="mb-3 row">
-            <div class="col-md-6">
-                <label class="form-label">English Question</label>
-                <input type="text" class="form-control" v-model="formData.english_question"
-                    placeholder="English Question" />
+    <div class="card p-4 shadow-sm">
+        <div class="row align-items-start">
+            <!-- English Section -->
+            <div class="col-md-7">
+                <div class="mb-3">
+                    <label class="form-label">
+                        English Title <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" placeholder="English Title"
+                        v-model="formData.english_question" />
+                    <textarea class="form-control mt-2" v-model="formData.english_answer" rows="2"
+                        placeholder="English Answer"></textarea>
+                </div>
+
+                <div class="mb-3 row">
+                    <div class="col-md-8">
+                        <label class="form-label">Order</label>
+                        <input type="number" class="form-control" v-model="formData.order" placeholder="Order" />
+                    </div>
+                </div>
             </div>
 
-            <div class="col-md-6">
-                <label class="form-label">English Answer</label>
-                <input type="text" class="form-control" v-model="formData.english_answer"
-                    placeholder="English Answer" />
-            </div>
-        </div>
+            <!-- More Languages -->
+            <div class="col-md-5">
+                <p>More Languages</p>
+                <div class="advanced-fields">
+                    <div class="mb-3">
+                        <label class="form-label">Hindi Question</label>
+                        <input type="text" class="form-control" placeholder="Hindi Question"
+                            v-model="formData.hindi_question" />
+                        <textarea class="form-control mt-2" rows="2" v-model="formData.hindi_answer"
+                            placeholder="Hindi Answer"></textarea>
+                    </div>
 
-        <!-- Hindi Rows -->
-        <div class="mb-3 row">
-            <div class="col-md-6">
-                <label class="form-label">Hindi Question</label>
-                <input type="text" class="form-control" v-model="formData.hindi_question"
-                    placeholder="Hindi Question" />
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Hindi Answer</label>
-                <input type="text" class="form-control" v-model="formData.hindi_answer" placeholder="Hindi Answer" />
-            </div>
-        </div>
-
-        <!-- Khasi Rows -->
-        <div class="mb-3 row">
-            <div class="col-md-6">
-                <label class="form-label">Khasi Question</label>
-                <input type="text" class="form-control" v-model="formData.khasi_question"
-                    placeholder="Khasi Question" />
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Khasi Answer</label>
-                <input type="text" class="form-control" v-model="formData.khasi_answer" placeholder="Khasi Answer" />
-            </div>
-        </div>
-
-        <div class="mb-3 row">
-            <div class="col-md-6">
-                <label class="form-label">Order</label>
-                <input type="number" class="form-control" v-model="formData.order" placeholder="Order" />
+                    <div class="mb-3">
+                        <label class="form-label">Khasi Question</label>
+                        <input type="text" class="form-control" placeholder="Khasi Question"
+                            v-model="formData.khasi_question" />
+                        <textarea class="form-control mt-2" rows="2" v-model="formData.khasi_answer"
+                            placeholder="Khasi Answer"></textarea>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <button class="btn btn-success" @click="submitData">Submit</button>
-
-
-
-
+        <!-- Submit Button -->
+        <button class="btn btn-success mt-3" @click="submitData">Submit</button>
     </div>
 </template>
+
+
 
 <script setup>
 import { onMounted, reactive } from 'vue';
@@ -84,10 +76,6 @@ const validateFields = () => {
     if (
         !formData.english_question.trim() ||
         !formData.english_answer.trim() ||
-        !formData.hindi_question.trim() ||
-        !formData.hindi_answer.trim() ||
-        !formData.khasi_question.trim() ||
-        !formData.khasi_answer.trim() ||
         !formData.order.toString().trim()
     ) {
         toastr.error("All fields are required!");
@@ -229,5 +217,16 @@ input[type="radio"]:checked::before {
 #radioKhasi:checked::before {
     background-color: #28a745;
     /* Green */
+}
+
+.advanced-fields {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 10px;
+}
+
+.advanced-fields input,
+.advanced-fields textarea {
+    background-color: #f1f1f1;
 }
 </style>

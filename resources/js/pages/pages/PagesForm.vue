@@ -29,13 +29,25 @@
                                     <div class="card-header row">
                                         <div class="col-10">
                                             <h4 class=" mt-1">{{ props.menuName }} </h4> Components
+
                                         </div>
-                                        <div class="col-2" align="right">
-                                            <a href="#" @click="openComponentsModal()" data-bs-toggle="modal"
-                                                data-bs-target="#AddElement"
-                                                class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2"><i
-                                                    class="fa fa-plus"></i></a>
+                                        <div class="row align-items-center">
+                                            <div class="col-auto" style="margin-left: -60px;">
+                                                <a @click="onBack" class="btn btn-danger btn-sm pt-2 pb-2"
+                                                    style="height: 40px; cursor: pointer;">
+                                                    Back
+                                                </a>
+                                            </div>
+                                            <div class="col-auto">
+                                                <a href="#" @click="openComponentsModal()" data-bs-toggle="modal"
+                                                    data-bs-target="#AddElement"
+                                                    class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2">
+                                                    <i class="fa fa-plus"></i>
+                                                </a>
+                                            </div>
                                         </div>
+
+
                                     </div>
                                     <div class="card-body table-responsive">
                                         <div class="form-group ui-sortable" id="pageComponentContainer">
@@ -160,6 +172,8 @@
 
 import { ref, onMounted, } from "vue";
 import axios from 'axios';
+import { useRouter } from 'vue-router'
+const router = useRouter()
 import ModalComponent from './ModalComponent.vue';
 import SlidesManager from '../../components/page_components/SlidesManager.vue';
 import WebsiteDetails from '../../components/page_components/WebsiteDetails.vue';
@@ -190,7 +204,6 @@ const toastr = useToastr();
 
 const getPageDetails = () => {
     console.log(props);
-    debugger;
     axios.post('/api/get_page_details/' + props.menuId)
         .then((response) => {
             pageSections.value = response.data;
@@ -218,6 +231,9 @@ const openComponentsModal = () => {
     $('#AddElement').modal('show');
 }
 
+const onBack = () => {
+    router.push('/admin/pages')
+}
 const openModal = (section) => {
     debugger;
     selectedSection.value = section;
@@ -350,5 +366,29 @@ onMounted(() => {
 .shadow-effect.selected:hover {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease-in-out;
+}
+
+.back-button {
+    display: inline-block;
+    margin-left: -60px;
+    height: 40px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    background-color: #28a745;
+    /* Bootstrap 'btn-success' */
+    color: white;
+    font-size: 0.875rem;
+    /* btn-sm */
+    border-radius: 0.2rem;
+    text-align: center;
+    line-height: 1.5;
+    text-decoration: none;
+    cursor: pointer;
+    /* 👈 Fix the cursor */
+}
+
+.back-button:hover {
+    background-color: #218838;
+    /* Darker green on hover */
 }
 </style>

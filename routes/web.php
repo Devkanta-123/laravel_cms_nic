@@ -108,6 +108,7 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/addCategoryMaster', [CategoryMasterController::class, 'addCategoryMaster']); //added by Dev on 18/02/2025
     //GET CATEGORY MASTER MENU
     Route::get('/api/getAllCategoryMaster', [CategoryMasterController::class, 'getAllCategoryMaster']); //added by Dev on 18/02/2025
+    Route::get('/api/getAllLevelMaster', [LevelMasterController::class, 'getAllLevelMaster']); //added by Dev on 18/02/2025
     //EDIT CATEGORY MASTER MENU
     Route::post('/api/editCategoryMaster', [CategoryMasterController::class, 'editCategoryMaster']); //added by Dev on 18/02/2025
     Route::post('/api/submitNotificationsData', [NotificationsController::class, 'submitNotificationsData']); //added by Dev on 24/02/2025

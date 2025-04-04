@@ -39,18 +39,12 @@
                             <tr>
                                 <th>S.No.</th>
                                 <th>Page Section Name <i class="fa fa-sort asc"></i></th>
-                                <th>Action <i class="fa fa-sort asc"></i></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in categorymasterdatas" :key="item.id">
+                            <tr v-for="(item, index) in levelmasterdatas" :key="item.id">
                                 <td width="10%">{{ index + 1 }}</td>
                                 <td width="20%">{{ item.level_name }}</td>
-                                <td width="20%">
-                                    <a href="#" @click.prevent="editCategory(item)"
-                                        class="btn btn-primary shadow btn-xs  me-1"><i
-                                            class="fas fa-pencil-alt"></i></a>
-                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -149,7 +143,7 @@ import axios from 'axios';
 import { Form, Field } from 'vee-validate';
 import { useToastr } from '../../toaster.js';
 import Swal from 'sweetalert2';
-const categorymasterdatas = ref([]);
+const levelmasterdatas = ref([]);
 const toastr = useToastr();
 const form = ref(null);
 const footerValues = ref([]);
@@ -200,9 +194,9 @@ const handleLevelDataSubmit = async (values, actions) => {
 
 const getAllCategoryMaster = async () => {  // Add async here
     try {
-
-        const response = await axios.get("/api/getAllCategoryMaster");
-        categorymasterdatas.value = response.data;
+        debugger;
+        const response = await axios.get("/api/getAllLevelMaster");
+        levelmasterdatas.value = response.data;
         await nextTick(); // Ensure DOM updates before initializing DataTable
         initializeDataTable();
     } catch (error) {

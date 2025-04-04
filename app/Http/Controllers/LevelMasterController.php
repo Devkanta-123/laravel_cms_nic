@@ -19,4 +19,5 @@ class LevelMasterController extends Controller
         $levels = LevelMaster::all();
         return response()->json($levels);
     }
+    
 }
