@@ -25,16 +25,27 @@ class MapController extends Controller
             'iframe' => 'required|string'
         ]);
 
-        $map = Map::create([
-            'iframe' => $request->iframe
-        ]);
+        // Check if a map record exists, then update, otherwise create
+        $map = Map::first();
+
+        if ($map) {
+            $map->update([
+                'iframe' => $request->iframe
+            ]);
+        } else {
+            $map = Map::create([
+                'iframe' => $request->iframe
+            ]);
+        }
 
         return response()->json([
-            'message' => 'Map data added successfully!',
+            'message' => 'Map data saved successfully!',
             'data' => $map
-        ], 201);
+        ], 200);
     }
-    public function getMapData(){
+
+    public function getMapData()
+    {
         $map = Map::all();
         return response()->json($map);
     }
