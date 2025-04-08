@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Helpers\ThemeHelper;
 use App\Models\Carousel;
 use App\Models\Gallery;
@@ -11,6 +12,7 @@ use App\Models\LatestNews;
 use App\Models\Website;
 use App\Models\Menu;
 use App\Models\Banner;
+use App\Models\Logo;
 use App\Models\Cards;
 use Carbon\Carbon;
 use App\Models\Footer;
@@ -93,8 +95,7 @@ class HomeController extends Controller
                 }
 
                 // Log file path for debugging
-                \Log::info('File stored at path: ' . $filePath);
-
+                //Log::info('File stored at path: ' . $filePath);
             }
             if ($footer) {
                 $footer->type = $request->type;
@@ -127,7 +128,6 @@ class HomeController extends Controller
             $footer->delete();
             return response()->noContent();
         }
-
     }
     // public function saveContent(Request $request)
     // {
@@ -293,7 +293,6 @@ class HomeController extends Controller
         }
 
         return response()->json(['message' => 'Images uploaded successfully', 'filenames' => $uploadedImages]);
-
     }
 
     public function deleteSlide(Request $request)
@@ -315,10 +314,6 @@ class HomeController extends Controller
             $slide->delete();
             return response()->json(['message' => 'Slide deleted successfully']);
         }
-
-
-
-
     }
 
     //BANNER
@@ -345,11 +340,9 @@ class HomeController extends Controller
                 'image' => $path,
                 'menu_id' => $menu_id
             ]);
-
         }
 
         return response()->json(['message' => 'Banner uploaded successfully', 'filenames' => $uploadedImages]);
-
     }
 
     public function deleteBanner(Request $request)
@@ -371,10 +364,6 @@ class HomeController extends Controller
             $banner->delete();
             return response()->json(['message' => 'Banner deleted successfully']);
         }
-
-
-
-
     }
 
 
@@ -425,7 +414,6 @@ class HomeController extends Controller
     {
         $galleries = Gallery::all();
         return response()->json($galleries);
-
     }
 
     //delete gallery image
@@ -513,7 +501,6 @@ class HomeController extends Controller
 
 
         return response()->json(['message' => 'News added successfully']);
-
     }
     //save Cards to database
     public function save_card(Request $request)
@@ -653,7 +640,6 @@ class HomeController extends Controller
         $data = DB::table('paragraph')
             ->get();
         return response()->json(['data' => $data]);
-
     }
     public function getCards()
     {
@@ -718,6 +704,11 @@ class HomeController extends Controller
     {
         return (Banner::all());
     }
+    public function getLogo(){
+        return (Logo::all());
+    }
+
+
 
     public function getWebsiteDescription()
     {
@@ -786,9 +777,33 @@ class HomeController extends Controller
         } else {
             return response()->json(['message' => 'Paragraph data  not found'], 404);
         }
-
     }
 
-   
+    public function uploadLogo(Request $request)
+    {
+        $request->validate([
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
+        ]);
 
+        $images = $request->images;
+        $menu_id = $request->menu_id;
+
+        // Handle file upload
+        $uploadedImages = [];
+        if ($request->hasFile('images')) {
+
+            $filename = $images[0]->getClientOriginalName();
+
+            $path = $images[0]->store('bannerlogo', 'public'); // Store in /public/storage/logo
+            $uploadedImages[] = $filename;
+
+
+            Logo::create([
+                'image' => $path,
+                'menu_id' => $menu_id
+            ]);
+        }
+
+        return response()->json(['message' => 'Logo uploaded successfully', 'filenames' => $uploadedImages]);
+    }
 }

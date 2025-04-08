@@ -27,6 +27,7 @@ Route::get('get_rightmenus', [HomeController::class, 'get_rightmenus']);
 Route::get('get_carousel', [HomeController::class, 'getCarousel']);
 
 Route::get('get_banner', [HomeController::class, 'getBanner']);
+Route::get('get_logo', [HomeController::class, 'getLogo']);
 
 Route::get('get_website_description', [HomeController::class, 'getWebsiteDescription']);
 
@@ -160,6 +161,9 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/upload_banner', [HomeController::class, 'uploadBanner']);
 
     Route::post('/api/delete_banner', [HomeController::class, 'deleteBanner']);
+
+//logo
+Route::post('/api/upload_logo', [HomeController::class, 'uploadLogo']);
 
 
     //GALLERY

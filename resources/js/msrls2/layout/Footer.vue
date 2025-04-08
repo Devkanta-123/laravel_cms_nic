@@ -39,7 +39,7 @@
                 <div class="footer-link-list">
                   <ul class="list-wrap">
                     <!-- Loop through 'footerContent' and filter by 'quicklink' -->
-                    <li v-for="quicklink in footerContent.filter(item => item.type === 'quicklink')"
+                    <li v-for="quicklink in footerContent.filter(item => item.type === 'quicklink')" 
                       :key="quicklink.id">
                       <a :href="quicklink.link" target="_blank" rel="noopener noreferrer">{{ quicklink.link_title }}</a>
 

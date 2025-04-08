@@ -66,7 +66,7 @@
                                                                 <!-- <img :src="`/storage/${section.icon}`" alt="Image"> -->
                                                             </div>
                                                             <p class="m-b15"><strong>{{ section.page_section_name
-                                                                    }}</strong></p>
+                                                            }}</strong></p>
                                                         </div>
                                                         <div class="icon-content">
                                                             <a href="#" @click="openModal(section)"
@@ -186,6 +186,7 @@ import Paragraph from '../../components/page_components/Paragraph.vue';
 import Content from '@/components/page_components/Content.vue';
 import FAQ from "../../components/page_components/FAQ.vue";
 import Map from "../../components/page_components/Map.vue";
+import Logo from "../../components/page_components/Logo.vue";
 
 import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
@@ -275,6 +276,11 @@ const openModal = (section) => {
         case 'Map':
             modalComponent.value = Map;
             break;
+
+        case 'Logo':
+            modalComponent.value = Logo;
+            break;
+
 
 
         default:

@@ -298,7 +298,7 @@
       </section> -->
 
       <div class="brand__area-two">
-        <Banner />
+        <Logo />
       </div>
       <button class="scroll__top scroll-to-target open" data-target="html" @click="scrollToTop">
         <i class="fas fa-angle-up"></i>
@@ -326,6 +326,7 @@ import Loader from '../../components/Loader.vue';
 import Notifications from '../components/Notifications.vue';
 import Cards from '../components/Cards.vue';
 import Banner from '../components/Banner.vue';
+import Logo from '../components/Logo.vue';
 import Accessibility from '../settings/Accessibility.vue';
 import Page from './Page.vue';
 import { useRoute } from "vue-router";
