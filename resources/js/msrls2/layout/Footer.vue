@@ -17,7 +17,7 @@
                 </div>
                 <div class="footer-content">
                   <!-- Render dynamic text -->
-                  <p v-for="text in footerContent.filter(item => item.type === 'text')" :key="text.id">
+                  <p v-for="text in footerContent.filter(item => item.type === 'text')" :key="text.id"  class="text-justify">
                     {{ text.content }}
                   </p>
                   <!-- Render social links -->
@@ -38,13 +38,14 @@
                 <h4 class="fw-title">Quick Links</h4>
                 <div class="footer-link-list">
                   <ul class="list-wrap">
-                    <!-- Loop through 'footerContent' and filter by 'quicklink' -->
-                    <li v-for="quicklink in footerContent.filter(item => item.type === 'quicklink')" 
-                      :key="quicklink.id">
-                      <a :href="quicklink.link" target="_blank" rel="noopener noreferrer">{{ quicklink.link_title }}</a>
-
+                    <li v-for="quicklink in validQuickLinks" :key="quicklink.id">
+                      <a :href="quicklink.link" target="_blank" rel="noopener noreferrer">
+                        {{ quicklink.link_title }}
+                      </a>
                     </li>
+
                   </ul>
+
                 </div>
               </div>
             </div>
@@ -70,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 const cacheDuration = 1 * 60 * 1000;  // Cache duration (1 minute) in milliseconds
 
@@ -82,44 +83,41 @@ const getImageUrl = (path) => {
 };
 
 const fetchFooterContent = async () => {
-  const now = new Date().getTime();
+  debugger;
+  const now = new Date().getTime()
 
-  // Check if cached data exists and is valid
-  const cachedData = localStorage.getItem("footer");
-  const cachedTimestamp = localStorage.getItem("footerTimestamp");
+  const cachedData = localStorage.getItem("footer")
+  const cachedTimestamp = localStorage.getItem("footerTimestamp")
 
   if (cachedData && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
-    console.log("Using cached footer content from localStorage");
-    footerContent.value = JSON.parse(cachedData);
-    return;
+    console.log("Using cached footer content from localStorage")
+    footerContent.value = JSON.parse(cachedData)
+    return
   }
 
-  // If cache is invalid or expired, fetch new data from API
-  loadingFooter.value = true;
+  loadingFooter.value = true
   try {
-    debugger;
-    const response = await axios.get("/get_footer");
-    console.log("Fetched Footer Content:", response.data.data);
-
-    if (response.data && Array.isArray(response.data.data)) {
-      // Process the fetched data and apply URL correction only for images
-      footerContent.value = response.data.data.map(item => ({
-        ...item,
-        content: item.type === "logo" ? getImageUrl(item.content) : item.content,
-      }));
-
-      // Store new data in localStorage with a timestamp
-      localStorage.setItem("footer", JSON.stringify(footerContent.value));
-      localStorage.setItem("footerTimestamp", now.toString());
-    } else {
-      console.error("Invalid footer data format");
-    }
+    const response = await axios.get("/get_footer")
+    console.log("Fetched Footer Content:", response.data.data)
+    footerContent.value = response.data.data
+    localStorage.setItem("footer", JSON.stringify(response.data.data))
+    localStorage.setItem("footerTimestamp", now.toString())
   } catch (error) {
-    console.error("Failed to fetch footer content:", error);
+    console.error("Failed to fetch footer content", error)
   } finally {
-    loadingFooter.value = false;
+    loadingFooter.value = false
   }
-};
+}
+
+// Computed to filter valid quick links
+const validQuickLinks = computed(() => {
+  return footerContent.value.filter(item =>
+    item.type === 'quicklink' && item.link && (item.link_title || item.content)
+  ).map(item => ({
+    ...item,
+    link_title: item.link_title || item.content
+  }))
+})
 
 // Determine social media icon class based on link title
 const getSocialIconClass = (linkTitle) => {

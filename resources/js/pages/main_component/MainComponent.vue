@@ -228,13 +228,13 @@
                         <!-- Quick Link -->
 
                         <div v-if="formFooterValues.type === 'quicklink'" class="form-group">
-                            <label for="link">Link Text</label>
+                            <label for="link">Quick Link Text</label>
                             <Field type="text" class="form-control" v-model="formFooterValues.content" name="content"
                                 id="content" placeholder="Enter link" :class="{ 'is-invalid': errors.content }" />
                             <span class="invalid-feedback">{{ errors.content }}</span>
-                            <label for="content">Link </label>
+                            <label for="quicklink">Link </label>
                             <Field type="text" class="form-control" v-model="formFooterValues.quicklink"
-                                name="quicklink" id="quicklink" placeholder="Enter Quick Link"
+                                name="link" id="link" placeholder="Enter Quick Link"
                                 :class="{ 'is-invalid': errors.quicklink }" />
                             <span class="invalid-feedback">{{ errors.quicklink }}</span>
 

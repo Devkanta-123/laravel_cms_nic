@@ -97,14 +97,32 @@ class HomeController extends Controller
                 // Log file path for debugging
                 //Log::info('File stored at path: ' . $filePath);
             }
+            //quicklink edit
+
+            if ($request->type == 'quicklink' && $footer)  {
+                $footer->type = $request->type;
+                $footer->link = $request->quicklink;
+                $footer->order = $request->order;
+                $footer->content = $request->content;
+                $footer->save();
+            }
+
             if ($footer) {
                 $footer->type = $request->type;
                 $footer->link = $newFileName;
                 $footer->order = $request->order;
                 $footer->content = $request->content;
                 $footer->save();
-            } else {
+            } else if($request->type == 'quicklink') { //create the quick link
 
+                Footer::create([
+                    'type' => $request->type,
+                    'content' => $request->content,
+                    'order' => $request->order,
+                    'link' => $request->quicklink
+                ]);
+            }
+            else{                              //create for link
                 Footer::create([
                     'type' => $request->type,
                     'content' => $request->content,
@@ -704,7 +722,8 @@ class HomeController extends Controller
     {
         return (Banner::all());
     }
-    public function getLogo(){
+    public function getLogo()
+    {
         return (Logo::all());
     }
 

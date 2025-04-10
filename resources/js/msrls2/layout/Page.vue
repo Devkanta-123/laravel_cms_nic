@@ -15,7 +15,7 @@
             <div class="row">
                 <div class="col-lg-6">
                     <div class="breadcrumb__content">
-                        <h2 class="title">{{ pageName }}</h2>
+                        <h6 class="title">{{ pageName }}</h6>
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item">
@@ -165,6 +165,11 @@ const fetchPageContent = async () => {
 
                 case "Contact Us":
                     contactus.value = true;
+                    response = await axios.get(`/get_page_content/${route.params.id}`);
+                    if (response.data) {
+                        debugger;
+                        pageContent.value = response.data.content || '';
+                    }
                     break;
 
 
