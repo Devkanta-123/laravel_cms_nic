@@ -22,7 +22,7 @@
                   </p>
                   <!-- Render social links -->
                   <div class="footer-social">
-                    <ul class="list-wrap">*
+                    <ul class="list-wrap">
                       <li v-for="social in footerContent.filter(item => item.type === 'link')" :key="social.id">
                         <a :href="social.link" target="_blank" rel="noopener noreferrer" v-if="social.link">
                           <i :class="getSocialIconClass(social.link_title)"></i>
@@ -52,14 +52,17 @@
 
             <!-- Additional dynamic sections can be added here -->
           </div>
-          <div class="row align-items-center">
-            <div class="col-lg-5">
-              <div class="copyright-text">
-                <p>Copyright © <a href="#">NIC</a> | All Right Reserved</p>
-                <a href="#">Support Terms &amp; Conditions Privacy Policy.</a>
-              </div>
-            </div>
-          </div>
+          <div class="footer__bottom-two">
+					<div class="container">
+						<div class="row">
+							<div class="col-lg-20">
+								<div class="copyright-text-two">
+									<p>Copyright © <a href="">NIC Shillong</a> | All Right Reserved</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
         </div>
       </div>
 
