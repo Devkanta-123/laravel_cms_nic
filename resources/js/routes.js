@@ -11,14 +11,16 @@ import Theme from './pages/theme/Theme.vue';
 import PageSectionMaster from './pages/page_section_master/PageSectionMaster.vue';
 import CategoryMaster from './pages/category_master/CategoryMaster.vue';
 import LevelMaster from './pages/level_master/LevelMaster.vue';
-
+import CCDashboard from './components/ContentCreator/Dashboard.vue';
+import CCPages from './components/ContentCreator/Pages.vue';
+import CCMenu from './components/ContentCreator/Menu.vue'
+import CCPagesForm from './components/ContentCreator/PagesForm.vue'
 
 // import PageContent from './smb/layout/PageContent.vue';
 // import Page from './smb/layout/Page.vue';
 // import Home from './smb/Home.vue';
 import Roles from './pages/admin/Roles.vue';
 const folderPath = window.folderPath;
-debugger;
 console.log(folderPath);
 export default [
 
@@ -101,6 +103,32 @@ export default [
         component: UpdateSetting,
 
     },
+    //Content Creator  
+    {
+        path: '/contentcreator/dashboard',
+        name: 'contentcreator.dashboard',
+        component: CCDashboard,
+    },
+    {
+        path: '/contentcreator/pages',
+        name: 'contentcreator.pages',
+        component: CCPages,
+
+    },
+    {
+        path: '/contentcreator/menu',
+        name: 'contentcreator.menu',
+        component: CCMenu,
+
+    },
+
+    {
+        path: '/contentcreator/pages-form/:menuId/:menuName',
+        name: 'CCPagesForm',
+        component: CCPagesForm,
+        props: true
+
+    },
 
 
     //FRONT END 
@@ -115,7 +143,8 @@ export default [
     {
         path: '/',
         name: 'PageContent',
-        component: () => import(`./${folderPath}/layout/PageContent.vue`),
+        component: () =>
+            import (`./${folderPath}/layout/PageContent.vue`),
         props: route => ({
             id: route.params.id || '1', // Default to '1' if no ID is provided
         }),
@@ -131,7 +160,8 @@ export default [
     {
         path: '/page/:id',
         name: 'Page',
-        component: () => import(`./${folderPath}/layout/Page.vue`),
+        component: () =>
+            import (`./${folderPath}/layout/Page.vue`),
         props: route => ({
             id: route.params.id,
             newsId: route.query.newsid || null, // This will pass the newsid from the query parameter (e.g., 3)

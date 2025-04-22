@@ -39,7 +39,7 @@
                         data-accordion="false">
 
 
-                        <li class="nav-item">
+                        <li class="nav-item" v-if="role == 1">
                             <router-link to="/admin/dashboard" active-class="active" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>
@@ -66,6 +66,7 @@
                                 </p>
                             </router-link>
                         </li>
+
                         <!-- <li class="nav-item" v-if="role == 2">
                         <router-link to="/admin/website" active-class="active"  class="nav-link">
                             <i class="nav-icon fas fa-list"></i>
@@ -142,6 +143,34 @@
                                 <p>
                                     Settings
 
+                                </p>
+                            </router-link>
+                        </li>
+                         <!-- Content Creator -->
+                         <li class="nav-item" v-if="role == 3">
+                            <router-link to="/contentcreator/dashboard" active-class="active" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Dashboard
+
+                                </p>
+                            </router-link>
+                        </li>
+                         <li class="nav-item" v-if="role == 3">
+                            <router-link to="/contentcreator/pages"
+                                :class="$route.path.startsWith('/contentcreator/pages') ? 'active' : ''" class="nav-link">
+                                <i class="nav-icon fas fa-list"></i>
+                                <p>
+                                    Pages
+                                </p>
+                            </router-link>
+                        </li>
+                        <li class="nav-item" v-if="role == 3">
+                            <router-link to="/contentcreator/menu"
+                                :class="$route.path.startsWith('/contentcreator/menu') ? 'active' : ''" class="nav-link">
+                                <i class="nav-icon fas fa-list"></i>
+                                <p>
+                                    Menu
                                 </p>
                             </router-link>
                         </li>

@@ -22,8 +22,11 @@ class RoleSeeder extends Seeder
             'role_name' =>'Admin',
            ],
             ['id' => 3,
-           'role_name' =>'Publisher',
+           'role_name' =>'Content Creator',
             ],
+            ['id' => 4,
+            'role_name' =>'Publisher',
+             ],
         
         ];
 

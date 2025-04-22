@@ -825,4 +825,5 @@ class HomeController extends Controller
 
         return response()->json(['message' => 'Logo uploaded successfully', 'filenames' => $uploadedImages]);
     }
+   
 }

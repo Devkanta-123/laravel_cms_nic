@@ -17,7 +17,7 @@ const fetchUser = async () => {
     try {
         await axios.get('/api/get_user')  
         .then((response) => {
-            console.log(response.data[0]);
+            console.log("Login User Data" , response.data[0]);
             setUser(response.data[0], response.data[1][0]);
         })  
         .catch((error) => {
