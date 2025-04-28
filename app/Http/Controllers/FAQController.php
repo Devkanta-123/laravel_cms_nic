@@ -46,9 +46,19 @@ class FAQController extends Controller
 
 
 
-    public function getFAQData()
+    public function getFAQData(Request $request)
     {
-        $faqs = FAQ::orderBy('order', 'asc')->get();
+        $flag = (int) $request->query('flag'); // Convert to integer
+    
+        if ($flag === 1) {
+            // If flag1 is 1, fetch latest 4 FAQs
+            $faqs = FAQ::orderBy('created_at', 'desc')->limit(4)->get();
+        } else if ($flag === 2) {
+            // Otherwise fetch all FAQs ordered by 'order'
+            $faqs = FAQ::orderBy('order', 'asc')->get();
+        }
+    
         return response()->json($faqs);
     }
+    
 }

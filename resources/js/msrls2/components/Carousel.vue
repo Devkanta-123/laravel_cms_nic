@@ -1,21 +1,56 @@
 <template>
-  <section class="slider__area">
-    <div class="slider-container">
-      <div class="slider-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-        <div v-for="(slide, index) in slides" :key="index" class="slider-item">
-          <div class="card">
-            <img :src="slide" alt="Slide Image" />
+  
+<section class="slider__area">
+  <div class="slider-container">
+    <div
+      class="slider-wrapper"
+      :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+    >
+    
+      <div v-for="(slide, index) in slides" :key="index" class="slider-item">
+        <div class="card slider-card">
+          <div class="overlay">
+            <img :src="slide" alt="Slide Image" class="slider-image" />
+
+            <h2
+              v-if="index === 0"
+              class="typewriter-text"
+            >
+            With MSRLS, Together for Sustainable Rural Growth
+            </h2>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Navigation buttons -->
-    <div class="box-button-slider-bottom">
+
+    <!-- <div class="box-button-slider-bottom">
       <button @click="prevImage" class="slider-button prev">❮</button>
       <button @click="nextImage" class="slider-button next">❯</button>
+    </div> -->
+
+
+  <!-- <section class="slider__area" v-if="slides.length">
+    <div class="slider__wrapper">
+      <div
+        v-for="(slide, index) in slides"
+        :key="index"
+        class="slider__slide"
+        :class="{ active: currentIndex === index }"
+      >
+        <img :src="slide" alt="Slide" class="slider__img" />
+        <div class="slider__content">
+          <h2 class="title text-white">Transforming Dreams into Financial Reality</h2>
+          <p class="text-white">
+            Apexa helps you to convert your data into a strategic asset and get business insights.
+          </p>
+          <a href="/page/2" class="btn">Learn More</a>
+        </div>
+      </div>
     </div>
-  </section>
+  </section> -->
 </template>
 
 
@@ -97,7 +132,7 @@ onMounted(() => {
   fetchSlides();
 
   // Set interval to automatically change the slide every 5 seconds
-  slideInterval = setInterval(nextImage, 5000);
+  slideInterval = setInterval(nextImage, 10000);
 });
 
 onUnmounted(() => {
@@ -149,7 +184,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 12px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -182,4 +216,51 @@ onUnmounted(() => {
 .slider-button:hover {
   background: #012f2f;
 }
+
+
+
+.slider-image {
+  width: 100%;
+  display: block;
+  filter: brightness(60%);
+  height: 800px; /* or any height you prefer */
+  object-fit: cover; /* keeps image proportions and fills the container */
+}
+
+.overlay {
+  position: relative;
+}
+
+/* Typewriter Title Styling */
+.typewriter-text {
+  position: absolute;
+  top: 30%; /* A little lower than top */
+  left: 75%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 2rem;
+  font-family: 'Baloo 2', cursive;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid white;
+  width: 0;
+  animation:
+    typing 4s steps(40, end) forwards,
+    blink-caret 0.75s step-end infinite;
+  z-index: 2;
+}
+
+/* Keyframes for typewriter animation */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: white }
+}
+
+
 </style>

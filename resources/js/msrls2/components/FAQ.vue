@@ -71,11 +71,14 @@ const fetchFAQs = async () => {
 
     loadingfaqData.value = true;
     try {
-        const response = await axios.get('/get_faq');
+        const response = await axios.get('/get_faq', {
+      params: {
+        flag: 2
+      }
+    });
         console.log('Fetched faqData:', response.data);
         if (response.data && Array.isArray(response.data)) {
             faqData.value = response.data;
-
             sessionStorage.setItem('faq', JSON.stringify(response.data));
             sessionStorage.setItem('faqTimestamp', now.toString());
         } else {

@@ -1,12 +1,11 @@
 <template>
-  <div class="row">
+  <!-- <div class="row">
     <div class="col-12">
       <p class="news-label">Latest News:</p>
       <div
         class="swiper-container brand-active swiper-container-initialized swiper-container-horizontal swiper-container-pointer-events">
         <ul class="list-wrap">
-          <!-- Fixed label -->
-          <!-- Iterate over the news data and render the items -->
+        
           <li v-for="(item, index) in newsData" :key="item.id">
             <a href="#" @click.prevent="openNews(item)" style="color: #014E4E;">
               {{ getLatestNewsTitle(item) }}
@@ -16,16 +15,67 @@
         </ul>
       </div>
     </div>
+  </div> -->
+  <div class="bg-img position-absolute top-0 bottom-0 start-0 end-0 z-0"></div>
+  <div class="container position-relative z-1">
+    <div class="row justify-content-center">
+      <div class="col-xl-6 col-lg-8">
+        <div class="section-title text-center mb-40 tg-heading-subheading animation-style3">
+          <h1 class="sub-title">LATEST NEWS</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="position-relative">
+
+      <div class="row justify-content-center">
+        <div v-for="(item, index) in paginatedNews" :key="item.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-8">
+          <div class="services-item shine-animate-item">
+            <div class="services-thumb">
+              <a href="#" class="shine-animate" target="_blank">
+                <img
+                  src="https://img.freepik.com/free-vector/news-concept-landing-page_52683-20706.jpg?t=st=1745559655~exp=1745563255~hmac=14a7567655a2e0966fca1aad3dd2ccdc9a0810f9ee2c11a93d9dd156fa1e53f1&w=740"
+                  alt="News Image" />
+              </a>
+            </div>
+            <div class="services-content">
+              <div class="icon">
+                <i class="fa-solid fa-newspaper"></i>
+              </div>
+              <h4 class="services__top-title">
+                <a href="#" @click.prevent="openNews(item)">
+                  {{ getLatestNewsTitle(item) }}
+                </a>
+              </h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="project__nav-wrap">
+        <div class="project-button-prev" tabindex="0" role="button" aria-label="Previous slide" @click="prevSlide"
+          :class="{ 'disabled': currentIndex === 0 }">
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="project-button-next" tabindex="0" role="button" aria-label="Next slide" @click="nextSlide"
+          :class="{ 'disabled': currentIndex + itemsPerPage >= newsData.length }">
+          <i class="fa fa-chevron-right"></i>
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
 
 <script setup>
-import { ref, onMounted, inject, provide } from 'vue';
+import { ref, onMounted, computed, inject, provide } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 const language = inject("language");
 const router = useRouter();
+const currentIndex = ref(0);
+const itemsPerPage = 4;
 provide("language", language); // Provide language to all child components
 const newsData = ref([]);  // Holds the news data
 const loadingNews = ref(false);  // Tracks if the news data is loading
@@ -38,29 +88,26 @@ const props = defineProps({
   }
 });
 
-// Fetch latest news data
+const paginatedNews = computed(() => {
+  return newsData.value.slice(currentIndex.value, currentIndex.value + itemsPerPage);
+});
+
 const fetchLatestNews = async () => {
   const now = new Date().getTime();
-
-  // Check if cached data exists and is valid
   const cachedData = sessionStorage.getItem('latestNews');
   const cachedTimestamp = sessionStorage.getItem('latestNewsTimestamp');
+
   if (cachedData && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
     console.log('Using cached latest news data from sessionStorage');
-    newsData.value = JSON.parse(cachedData);  // Set cached data
+    newsData.value = JSON.parse(cachedData);
     return;
   }
 
-  // If cache is invalid or expired, fetch new data
   loadingNews.value = true;
   try {
     const response = await axios.get('/get_latest_news');
-    console.log('Fetched latest news:', response.data.data);
-
     if (response.data && Array.isArray(response.data.data)) {
       newsData.value = response.data.data;
-
-      // Store data in sessionStorage with a timestamp
       sessionStorage.setItem('latestNews', JSON.stringify(response.data.data));
       sessionStorage.setItem('latestNewsTimestamp', now.toString());
     } else {
@@ -73,9 +120,21 @@ const fetchLatestNews = async () => {
   }
 };
 
+const nextSlide = () => {
+  if (currentIndex.value + itemsPerPage < newsData.value.length) {
+    currentIndex.value += itemsPerPage;
+  }
+};
+
+const prevSlide = () => {
+  if (currentIndex.value - itemsPerPage >= 0) {
+    currentIndex.value -= itemsPerPage;
+  }
+};
+
+
 // Function to get the correct title based on selected language
 const getLatestNewsTitle = (newsItem) => {
-
   switch (props.language) {
     case 'Hindi':
       return newsItem.hindi_title || newsItem.title;  // Fallback to default title if hindi_title is missing
@@ -108,6 +167,7 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+
 .list-wrap {
   display: flex;
   animation: marquee 20s linear infinite;
@@ -115,11 +175,16 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+
 .list-wrap:hover {
   animation-play-state: paused;
   /* Stop animation on hover */
 }
 
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
 
 .news-label {
   font-weight: bold;

@@ -5,7 +5,7 @@
     <div v-if="route.params.id == 1 || route.params.id == null">
         <Carousel></Carousel>
         <br><br><br>
-        <LatestNews :menu="props.id" />
+        <!-- <LatestNews :menu="props.id" /> -->
 
     </div>
 

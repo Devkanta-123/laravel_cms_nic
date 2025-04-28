@@ -1,7 +1,6 @@
 <template>
     <div class="container">
-        <div class="row gutter-24 justify-content-center" style="margin-top:-170px;">
-            <div class="col-lg-6 col-md-12">
+        <!-- <div class="col-lg-6 col-md-12">
                 <div class="features__item-two">
                     <div class="features__icon-two">
                         <i class="fa-solid fa-clipboard"></i>
@@ -21,8 +20,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-6 col-md-12">
+            </div> -->
+        <!-- <div class="col-lg-6 col-md-12">
                 <div class="features__item-two">
                     <div class="features__icon-two">
                         <i class="fa-solid fa-bullhorn"></i>
@@ -30,7 +29,6 @@
                     <div class="features__content-two">
                         <h4 class="title"><a href="#">Notice Board</a></h4>
                         <div class="about__list-box">
-                            <!-- Dynamic List: Scrolling enabled only here -->
                             <div class="marquee-container" @mouseover="pauseScroll" @mouseleave="resumeScroll">
                                 <ul class="list-wrap" ref="newsList">
                                     <li v-for="(item, index) in newsData" :key="item.menu_id" >
@@ -48,17 +46,113 @@
                         </a>
                     </div>
                 </div>
+            </div> -->
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="section-title text-center mb-50 tg-heading-subheading animation-style3">
+                        <span class="sub-title">
+                            NOTICE BOARD <i class="fa-solid fa-bullhorn"></i>
+                        </span>
+                    </div>
+                </div>
             </div>
+
+            <div class="row position-relative">
+                <div class="d-flex justify-content-between align-items-center w-100 mb-3">
+
+                    <div class="testimonial__nav-four">
+                        <div class="testimonial-two-button-prev" tabindex="0" role="button" @click="prevSlide"
+                            aria-label="Previous slide" aria-controls="swiper-wrapper-109a395953f46aece"> <i
+                                class="fa fa-chevron-right"></i>
+                        </div>
+                        <div class="testimonial-two-button-next" tabindex="0" role="button" @click="nextSlide"
+                            aria-label="Next slide" aria-controls="swiper-wrapper-109a395953f46aece"><i
+                                class="fa fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <template v-for="(item, index) in visibleNews" :key="item.id">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="blog__post-two shine-animate-item">
+                            <div class="blog__post-thumb-two">
+                                <a class="shine-animate" target="_blank">
+                                    <img src="https://img.freepik.com/free-photo/people-taking-part-high-protocol-event_23-2150951243.jpg?t=st=1745399048~exp=1745402648~hmac=c81dd61713a0532b0120fd7e3bbbd23ed8bd1d666e861245ec3c6ee5c364a0dc&w=996"
+                                        alt="Apexa" />
+                                </a>
+                            </div>
+                            <div class="blog__post-content-two">
+                                <div class="blog-post-meta">
+                                    <ul class="list-wrap">
+                                        <li>
+                                            <a href="#" class="blog__post-tag-two">
+                                                {{ categoryNames[item.category_id] || 'Unknown' }}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ new Date(item.date).toLocaleDateString('en-GB') }}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <h2 class="title">
+                                    <a href="#" @click.prevent="openNews(item)">{{ item.title }}</a>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
+                </template>
+
+            </div>
+            <a href="/page/45?page_name=Notice+Board" class="btn"
+                style="position: relative; --after-display: none; --before-display: none;" data-aos="fade-up"
+                data-aos-delay="600">
+                See All NoticeBoard
+            </a>
         </div>
+        <!-- <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-6">
+                    <div class="section-title text-center mb-50 tg-heading-subheading animation-style3">
+                        <span class="sub-title">RECRUITMENTS</span>
+                    </div>
+                </div>
+                <div class="row gutter-24 justify-content-center">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="blog__post-four shine-animate-item">
+                            <div class="blog__post-content-four">
+                                <h2 class="title"><a href="blog-details.html">Marketing your area business downturn now
+                                        a
+                                        days</a></h2>
+                                <div class="blog-post-meta blog-post-meta-two">
+                                    <ul class="list-wrap">
+                                        <li><i class="fas fa-calendar-alt"></i>Oct 21, 2024</li>
+                                        <li><i class="far fa-comment-alt"></i><a href="blog-details.html">02
+                                                Comments</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+        </div> -->
     </div>
+
+
 
 </template>
 <script setup>
-import { ref, onMounted, inject, provide } from 'vue';
+import { ref, onMounted, inject, provide, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 const router = useRouter();
-
+const currentIndex = ref(0);
+const itemsPerPage = 3; // S
 const newsData = ref([]);  // Holds the newsletter data
 const recruitmentsData = ref([]); // Holds the
 const loadingNewsLetter = ref(false);  // Tracks if the newsletter data is loading
@@ -72,7 +166,13 @@ const props = defineProps({
         required: true
     }
 });
-
+const categoryNames = {
+    1: 'Newsletter',
+    2: 'Tenders',
+    3: 'Recruitments',
+    4: 'Notifications',
+    5: 'Absorption'
+};
 // Fetch the latest newsletter data
 const fetchNotificationsForCurrentMonth = async () => {
     const now = new Date().getTime();
@@ -153,10 +253,26 @@ const getNoticeboardTitle = (newsItem) => {
     }
 };
 
+
+const visibleNews = computed(() => {
+    return newsData.value.slice(currentIndex.value, currentIndex.value + itemsPerPage);
+});
+
+const nextSlide = () => {
+    if (currentIndex.value + itemsPerPage < newsData.value.length) {
+        currentIndex.value += itemsPerPage;
+    }
+};
+
+const prevSlide = () => {
+    if (currentIndex.value - itemsPerPage >= 0) {
+        currentIndex.value -= itemsPerPage;
+    }
+};
 // Method to open the newsletter item based on its type (link or file)
+
 const openNews = (item) => {
-    debugger;
-    const filePath = '/storage/' + item.file.replace('public/', '');  // Build file URL based on Laravel's storage path
+    const filePath = '/storage/' + item.file;  // No need to replace 'public/' if file already starts without it
     window.open(filePath, '_blank');  // Open the file in a new tab
 };
 
@@ -224,5 +340,15 @@ onMounted(() => {
 /* Hide the button when clicked */
 .custom-btn.hide {
     display: none;
+}
+
+.btn::before {
+    content: "";
+    /* some animation or background */
+}
+
+.btn::after {
+    content: "";
+    /* some animation or background */
 }
 </style>

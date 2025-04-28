@@ -290,7 +290,7 @@ class HomeController extends Controller
     public function uploadCarousel(Request $request)
     {
         $request->validate([
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:7048' // Adjust max file size as needed
         ]);
 
         // Handle file upload
