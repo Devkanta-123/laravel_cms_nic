@@ -159,18 +159,10 @@ const onBack = () => {
     router.push('/contentcreator/pages')
 }
 const openPageSection = (section) => {
-    debugger;
-    const name = section.page_section_name.toLowerCase()
-
-    // Navigate to a named route or dynamic route
-    switch (name) {
-        case 'carousel':
-            router.push({ name: 'CarouselPage', query: { sectionId: section.id } })
-            break
-        default:
-            console.warn('Unknown section:', name)
-            break
-    }
+    router.push({
+        name: 'CCFormsHandler',
+        params: { menuId: section.menu_id, menuName: section.page_section_name }
+    });
 }
 const addComponent = (component) => {
     const payload = {

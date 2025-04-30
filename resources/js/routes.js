@@ -15,6 +15,7 @@ import CCDashboard from './components/ContentCreator/Dashboard.vue';
 import CCPages from './components/ContentCreator/Pages.vue';
 import CCMenu from './components/ContentCreator/Menu.vue'
 import CCPagesForm from './components/ContentCreator/PagesForm.vue'
+import CCFormsHandler from './components/ContentCreator/FormsHandler.vue'
 
 // import PageContent from './smb/layout/PageContent.vue';
 // import Page from './smb/layout/Page.vue';
@@ -126,6 +127,14 @@ export default [
         path: '/contentcreator/pages-form/:menuId/:menuName',
         name: 'CCPagesForm',
         component: CCPagesForm,
+        props: true
+
+    },
+    //FormsHandler
+    {
+        path: '/contentcreator/pages-form/:menuId/:menuName',
+        name: 'CCFormsHandler',
+        component: CCFormsHandler,
         props: true
 
     },

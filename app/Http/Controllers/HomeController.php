@@ -18,7 +18,7 @@ use Carbon\Carbon;
 use App\Models\Footer;
 use App\Models\Newsletter;
 use App\Models\PageSectionMaster;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -99,7 +99,7 @@ class HomeController extends Controller
             }
             //quicklink edit
 
-            if ($request->type == 'quicklink' && $footer)  {
+            if ($request->type == 'quicklink' && $footer) {
                 $footer->type = $request->type;
                 $footer->link = $request->quicklink;
                 $footer->order = $request->order;
@@ -113,7 +113,7 @@ class HomeController extends Controller
                 $footer->order = $request->order;
                 $footer->content = $request->content;
                 $footer->save();
-            } else if($request->type == 'quicklink') { //create the quick link
+            } else if ($request->type == 'quicklink') { //create the quick link
 
                 Footer::create([
                     'type' => $request->type,
@@ -121,8 +121,7 @@ class HomeController extends Controller
                     'order' => $request->order,
                     'link' => $request->quicklink
                 ]);
-            }
-            else{                              //create for link
+            } else {                              //create for link
                 Footer::create([
                     'type' => $request->type,
                     'content' => $request->content,
@@ -290,9 +289,13 @@ class HomeController extends Controller
     public function uploadCarousel(Request $request)
     {
         $request->validate([
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:7048' // Adjust max file size as needed
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:20480' // 20MB
         ]);
-
+        // Get logged-in user
+        $user = Auth::user(); // This will get the authenticated user
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
         // Handle file upload
         $uploadedImages = [];
         if ($request->hasFile('images')) {
@@ -303,9 +306,12 @@ class HomeController extends Controller
 
 
                 Carousel::create([
-                    'image' => $path,  //$filename
+                    'image' => $path,
                     'link' => $path,
-                    'type' => 'Slider'
+                    'type' => 'Slider',
+                    'user_id' => $user->id,
+                    'role_id' => $user->role_id,
+                    'flag' => 'N'
                 ]);
             }
         }
@@ -825,5 +831,5 @@ class HomeController extends Controller
 
         return response()->json(['message' => 'Logo uploaded successfully', 'filenames' => $uploadedImages]);
     }
-   
+
 }
