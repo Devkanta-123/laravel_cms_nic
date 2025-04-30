@@ -3,7 +3,6 @@
 
   <head>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
   </head>
   <div class="app-wrapper">
     <header class="transparent-header">
@@ -440,6 +439,8 @@ import '../assets/css/magnific-popup.css';
 import '../assets/css/fontawesome-all.min.css';
 import '../assets/css/default.css';
 import '../assets/css/main.css';
+import '../assets/js/swiper-bundle.js';
+import '../assets/css/swiper-bundle.css';
 const menuItems = ref([]);
 const header = ref([]);
 const highContrastMode = ref(false);

@@ -1,6 +1,6 @@
 <template>
-  
-<section class="slider__area">
+
+  <!-- <section class="slider__area">
   <div class="slider-container">
     <div
       class="slider-wrapper"
@@ -23,10 +23,49 @@
       </div>
     </div>
   </div>
-</section>
+</section> -->
+  <section class="slider__area">
+    <div class="swiper-container slider_baner__active">
+      <div class="swiper-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+        <div v-for="(slide, index) in slides" :key="index" class="swiper-slide">
+          <div class="banner__area-three banner__bg-five" :style="`background-image: url(&quot;${slide}&quot;)`" style="opacity: 0.85;">
+            <div class="container">
+              <div class="row">
+                <div class="col-xl-7 col-lg-6">
+                  <div class="banner__content-three home-9">
+                    <h2 class="title" data-aos="fade-up" data-aos-delay="300">
+                      With MSRLS, Together for Sustainable Rural Growth
+                      <span>Sustainable Rural Growth</span>.
+                    </h2>
+                    <a href="about" class="btn" data-aos="fade-up" data-aos-delay="600">
+                     Learn More
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box-button-slider-bottom home-9 d-none d-lg-block">
+      <div class="container">
+        <div class="testimonial__nav-four">
+          <div class="testimonial-two-button-prev button-swiper-prev" tabindex="0" role="button" @click="prevImage">
+            <i class="fa fa-chevron-right"></i>
+          </div>
+          <div class="testimonial-two-button-next button-swiper-next" tabindex="0" role="button" @click="nextImage">
+            <i class="fa fa-chevron-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
 
-    <!-- <div class="box-button-slider-bottom">
+
+  <!-- <div class="box-button-slider-bottom">
       <button @click="prevImage" class="slider-button prev">❮</button>
       <button @click="nextImage" class="slider-button next">❯</button>
     </div> -->
@@ -55,9 +94,11 @@
 
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
+import  { loadOrCacheImage } from '../services/carousalCache.js';
 
+let slideInterval;
 const slides = ref([]); // Holds the image data
 const currentIndex = ref(0); // Tracks the index of the current slide
 // const cacheDuration = 24 * 60 * 60 * 1000; // Cache duration (1 day)
@@ -66,19 +107,6 @@ const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
 
 // Fetch the carousel slides
 const fetchSlides = async () => {
-  const now = new Date().getTime();
-
-  // Check if cached data exists and is valid
-  const cachedSlides = localStorage.getItem('carouselSlides');
-  const cachedTimestamp = localStorage.getItem('carouselSlidesTimestamp');
-
-  if (cachedSlides && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
-    console.log('Using cached carousel slides from localStorage');
-    slides.value = JSON.parse(cachedSlides); // Use cached slides data
-    return;
-  }
-
-  // If the cache is invalid or expired, fetch new data
   try {
     debugger;
     const response = await axios.get('/get_carousel');
@@ -86,26 +114,12 @@ const fetchSlides = async () => {
 
     if (response.data && Array.isArray(response.data)) {
       const slideData = await Promise.all(response.data.map(async (slide) => {
-        const filePath = '/storage/' + slide.image.replace('public/', ''); // Build URL
-
-        // Fetch image as a base64 encoded string
-        const imageResponse = await fetch(filePath);
-        const imageBlob = await imageResponse.blob();
-        const imageBase64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(imageBlob);
-        });
-
+        const filePath = '/storage/' + slide.image.replace('public/', '');
+        const imageBase64 = await loadOrCacheImage(filePath);
         return { filePath, imageBase64 };
       }));
 
       slides.value = slideData.map(slide => slide.imageBase64);
-
-      // Cache the slides and timestamp in localStorage
-      localStorage.setItem('carouselSlides', JSON.stringify(slides.value));
-      localStorage.setItem('carouselSlidesTimestamp', now.toString());
     } else {
       console.error('Invalid data format');
     }
@@ -113,6 +127,7 @@ const fetchSlides = async () => {
     console.error('Failed to fetch slides:', error);
   }
 };
+
 
 // Navigation functions to handle image sliding
 const prevImage = () => {
@@ -126,15 +141,12 @@ const nextImage = () => {
 };
 
 // Auto slide change every 5 seconds
-let slideInterval;
 
-onMounted(() => {
-  fetchSlides();
+onMounted(async () => {
+  await fetchSlides();
+  slideInterval = setInterval(nextImage, 5000);
 
-  // Set interval to automatically change the slide every 5 seconds
-  slideInterval = setInterval(nextImage, 10000);
 });
-
 onUnmounted(() => {
   // Clear interval when the component is unmounted
   clearInterval(slideInterval);
@@ -223,44 +235,14 @@ onUnmounted(() => {
   width: 100%;
   display: block;
   filter: brightness(60%);
-  height: 800px; /* or any height you prefer */
-  object-fit: cover; /* keeps image proportions and fills the container */
+  height: 800px;
+  /* or any height you prefer */
+  object-fit: cover;
+  /* keeps image proportions and fills the container */
 }
 
 .overlay {
   position: relative;
 }
-
-/* Typewriter Title Styling */
-.typewriter-text {
-  position: absolute;
-  top: 30%; /* A little lower than top */
-  left: 75%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 2rem;
-  font-family: 'Baloo 2', cursive;
-  font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  border-right: 2px solid white;
-  width: 0;
-  animation:
-    typing 4s steps(40, end) forwards,
-    blink-caret 0.75s step-end infinite;
-  z-index: 2;
-}
-
-/* Keyframes for typewriter animation */
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-
-@keyframes blink-caret {
-  from, to { border-color: transparent }
-  50% { border-color: white }
-}
-
 
 </style>
