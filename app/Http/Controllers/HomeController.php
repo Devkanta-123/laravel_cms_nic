@@ -296,6 +296,13 @@ class HomeController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
+        //before submit check roleid and set flag value
+        // Determine flag based on role_id
+        if ($user->role_id == 2) { //if admin upload 
+            $flag = 'A';
+        } elseif ($user->role_id == 3) { //if contentcreator upload
+            $flag = 'N';
+        }
         // Handle file upload
         $uploadedImages = [];
         if ($request->hasFile('images')) {
@@ -311,7 +318,7 @@ class HomeController extends Controller
                     'type' => 'Slider',
                     'user_id' => $user->id,
                     'role_id' => $user->role_id,
-                    'flag' => 'N'
+                    'flag' => $flag
                 ]);
             }
         }
@@ -719,9 +726,46 @@ class HomeController extends Controller
         return $getMenus;
     }
 
-    public function getCarousel()
+    // public function getCarousel()
+    // {
+    //     return (Carousel::all());
+    // }
+
+    public function getCarousel(Request $request)
     {
-        return (Carousel::all());
+
+        $flag = $request->query('flag');
+        $user = Auth::user();
+        if ($flag === 'A') { //for  website
+            // Return Carousel records with flag 'A'
+            return Carousel::where('flag', 'A')->get();
+        } elseif ($flag === '4'  && $user->role_id == $flag) {
+            // Use query builder to join with users table and return specific fields
+            return DB::table('carousel as cs')
+                ->join('users as u', 'cs.user_id', '=', 'u.id')
+                ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id')
+                ->get();
+        }
+
+        // Default: return all Carousel records
+        return Carousel::all();
+    }
+
+    public function approveCarousel(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        $request->validate([
+            'id' => 'required|exists:carousel,id'
+        ]);
+
+        $carousel = Carousel::find($request->id);
+        $carousel->flag = 'A'; // Approve
+        $carousel->save();
+
+        return response()->json(['success' => true, 'message' => 'Approved successfully']);
     }
 
     public function getBanner()
@@ -831,5 +875,4 @@ class HomeController extends Controller
 
         return response()->json(['message' => 'Logo uploaded successfully', 'filenames' => $uploadedImages]);
     }
-
 }

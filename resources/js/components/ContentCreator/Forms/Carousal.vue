@@ -1,37 +1,97 @@
 <template>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
+
     <br>
-    <div class="col-xl-6 mb-30">
-        <div class="card card-statistics h-100">
-            <div class="card-body">
-                <h5 class="card-title">Carousel</h5>
-                <div id="example-basic" role="application" class="wizard clearfix">
-                    <div class="content clearfix">
-                        <section id="example-basic-p-0" role="tabpanel" aria-labelledby="example-basic-h-0"
-                            class="body current" aria-hidden="false">
-                            <h4 class="sr-only">&nbsp;</h4>
-                            <label for="uName">Image</label>
-                            <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
-                                class="form-control">
 
-                        </section>
+    <div style="display: flex;">
+        <div class="col-xl-4 mb-30">
+            <!-- First Card (Carousel) -->
+            <div class="card card-statistics h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Carousel</h5>
+                    <div id="example-basic" role="application" class="wizard clearfix">
+                        <div class="content clearfix">
+                            <section class="body current" aria-hidden="false">
+                                <label for="uName">Image</label>
+                                <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
+                                    class="form-control" required>
+                            </section>
+                        </div>
 
+                        <!-- Image Preview Section -->
+                        <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
+                            <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
+                                <button type="button" @click="removeImage(index)"
+                                    class="btn-close btn-sm position-absolute top-0 end-0"
+                                    style="z-index: 2; background-color: white; border-radius: 50%;">
+                                </button>
+                                <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="actions clearfix mt-3">
+                            <ul role="menu" aria-label="Pagination">
+                                <li>
+                                    <button class="btn btn-success" role="menuitem" @click="uploadImages">Save</button>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="actions clearfix">
-                        <ul role="menu" aria-label="Pagination">
-                            <li aria-hidden="false" aria-disabled="false"><a href="#next" role="menuitem"
-                                    @click="uploadImages">Save</a></li>
-                        </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-xl-8 mb-30">
+            <div class="card card-statistics h-100">
+                <div class="card-body">
+                    <h5 class="card-title pb-0 border-0">List </h5>
+                    <!-- action group -->
+                    <div class="table-responsive">
+                        <table class="table center-aligned-table mb-0">
+                            <thead>
+                                <tr class="text-dark">
+                                    <th>Image</th>
+                                    <th>Added On</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(slide, index) in slides" :key="index">
+                                    <td>
+                                        <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
+                                            alt="Slide Image">
+                                    </td>
+                                    <td>{{ formatDate(slide.created_at) }}</td>
+                                    <td>
+                                        <label :class="slide.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
+                                            {{ slide.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        </label>
+                                    </td>
+                                    <td>
+                                        
+                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(slide.id)"></i>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
-const toastr = useToastr(); 
+const toastr = useToastr();
 
 const images = ref([]);
 const isDragging = ref(false);
@@ -41,55 +101,49 @@ const slides = ref([]);
 const selectFile = () => {
     fileInput.value.click();
 }
-
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+};
 const onFileSelect = (event) => {
     debugger;
     const files = event.target.files;
-    if (files.length === 0) return;
+    if (!files || files.length === 0) return;
+
     for (let i = 0; i < files.length; i++) {
-        if (files[i].type.split('/')[0] !== 'image') continue;
-        if (!images.value.some((e) => e.name === files[i].name)) {
+        const file = files[i];
+
+        // Skip non-image files
+        if (!file || file.type.split('/')[0] !== 'image') continue;
+
+        // Avoid duplicates by file name
+        if (!images.value.some((e) => e.name === file.name)) {
+            const url = URL.createObjectURL(file);
+
             images.value.push({
-                name: files[i].name,
-                file: files[i],
-                url: URL.createObjectURL(files[i]),
+                name: file.name,
+                file: file,
+                url: url, // This will be used to preview
             });
         }
     }
 };
 
-const deleteImage = (index) => {
+const removeImage = (index) => {
     images.value.splice(index, 1);
-}
-
-const onDragOver = (e) => {
-    isDragging.value = true;
-    e.dataTransfer.dropEffect = 'copy';
-};
-
-const onDragLeave = () => {
-    isDragging.value = false;
-};
-
-const onDrop = (e) => {
-    isDragging.value = false;
-    const files = e.dataTransfer.files;
-    if (files.length === 0) return;
-    for (let i = 0; i < files.length; i++) {
-        if (files[i].type.split('/')[0] !== 'image') continue;
-        if (!images.value.some((e) => e.name === files[i].name)) {
-            images.value.push({
-                name: files[i].name,
-                file: files[i],
-                url: URL.createObjectURL(files[i]),
-            });
-        }
-    }
 };
 
 // console.log("RoleID" + role_id);
 const uploadImages = () => {
-    debugger;
+    // Check if images array is empty or contains invalid entries
+    if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
+        toastr.error('Please select at least one valid image before uploading.');
+        return;
+    }
     const formData = new FormData();
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);

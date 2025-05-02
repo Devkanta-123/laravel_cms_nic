@@ -108,8 +108,9 @@ const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
 // Fetch the carousel slides
 const fetchSlides = async () => {
   try {
-    debugger;
-    const response = await axios.get('/get_carousel');
+    const response = await axios.get('/get_carousel', {
+      params: { flag: 'A' } 
+    });
     console.log('Fetched slides:', response.data);
 
     if (response.data && Array.isArray(response.data)) {

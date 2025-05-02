@@ -122,9 +122,12 @@ const fetchUser = async () => {
                 // Redirect based on role_id
                 if (user.role_id === 1 || user.role_id === 2) {
                     window.location.href = "/admin/dashboard";
-                } else if (user.role_id === 3 || user.role_id === 4) {
+                } else if (user.role_id === 3) { //content creator
                     window.location.href = "/contentcreator/dashboard";
+                }else if (user.role_id === 4) { //publisher
+                    window.location.href = "/publisher/dashboard";
                 }
+                
             })
             .catch((error) => {
                 console.error('Error:', error);

@@ -174,6 +174,27 @@
                                 </p>
                             </router-link>
                         </li>
+                        
+                        <!-- Publisher -->
+                        <li class="nav-item" v-if="role == 4">
+                            <router-link to="/publisher/dashboard"
+                                :class="$route.path.startsWith('/publisher/dashboard') ? 'active' : ''" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Dashboard
+                                </p>
+                            </router-link>
+                        </li>
+                        <li class="nav-item" v-if="role == 4">
+                            <router-link to="/publisher/pages"
+                                :class="$route.path.startsWith('/publisher/pages') ? 'active' : ''" class="nav-link">
+                                <i class="nav-icon fas fa-list"></i>
+                                <p>
+                                    Pages
+                                </p>
+                            </router-link>
+                        </li>
+
                         <li class="nav-item">
                             <!-- <form method="POST" action="{{route('logout')}}" class="nav-link"> -->
 

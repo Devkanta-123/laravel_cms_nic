@@ -25,6 +25,7 @@ Route::get('get_mainmenus', [HomeController::class, 'get_mainmenus']);
 Route::get('get_rightmenus', [HomeController::class, 'get_rightmenus']);
 
 Route::get('get_carousel', [HomeController::class, 'getCarousel']);
+Route::post('/approve_carousel', [HomeController::class, 'approveCarousel']); //for publisher approval
 
 Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);

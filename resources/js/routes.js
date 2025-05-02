@@ -16,6 +16,10 @@ import CCPages from './components/ContentCreator/Pages.vue';
 import CCMenu from './components/ContentCreator/Menu.vue'
 import CCPagesForm from './components/ContentCreator/PagesForm.vue'
 import CCFormsHandler from './components/ContentCreator/FormsHandler.vue'
+import PDashboard from './components/Publisher/Dashboard.vue';
+import PublisherPages from './components/Publisher/Pages.vue';
+import PublisherPagesForm from './components/Publisher/PagesForm.vue'
+import PublisherFormsHandler from './components/Publisher/FormsHandler.vue'
 
 // import PageContent from './smb/layout/PageContent.vue';
 // import Page from './smb/layout/Page.vue';
@@ -130,7 +134,7 @@ export default [
         props: true
 
     },
-    //FormsHandler
+    //FormsHandler for Content Creator
     {
         path: '/contentcreator/pages-form/:menuId/:menuName',
         name: 'CCFormsHandler',
@@ -140,15 +144,47 @@ export default [
     },
 
 
-    //FRONT END 
 
-    //HOMEPAGE
-    // {
-    //     path: '/',
-    //     name: 'PageContent',
-    //     component: () => import(`./${folderPath}/layout/PageContent.vue`),
-    //     props: { id: '1' }
-    // },
+    //Publisher
+    {
+        path: '/publisher/dashboard',
+        name: 'publisher.dashboard',
+        component: PDashboard,
+    },
+    {
+        path: '/publisher/pages',
+        name: 'publisher.pages',
+        component: PublisherPages,
+
+    },
+
+    {
+        path: '/publisher/pages-form/:menuId/:menuName',
+        name: 'PublisherPagesForm',
+        component: PublisherPagesForm,
+        props: true
+
+    },
+    //FormsHandler for Content Creator
+    {
+        path: '/publisher/pages-form/:menuId/:menuName',
+        name: 'PublisherFormsHandler',
+        component: PublisherFormsHandler,
+        props: true
+
+    },
+
+
+    // FRONT END 
+
+    // HOMEPAGE
+    {
+        path: '/',
+        name: 'PageContent',
+        component: () =>
+            import (`./${folderPath}/layout/PageContent.vue`),
+        props: { id: '1' }
+    },
     {
         path: '/',
         name: 'PageContent',
