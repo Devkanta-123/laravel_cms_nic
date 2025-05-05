@@ -1,31 +1,63 @@
 <template>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+        integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
 
     <br>
 
-    <div style="display: flex;">
-        <div class="col-xl-4 mb-30">
+    <div>
+        <div class="col-xl-12 mb-30">
             <!-- First Card (Carousel) -->
             <div class="card card-statistics h-100">
                 <div class="card-body">
                     <h5 class="card-title">Latest News</h5>
                     <div id="example-basic" role="application" class="wizard clearfix">
                         <div class="content clearfix">
-                            <section class="body current" aria-hidden="false">
-                                <label for="uName">Image</label>
-                                <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
-                                    class="form-control" required>
-                            </section>
-                        </div>
+                            <div class="row">
+                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                    <label class="form-label" for="englishTitle">English Title <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" id="englishTitle" class="form-control" v-model="title"
+                                        placeholder="English Title" required>
+                                </div>
+                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                    <label class="form-label" for="khasiTitle">Khasi Title</label>
+                                    <input type="text" id="khasiTitle" class="form-control" v-model="titleK"
+                                        placeholder="Khasi Title">
+                                </div>
+                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                    <label class="form-label" for="hindiTitle">Hindi Title</label>
+                                    <input type="text" id="hindiTitle" class="form-control" v-model="titleH"
+                                        placeholder="Hindi Title">
+                                </div>
+                            </div>
 
-                        <!-- Image Preview Section -->
-                        <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
-                            <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
-                                <button type="button" @click="removeImage(index)"
-                                    class="btn-close btn-sm position-absolute top-0 end-0"
-                                    style="z-index: 2; background-color: white; border-radius: 50%;">
-                                </button>
-                                <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+                            <div class="row">
+                                <!-- Checkbox Switch -->
+                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                    <div class="form-group mb-3">
+                                        <div class="checkbox checbox-switch switch-primary">
+                                            <label>
+                                                <input type="checkbox" v-model="showLinkInput">
+                                                <span></span> Is URL?
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="row">
+                                <!-- File Upload (Shown only when showLinkInput is false) -->
+                                <div v-show="!showLinkInput" class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                    <label class="form-label" for="fileInput">File Upload</label>
+                                    <input type="file" id="fileInput" class="form-control" @change="handleFileChange"
+                                        accept=".pdf">
+                                </div>
+
+                                <!-- Link Input (Shown only when showLinkInput is true) -->
+                                <div v-show="showLinkInput" class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                    <label class="form-label" for="linkInput">URL</label>
+                                    <input type="text" id="linkInput" class="form-control" v-model="link"
+                                        placeholder="Enter URL" autocomplete="off">
+                                </div>
                             </div>
                         </div>
 
@@ -33,23 +65,27 @@
                         <div class="actions clearfix mt-3">
                             <ul role="menu" aria-label="Pagination">
                                 <li>
-                                    <button class="btn btn-success" role="menuitem" @click="uploadImages">Save</button>
+                                    <button type="button" class="btn btn-success" role="menuitem"
+                                        @click="saveLatestNews">
+                                        Save
+                                    </button>
                                 </li>
                             </ul>
                         </div>
                     </div>
+
                 </div>
 
             </div>
         </div>
 
-        <div class="col-xl-8 mb-30">
+        <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
-                        <table class="table center-aligned-table mb-0"  id="slidesTable">
+                        <table class="table center-aligned-table mb-0" id="slidesTable">
                             <thead>
                                 <tr class="text-dark">
                                     <th>Image</th>
@@ -72,7 +108,7 @@
                                         </label>
                                     </td>
                                     <td>
-                                        
+
                                         <i class="fas fa-trash-alt text-danger" @click="deleteSlide(slide.id)"></i>
                                     </td>
                                 </tr>
@@ -88,110 +124,75 @@
 
 </template>
 <script setup>
-import { ref, onMounted,nextTick } from 'vue';
-import axios from 'axios';
+import { ref ,onMounted } from 'vue'
+import axios from 'axios'
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 
-const images = ref([]);
-const isDragging = ref(false);
-// fileInput.value = null;
-const slides = ref([]);
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
-const onFileSelect = (event) => {
-    debugger;
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+const showLinkInput = ref(false)
+const file = ref(null)
+const link = ref('')
+const title = ref('')
+const titleK = ref('')
+const titleH = ref('')
+const latestnewsdata = ref('');
+// Handle file change
+const handleFileChange = (e) => {
+    file.value = e.target.files[0]
+}
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+// Simple validation
+const validateInputs = () => {
+    if (!title.value.trim()) return false
+    if (showLinkInput.value && !link.value.trim()) return false
+    if (!showLinkInput.value && !file.value) return false
+    return true
+}
 
-        // Skip non-image files
-        if (!file || file.type.split('/')[0] !== 'image') continue;
-
-        // Avoid duplicates by file name
-        if (!images.value.some((e) => e.name === file.name)) {
-            const url = URL.createObjectURL(file);
-
-            images.value.push({
-                name: file.name,
-                file: file,
-                url: url, // This will be used to preview
-            });
-        }
+// Save function
+const saveLatestNews = () => {
+    if (!validateInputs()) {
+        toastr.error('Please correct the errors before submitting.')
+        return
     }
-};
-
-const removeImage = (index) => {
-    images.value.splice(index, 1);
-};
-
-// console.log("RoleID" + role_id);
-const uploadImages = () => {
-    // Check if images array is empty or contains invalid entries
-    if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
-        toastr.error('Please select at least one  image before uploading.');
-        return;
+    const formData = new FormData()
+    if (showLinkInput.value) {
+        formData.append('link', link.value)
+    } else {
+        formData.append('file', file.value)
     }
-    const formData = new FormData();
-    images.value.forEach((image) => {
-        formData.append('images[]', image.file, image.name);
-    });
 
-    axios.post('/api/upload_carousel', formData, {
+    formData.append('title', title.value)
+    formData.append('titleK', titleK.value)
+    formData.append('titleH', titleH.value)
+
+    axios.post('/api/save_latest_news', formData, {
         headers: {
-            'Content-Type': 'multipart/form-data'
-        }
+            'Content-Type': 'multipart/form-data',
+        },
     })
-        .then(response => {
-            fetchSlides();
-            console.log('Images uploaded successfully:', response.data);
-            toastr.success('Images uploaded successfully');
-            images.value = [];
+        .then((response) => {
+            toastr.success(response.data.message || 'News saved successfully.')
         })
-        .catch(error => {
-            console.error('Error uploading images:', error);
-        });
-};
-
-const deleteDBImage = (slide, index) => {
-
-    axios.post('/api/delete_slide', { id: slide.id })
-        .then(response => {
-            console.log('Slide deleted successfully:', response.data);
-            toastr.success('Slide deleted successfully');
-            slides.value.splice(index, 1);
+        .catch((error) => {
+            console.error('Error saving news:', error)
+            toastr.error('An error occurred while saving the news.')
         })
-        .catch(error => {
-            console.error('Error deleting slide:', error);
-        });
-};
-
-const fetchSlides = async () => {
-    try {
-        const response = await axios.get('/get_carousel');
-        console.log(response.data);
-        slides.value = response.data;
-        await nextTick() // wait until DOM is updated
-        if ($.fn.dataTable.isDataTable('#slidesTable')) {
-            $('#slidesTable').DataTable().destroy()
-        }
-        $('#slidesTable').DataTable()
-    } catch (error) {
-        console.error('Failed to fetch slides:', error);
-    }
+}
+const fetchLatestNews = async () => {
+    debugger;
+  try {
+    const response = await axios.post('/api/get_latest_news'); 
+    latestnewsdata.value = response.data;
+    console.log("Latest News data" , response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
 };
 
 
 onMounted(() => {
-    fetchSlides();
+    fetchLatestNews()
 });
 
 </script>

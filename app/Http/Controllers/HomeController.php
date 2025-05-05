@@ -480,6 +480,19 @@ class HomeController extends Controller
 
     public function saveLatestNews(Request $request)
     {
+
+        $user = Auth::user(); // This will get the authenticated user
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        //before submit check roleid and set flag value
+        // Determine flag based on role_id
+        if ($user->role_id == 2) { //if admin upload 
+            $flag = 'A';
+        } elseif ($user->role_id == 3) { //if contentcreator upload
+            $flag = 'N';
+        }
+
         DB::beginTransaction();
         $request->validate([
             // 'file' => 'sometimes|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240', // 10240 KB = 10 MB
@@ -515,7 +528,9 @@ class HomeController extends Controller
                 'page' => $request->page,
                 'pagename' => $request->pagename,
                 'pagemenuid' => $request->pagemenuid,
-
+                'flag' => $flag,
+                'user_id' => $user->id,
+                'role_id' => $user->role_id
             ]);
             DB::commit();
         } catch (\Exception $e) {
