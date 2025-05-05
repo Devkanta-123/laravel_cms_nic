@@ -8,7 +8,7 @@
             <!-- First Card (Carousel) -->
             <div class="card card-statistics h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Carousel</h5>
+                    <h5 class="card-title">Latest News</h5>
                     <div id="example-basic" role="application" class="wizard clearfix">
                         <div class="content clearfix">
                             <section class="body current" aria-hidden="false">

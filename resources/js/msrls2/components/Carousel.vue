@@ -25,29 +25,32 @@
   </div>
 </section> -->
   <section class="slider__area">
-    <div class="swiper-container slider_baner__active">
-      <div class="swiper-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-        <div v-for="(slide, index) in slides" :key="index" class="swiper-slide">
-          <div class="banner__area-three banner__bg-five" :style="`background-image: url(&quot;${slide}&quot;)`" style="opacity: 0.85;">
-            <div class="container">
-              <div class="row">
-                <div class="col-xl-7 col-lg-6">
-                  <div class="banner__content-three home-9">
-                    <h2 class="title" data-aos="fade-up" data-aos-delay="300">
-                      With MSRLS, Together for Sustainable Rural Growth
-                      <span>Sustainable Rural Growth</span>.
-                    </h2>
-                    <a href="about" class="btn" data-aos="fade-up" data-aos-delay="600">
-                     Learn More
-                    </a>
-                  </div>
-                </div>
+   <div class="swiper-container slider_baner__active">
+  <div class="swiper-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+    <div v-for="(slide, index) in slides" :key="index" class="swiper-slide">
+      <div class="banner__area-three banner__bg-five" 
+           :style="`background-image: url('${slide}')`" 
+           style="opacity: 0.85;">
+        <div class="container">
+          <div class="row">
+            <div class="col-xl-7 col-lg-6">
+              <div class="banner__content-three home-9">
+                <h2 class="title" data-aos="fade-up" data-aos-delay="300" >
+                  With MSRLS, Together for 
+                  <span id="typewriter">{{ displayText }}</span>
+                </h2>
+                <a href="about" class="btn" data-aos="fade-up" data-aos-delay="600">
+                  Learn More
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
 
     <div class="box-button-slider-bottom home-9 d-none d-lg-block">
       <div class="container">
@@ -96,20 +99,28 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
-import  { loadOrCacheImage } from '../services/carousalCache.js';
-
+import { loadOrCacheImage } from '../services/carousalCache.js';
+const fullText = "Sustainable Rural Growth."
+const displayText = ref("")
+let index = 0
 let slideInterval;
 const slides = ref([]); // Holds the image data
 const currentIndex = ref(0); // Tracks the index of the current slide
 // const cacheDuration = 24 * 60 * 60 * 1000; // Cache duration (1 day)
 const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
 
-
+const typeWriter = () => {
+  if (index < fullText.length) {
+    displayText.value += fullText.charAt(index)
+    index++
+    setTimeout(typeWriter, 100)
+  }
+}
 // Fetch the carousel slides
 const fetchSlides = async () => {
   try {
     const response = await axios.get('/get_carousel', {
-      params: { flag: 'A' } 
+      params: { flag: 'A' }
     });
     console.log('Fetched slides:', response.data);
 
@@ -145,6 +156,7 @@ const nextImage = () => {
 
 onMounted(async () => {
   await fetchSlides();
+  typeWriter()
   slideInterval = setInterval(nextImage, 5000);
 
 });
@@ -157,6 +169,23 @@ onUnmounted(() => {
 
 
 <style scoped>
+#typewriter::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+
+  from,
+  to {
+    opacity: 1
+  }
+
+  50% {
+    opacity: 0
+  }
+}
+
 /* Slider Container */
 .slider__area {
   display: flex;
@@ -245,5 +274,4 @@ onUnmounted(() => {
 .overlay {
   position: relative;
 }
-
 </style>

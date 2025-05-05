@@ -5,22 +5,23 @@
     <div class="col-xl-12 mb-30">
         <div class="card card-statistics h-100">
             <div class="card-body">
-                <h5 class="card-title pb-0 border-0">Carousal</h5>
+                <h5 class="card-title pb-0 border-0">Carousel</h5>
                 <!-- action group -->
                 <div class="table-responsive">
-                    <table class="table center-aligned-table mb-0">
+                    <table id="slidesTable" class="table center-aligned-table mb-0 display">
                         <thead>
                             <tr class="text-dark">
+                                <th>#</th>
                                 <th>Image</th>
                                 <th>Added by</th>
                                 <th>Added On</th>
                                 <th>Status</th>
                                 <th>Action</th>
-
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(slide, index) in slides" :key="index">
+                            <tr v-for="(slide, index) in slides" :key="slide.id">
+                                <td>{{ index + 1 }}</td>
                                 <td>
                                     <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
                                         alt="Slide Image">
@@ -33,7 +34,6 @@
                                     </label>
                                 </td>
                                 <td>
-
                                     <div class="checkbox checbox-switch switch-success">
                                         <label>
                                             <input type="checkbox" :checked="slide.flag === 'A'"
@@ -41,11 +41,8 @@
                                             <span></span>
                                         </label>
                                     </div>
-                                    <!-- <i class="fas fa-trash-alt text-danger" @click="deleteSlide(slide.id)"></i> -->
-
                                 </td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -54,7 +51,7 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
@@ -63,10 +60,6 @@ const images = ref([]);
 const isDragging = ref(false);
 // fileInput.value = null;
 const slides = ref([]);
-
-const selectFile = () => {
-    fileInput.value.click();
-}
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -75,61 +68,8 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-const onFileSelect = (event) => {
-    debugger;
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
 
-        // Skip non-image files
-        if (!file || file.type.split('/')[0] !== 'image') continue;
-
-        // Avoid duplicates by file name
-        if (!images.value.some((e) => e.name === file.name)) {
-            const url = URL.createObjectURL(file);
-
-            images.value.push({
-                name: file.name,
-                file: file,
-                url: url, // This will be used to preview
-            });
-        }
-    }
-};
-
-const removeImage = (index) => {
-    images.value.splice(index, 1);
-};
-
-// console.log("RoleID" + role_id);
-const uploadImages = () => {
-    // Check if images array is empty or contains invalid entries
-    if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
-        toastr.error('Please select at least one valid image before uploading.');
-        return;
-    }
-    const formData = new FormData();
-    images.value.forEach((image) => {
-        formData.append('images[]', image.file, image.name);
-    });
-
-    axios.post('/api/upload_carousel', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
-        .then(response => {
-            fetchSlides();
-            console.log('Images uploaded successfully:', response.data);
-            toastr.success('Images uploaded successfully');
-            images.value = [];
-        })
-        .catch(error => {
-            console.error('Error uploading images:', error);
-        });
-};
 
 const deleteDBImage = (slide, index) => {
 
@@ -144,17 +84,23 @@ const deleteDBImage = (slide, index) => {
         });
 };
 
+
 const fetchSlides = async () => {
     try {
         const response = await axios.get('/get_carousel', {
-            params: { flag: 4 } //RoleID for Publisher
-        });
-        console.log(response.data);
-        slides.value = response.data;
+            params: { flag: 4 }
+        })
+        slides.value = response.data
+
+        await nextTick() // wait until DOM is updated
+        if ($.fn.dataTable.isDataTable('#slidesTable')) {
+            $('#slidesTable').DataTable().destroy()
+        }
+        $('#slidesTable').DataTable()
     } catch (error) {
-        console.error('Failed to fetch slides:', error);
+        console.error('Failed to fetch slides:', error)
     }
-};
+}
 const approveSlide = async (id, index) => {
     try {
         debugger;

@@ -150,7 +150,7 @@
         <Carousel></Carousel>
       </div>
       <!-- Statistic -->
-      <section class="features__area">
+      <section class="features__area"  v-if="currentId == '1'">
         <div class="container-fluid p-0">
           <div class="features__item-wrap">
             <div class="row g-0">
@@ -310,10 +310,10 @@
         <br>
       </div>
 
-      <section class="services-area services-bg position-relative" v-if="currentId == '1'">
+     
+      <section class="project__area-two" v-if="currentId == '1'">
         <Cards :language="language" />
-      </section>
-
+            </section>
       <!-- Home FAQs -->
       <section class="faqs__area-six" v-if="currentId == '1'">
         <div class="circle" data-parallax="{&quot;x&quot; : 100 , &quot;y&quot; : 100 }"

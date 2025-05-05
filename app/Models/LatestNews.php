@@ -23,7 +23,11 @@ class LatestNews extends Model
         'other_title',
         'page',
         'pagename',
-        'pagemenuid'
+        'pagemenuid',
+        'user_id',
+        'role_id',
+        'flag'
+		
 
     ];
 }
