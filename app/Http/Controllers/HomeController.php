@@ -631,11 +631,23 @@ class HomeController extends Controller
     //     // dd($data);
     //     return response()->json(['data' => $data]);
     // }
-    public function getLatestNews()
+    public function getLatestNews(Request $request)
     {
         // Get the current month
         $currentMonth = Carbon::now()->month; // Get the current month (1-12)
         $currentYear = Carbon::now()->year; // Get the current year (e.g. 2024)
+        $flag = $request->input('flag');
+        $user = Auth::user();
+
+        if ($flag == 'A') { //Approved{
+            return LatestNews::where('flag', 'A')->get();
+        } elseif ($flag == '4' && $user->role_id == $flag) {
+            return DB::table('latest_news as ln')
+            ->join('users as u', 'ln.user_id', '=', 'u.id')
+            ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file','ln.status','ln.flag','ln.type')
+            ->get();
+        }
+        
 
         // 1. Migrate old news to archive_news table (news not from the current month)
         $oldNews = DB::table('latest_news')
@@ -678,7 +690,18 @@ class HomeController extends Controller
             ->get();
 
         // Return the current month news as JSON response
-        return response()->json(['data' => $data]);
+        return response()->json($data);
+    }
+    public function approvedLatestNews(Request $request){
+        $request->validate([
+            'id' => 'required|exists:latest_news,id'
+        ]);
+    
+        $carousel = LatestNews::find($request->id);
+        $carousel->flag = 'A'; // Approve
+        $carousel->save();
+    
+        return response()->json(['success' => true, 'message' => 'Slide approved successfully']);
     }
 
     public function getParagraphs()

@@ -37,6 +37,8 @@ Route::get('/get_page_content/{menuId}', [HomeController::class, 'getPageContent
 Route::get('/page/{id}', [HomeController::class, 'index']);
 
 Route::get('/get_latest_news', action: [HomeController::class, 'getLatestNews']); //added by dev on 14/11/24
+Route::post('/approved_latestnews', action: [HomeController::class, 'approvedLatestNews']); //added by dev on 06/04/25
+
 Route::get('/get_paragraphs', action: [HomeController::class, 'getParagraphs']); //added by dev on 14/11/24
 Route::get('/get_cards', action: [HomeController::class, 'getCards']); //added by dev on 15/11/24
 Route::get('/get_footer', action: [HomeController::class, 'getFooter']); //added by dev on 19/11/24

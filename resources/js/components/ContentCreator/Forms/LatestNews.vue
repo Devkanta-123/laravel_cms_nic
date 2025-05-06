@@ -1,7 +1,5 @@
 <template>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
-        integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
-
+    
     <br>
 
     <div>
@@ -43,8 +41,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                </div>
-                                <div class="row">
+                            </div>
+                            <div class="row">
                                 <!-- File Upload (Shown only when showLinkInput is false) -->
                                 <div v-show="!showLinkInput" class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
                                     <label class="form-label" for="fileInput">File Upload</label>
@@ -85,34 +83,38 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
-                        <table class="table center-aligned-table mb-0" id="slidesTable">
+                        <table class="table center-aligned-table mb-0" id="latestNewsTable">
                             <thead>
                                 <tr class="text-dark">
-                                    <th>Image</th>
+                                    <th>Title</th>
                                     <th>Added On</th>
                                     <th>Status</th>
                                     <th>Action</th>
-
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(slide, index) in slides" :key="index">
+                                <tr v-for="(news, index) in latestnews" :key="index">
                                     <td>
-                                        <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
-                                            alt="Slide Image">
+                                        <a v-if="news.type === 'file'" :href="`/storage/${news.file}`"  target="_blank"
+                                            class="text-primary">
+                                            {{ news.title }}
+                                        </a>
+                                        <a v-else-if="news.type === 'link'" :href="news.link" target="_blank"
+                                            class="text-primary">
+                                            {{ news.title }}
+                                        </a>
+                                        <span v-else>{{ news.title }}</span>
                                     </td>
-                                    <td>{{ formatDate(slide.created_at) }}</td>
+                                    <td>{{ formatDate(news.created_at) }}</td>
                                     <td>
-                                        <label :class="slide.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ slide.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label :class="news.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
+                                            {{ news.flag === 'A' ? 'Approved' : 'Pending' }}
                                         </label>
                                     </td>
                                     <td>
-
-                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(slide.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(news.id)"></i>
                                     </td>
                                 </tr>
-
                             </tbody>
                         </table>
                     </div>
@@ -124,7 +126,7 @@
 
 </template>
 <script setup>
-import { ref ,onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
@@ -135,12 +137,20 @@ const link = ref('')
 const title = ref('')
 const titleK = ref('')
 const titleH = ref('')
-const latestnewsdata = ref('');
+const latestnews = ref([]);
 // Handle file change
 const handleFileChange = (e) => {
     file.value = e.target.files[0]
 }
 
+const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+};
 // Simple validation
 const validateInputs = () => {
     if (!title.value.trim()) return false
@@ -152,7 +162,7 @@ const validateInputs = () => {
 // Save function
 const saveLatestNews = () => {
     if (!validateInputs()) {
-        toastr.error('Please correct the errors before submitting.')
+        toastr.error('Please fill the required fields.')
         return
     }
     const formData = new FormData()
@@ -180,14 +190,25 @@ const saveLatestNews = () => {
         })
 }
 const fetchLatestNews = async () => {
-    debugger;
-  try {
-    const response = await axios.post('/api/get_latest_news'); 
-    latestnewsdata.value = response.data;
-    console.log("Latest News data" , response.data)
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
+    try {
+        const response = await axios.post('/api/get_latest_news');
+        latestnews.value = response.data;
+
+        await nextTick(); // Wait for DOM to update
+
+        // Destroy and reinitialize DataTable
+        if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+            $('#latestNewsTable').DataTable().destroy();
+        }
+        $('#latestNewsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+
+        console.log('Latest News data', response.data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
 };
 
 

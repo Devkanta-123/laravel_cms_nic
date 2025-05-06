@@ -105,10 +105,13 @@ const fetchLatestNews = async () => {
 
   loadingNews.value = true;
   try {
-    const response = await axios.get('/get_latest_news');
-    if (response.data && Array.isArray(response.data.data)) {
-      newsData.value = response.data.data;
-      sessionStorage.setItem('latestNews', JSON.stringify(response.data.data));
+    // const response = await axios.get('/get_latest_news');
+    const response = await axios.get('/get_latest_news', {
+      params: { flag: 'A' }
+    });
+    if (response.data && Array.isArray(response.data)) {
+      newsData.value = response.data;
+      sessionStorage.setItem('latestNews', JSON.stringify(response.data));
       sessionStorage.setItem('latestNewsTimestamp', now.toString());
     } else {
       console.error('Invalid data format');
