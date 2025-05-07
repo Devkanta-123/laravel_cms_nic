@@ -17,6 +17,7 @@ return new class extends Migration
             $table->bigInteger('page_section_id');
             $table->string('title');
             $table->text('description');
+            $table->text('new_description');
             $table->string('meta_title');
             $table->string('meta_description');
             $table->string('meta_keywords');

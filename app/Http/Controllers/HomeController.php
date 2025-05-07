@@ -213,11 +213,23 @@ class HomeController extends Controller
     {
         // Validate request
         $validatedData = $request->validate([
-            'content' => 'nullable|string', // Make content optional (nullable)
-            'menu' => 'required',
-            'page_section' => 'required',
-            'files.*' => 'file|mimes:jpeg,png,jpg,gif,pdf,docx|max:6144', // Max 6MB
+            'content' => 'nullable|string',
+            'menu' => 'required'
         ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        // Determine flag based on role_id
+        if ($user->role_id == 2) {
+            $flag = 'A'; // Admin save
+        } elseif ($user->role_id == 3) {
+            $flag = 'N'; // New content by creator
+        } else {
+            return response()->json(['message' => 'Invalid role'], 403);
+        }
 
         $content = $request->content ?? '';
 
@@ -225,41 +237,19 @@ class HomeController extends Controller
         $paragraph = Paragraph::updateOrCreate(
             [
                 'menu_id' => $request->menu,
-                'page_section_id' => $request->page_section,
+                'page_section_id' => $request->menu,
             ],
             [
                 'title' => '',
-                'description' => $content, // Store default content
+                'description' => $content,
                 'hindi_description' => '',
                 'khasi_description' => '',
-                'status' => "1"
+                'status' => "1",
+                'flag' => $flag,
+                'user_id' => $user->id,
+                'role_id' => $user->role_id
             ]
         );
-
-        // Define storage folder
-        $folderPath = 'paragraph_component'; // Storage in storage/app/public/paragraph_component/
-
-        // Ensure the folder exists
-        Storage::disk('public')->makeDirectory($folderPath);
-
-        // Handle multiple file uploads
-        $uploadedFiles = $request->file('files');
-        $filePaths = [];
-
-        if ($uploadedFiles) {
-            foreach ($uploadedFiles as $file) {
-                // Store file and get the path
-                $filePath = $file->store($folderPath, 'public');
-                $filePaths[] = $filePath; // Store only the file path
-            }
-        }
-
-        // Append file paths to description if files exist
-        if (!empty($filePaths)) {
-            $existingContent = $paragraph->description ? $paragraph->description . ',' : '';
-            $paragraph->description = $existingContent . implode(',', $filePaths);
-            $paragraph->save();
-        }
 
         return response()->json([
             'success' => true,
@@ -267,6 +257,60 @@ class HomeController extends Controller
             'data' => $paragraph
         ]);
     }
+
+
+
+    public function updateContent(Request $request)
+    {
+        $request->validate([
+            'menu' => 'required|integer',
+            'content' => 'required|string'
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $page = Paragraph::where('menu_id', $request->menu)->first();
+        if (!$page) {
+            return response()->json(['message' => 'Content not found'], 404);
+        }
+
+        // Determine flag based on role_id
+        if ($user->role_id == 2) {
+            $flag = 'A'; // Admin update - auto approved
+        } elseif ($user->role_id == 3) {
+            $flag = 'U'; // Content creator update - mark for review/update
+        } else {
+            return response()->json(['message' => 'Invalid role'], 403);
+        }
+
+        $page->new_description = $request->content; // Use correct column (you were using 'content' but saveContent uses 'description')
+        $page->flag = $flag;
+        $page->user_id = $user->id;
+        $page->role_id = $user->role_id;
+        $page->save();
+
+        return response()->json(['message' => 'Content updated successfully']);
+    }
+
+    // public function approvedParagraph(){
+    //     $user = Auth::user();
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Unauthorized'], 401);
+    //     }
+
+       
+
+    //     $page->new_description = $request->content; // Use correct column (you were using 'content' but saveContent uses 'description')
+    //     $page->flag = $flag;
+    //     $page->user_id = $user->id;
+    //     $page->role_id = $user->role_id;
+    //     $page->save();
+
+    //     return response()->json(['message' => 'Content updated successfully']);
+    // }
 
     public function saveContentWebsite(Request $request)
     {
@@ -643,11 +687,11 @@ class HomeController extends Controller
             return LatestNews::where('flag', 'A')->get();
         } elseif ($flag == '4' && $user->role_id == $flag) {
             return DB::table('latest_news as ln')
-            ->join('users as u', 'ln.user_id', '=', 'u.id')
-            ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file','ln.status','ln.flag','ln.type')
-            ->get();
+                ->join('users as u', 'ln.user_id', '=', 'u.id')
+                ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type')
+                ->get();
         }
-        
+
 
         // 1. Migrate old news to archive_news table (news not from the current month)
         $oldNews = DB::table('latest_news')
@@ -692,15 +736,16 @@ class HomeController extends Controller
         // Return the current month news as JSON response
         return response()->json($data);
     }
-    public function approvedLatestNews(Request $request){
+    public function approvedLatestNews(Request $request)
+    {
         $request->validate([
             'id' => 'required|exists:latest_news,id'
         ]);
-    
+
         $carousel = LatestNews::find($request->id);
         $carousel->flag = 'A'; // Approve
         $carousel->save();
-    
+
         return response()->json(['success' => true, 'message' => 'Slide approved successfully']);
     }
 
@@ -836,7 +881,8 @@ class HomeController extends Controller
                 'hindi_content' => $page->hindi_description,
                 'khasi_title' => $page->khasi_title,
                 'khasi_content' => $page->khasi_description,
-
+                'flag' => $page->flag,
+                'userid' => $page->user_id
             ]);
         }
 
@@ -845,6 +891,17 @@ class HomeController extends Controller
             'content' => 'The content for this page is not available.',
         ], 404);
     }
+
+    public function getPageContentByPublisher()
+{
+    $paragraphs = DB::table('paragraph as ph')
+        ->join('users as u', 'u.id', '=', 'ph.user_id')
+        ->select('ph.*', 'u.name as addedby')
+        ->get();
+
+    return response()->json($paragraphs);
+}
+
 
     public function getNewsLetter()
     {

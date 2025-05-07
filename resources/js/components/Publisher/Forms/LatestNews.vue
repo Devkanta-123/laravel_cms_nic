@@ -1,11 +1,6 @@
 <template>
-
-
     <br>
-
     <div>
-      
-
         <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">

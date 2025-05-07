@@ -29,7 +29,17 @@
                             class="img-circle elevation-2" alt="User Image">
                     </div>
                     <div class="info">
-                        <a href="#" class="d-block">{{ user && user.name ? user.name : '' }}</a>
+                        <a href="#" class="d-block">{{ user && user.name ? user.name : '' }}
+                            <br>
+                            <span>
+                                (
+                                {{ user && user.role_id === 1 ? 'Super Admin' :
+                                    user && user.role_id === 2 ? 'Admin' :
+                                        user && user.role_id === 3 ? 'Content Creator' :
+                                            user && user.role_id === 4 ? 'Publisher' : '' }}
+                                )
+                            </span>
+                        </a>
                     </div>
                 </div>
 
@@ -146,8 +156,8 @@
                                 </p>
                             </router-link>
                         </li>
-                         <!-- Content Creator -->
-                         <li class="nav-item" v-if="role == 3">
+                        <!-- Content Creator -->
+                        <li class="nav-item" v-if="role == 3">
                             <router-link to="/contentcreator/dashboard" active-class="active" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>
@@ -156,9 +166,10 @@
                                 </p>
                             </router-link>
                         </li>
-                         <li class="nav-item" v-if="role == 3">
+                        <li class="nav-item" v-if="role == 3">
                             <router-link to="/contentcreator/pages"
-                                :class="$route.path.startsWith('/contentcreator/pages') ? 'active' : ''" class="nav-link">
+                                :class="$route.path.startsWith('/contentcreator/pages') ? 'active' : ''"
+                                class="nav-link">
                                 <i class="nav-icon fas fa-list"></i>
                                 <p>
                                     Pages
@@ -167,18 +178,20 @@
                         </li>
                         <li class="nav-item" v-if="role == 3">
                             <router-link to="/contentcreator/menu"
-                                :class="$route.path.startsWith('/contentcreator/menu') ? 'active' : ''" class="nav-link">
+                                :class="$route.path.startsWith('/contentcreator/menu') ? 'active' : ''"
+                                class="nav-link">
                                 <i class="nav-icon fas fa-list"></i>
                                 <p>
                                     Menu
                                 </p>
                             </router-link>
                         </li>
-                        
+
                         <!-- Publisher -->
                         <li class="nav-item" v-if="role == 4">
                             <router-link to="/publisher/dashboard"
-                                :class="$route.path.startsWith('/publisher/dashboard') ? 'active' : ''" class="nav-link">
+                                :class="$route.path.startsWith('/publisher/dashboard') ? 'active' : ''"
+                                class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>
                                     Dashboard

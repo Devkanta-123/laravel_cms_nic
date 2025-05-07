@@ -33,6 +33,8 @@ Route::get('get_logo', [HomeController::class, 'getLogo']);
 Route::get('get_website_description', [HomeController::class, 'getWebsiteDescription']);
 
 Route::get('/get_page_content/{menuId}', [HomeController::class, 'getPageContent']);
+Route::get('/get_page_content_bypublisher', [HomeController::class, 'getPageContentByPublisher']);
+Route::post('/approved_paragraph', [HomeController::class, 'approvedParagraph']);
 
 Route::get('/page/{id}', [HomeController::class, 'index']);
 
@@ -144,6 +146,7 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/get_page_details/{menu}', [PagesController::class, 'get_page_details']);
 
     Route::post('/api/save-content', [HomeController::class, 'saveContent']);
+    Route::put('/api/update-content', [HomeController::class, 'updateContent']);
 
     //Main Component: header and footer
 

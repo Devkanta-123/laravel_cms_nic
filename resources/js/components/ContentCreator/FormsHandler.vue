@@ -18,6 +18,7 @@ const props = defineProps(['menuId', 'menuName'])
 
 import Carousal from './Forms/Carousal.vue'
 import LatestNews from './Forms/LatestNews.vue'
+import Paragraph from './Forms/Paragraph.vue'
 // Add more page imports here
 
 // Dynamically resolve the component to load based on menuName
@@ -28,6 +29,8 @@ const currentComponent = computed(() => {
       return Carousal
     case 'latest news':
       return LatestNews
+    case 'paragraph':
+      return Paragraph
 
     // Add more cases here:
     // case 'gallery': return Gallery

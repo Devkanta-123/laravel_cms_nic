@@ -22,7 +22,11 @@ class Paragraph extends Model
         'description',
         'hindi_description',
         'khasi_description',
+        'new_description',
         'status',
+        'flag',
+        'user_id',
+        'role_id'
     ];
 
 }
