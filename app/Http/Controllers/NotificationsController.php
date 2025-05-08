@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Notifications;
 use App\Models\CategoryMaster;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon; // Make sure this is imported
+
 class NotificationsController extends Controller
 {
     public function index()
@@ -27,6 +30,22 @@ class NotificationsController extends Controller
             'file.*.*' => 'required|mimes:pdf', // 6 MB max file size
         ]);
 
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+
+        // Determine flag based on role_id
+        if ($user->role_id == 2) {
+            $flag = 'A'; // Admin update - auto approved
+        } elseif ($user->role_id == 3) {
+            $flag = 'U'; // Content creator update - mark for review/update
+        } else {
+            return response()->json(['message' => 'Invalid role'], 403);
+        }
+
         // Process each row
         foreach ($request->title as $index => $title) {
             // Check if files exist for this row
@@ -41,6 +60,9 @@ class NotificationsController extends Controller
                         'title' => $title,
                         'date' => $request->date[$index],
                         'file' => $filePath,
+                        'user_id' => $user->id,
+                        'flag' => $flag,
+                        'role_id' => $user->role_id
                     ]);
                 }
             } else {
@@ -50,6 +72,9 @@ class NotificationsController extends Controller
                     'title' => $title,
                     'date' => $request->date[$index],
                     'file' => null, // No file uploaded
+                    'user_id' => $user->id,
+                    'flag' => $flag,
+                    'role_id' => $user->role_id
                 ]);
             }
         }
@@ -57,11 +82,61 @@ class NotificationsController extends Controller
         return response()->json(['message' => 'Notifications save successfully'], 201);
     }
 
-    public function getAllNotifications()
+    public function getAllNotifications(Request $request)
     {
-        $notifications = Notifications::all();
+        $user = Auth::user();
+        // if (!$user) {
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
+
+        $flag = $request->query('flag');
+
+        // If flag=A is explicitly passed, return only approved notifications
+        if ($flag === 'A') {
+            $notifications = Notifications::where('flag', 'A')->get();
+            return response()->json($notifications, 200);
+        }
+
+        // Role-based logic
+        if ($user->role_id == 2) {
+            // Admin - all notifications
+            $notifications = Notifications::all();
+        } elseif (in_array($user->role_id, [3, 4])) {
+            // Content Creator and Publisher
+            $notifications = DB::select("
+                SELECT ns.*, cm.category_name, u.name as addedby 
+                FROM notifications ns
+                INNER JOIN category_master cm ON cm.id = ns.category_id
+                INNER JOIN users u ON u.id = ns.user_id
+            ");
+        } else {
+            return response()->json(['message' => 'Invalid role'], 403);
+        }
+
         return response()->json($notifications, 200);
     }
+
+
+    public function approveNoticeBoard(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:notifications,id',
+        ]);
+
+        $updated = DB::table('notifications')
+            ->where('id', $request->id)
+            ->update([
+                'flag' => 'A',
+                'updated_at' => Carbon::now()
+            ]);
+
+        if ($updated) {
+            return response()->json(['message' => 'Notice approved successfully.'], 200);
+        } else {
+            return response()->json(['message' => 'Approval failed or already approved.'], 400);
+        }
+    }
+
     public function getNotificationsByCategory($category_name)
     {
         // First, check if the category name exists and get its ID
@@ -76,18 +151,20 @@ class NotificationsController extends Controller
         }
     }
 
-    public function getNotificationsForCurrentMonth()
-    {
-        $notifications = Notifications::whereMonth('date', date('m'))->get();
-        return response()->json($notifications, 200);
-    }
+   public function getNotificationsForCurrentMonth(Request $request)
+{
+    $flag = $request->query('flag', 'A'); // default to 'A'
+
+    $notifications = Notifications::whereMonth('date', date('m'))
+                                   ->where('flag', $flag)
+                                   ->get();
+
+    return response()->json($notifications, 200);
+}
+
     public function getRecruitmentsForCurrentMonth()
     {
         $notifications = Notifications::where('category_id', 3)->whereMonth('date', date('m'))->get();
         return response()->json($notifications, 200);
     }
-    
-  
-
-
 }

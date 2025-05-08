@@ -260,7 +260,7 @@ class HomeController extends Controller
 
 
 
-    public function updateContent(Request $request)
+    public function updateContent(Request $request) //Paragraph Content
     {
         $request->validate([
             'menu' => 'required|integer',
@@ -295,22 +295,7 @@ class HomeController extends Controller
         return response()->json(['message' => 'Content updated successfully']);
     }
 
-    // public function approvedParagraph(){
-    //     $user = Auth::user();
-    //     if (!$user) {
-    //         return response()->json(['message' => 'Unauthorized'], 401);
-    //     }
 
-       
-
-    //     $page->new_description = $request->content; // Use correct column (you were using 'content' but saveContent uses 'description')
-    //     $page->flag = $flag;
-    //     $page->user_id = $user->id;
-    //     $page->role_id = $user->role_id;
-    //     $page->save();
-
-    //     return response()->json(['message' => 'Content updated successfully']);
-    // }
 
     public function saveContentWebsite(Request $request)
     {
@@ -683,7 +668,7 @@ class HomeController extends Controller
         $flag = $request->input('flag');
         $user = Auth::user();
 
-        if ($flag == 'A') { //Approved{
+            if ($flag == 'A') { //Approved{
             return LatestNews::where('flag', 'A')->get();
         } elseif ($flag == '4' && $user->role_id == $flag) {
             return DB::table('latest_news as ln')
@@ -901,6 +886,45 @@ class HomeController extends Controller
 
     return response()->json($paragraphs);
 }
+
+public function approvedParagraph(Request $request)
+{
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    $request->validate([
+        'id' => 'required|exists:paragraph,id',
+    ]);
+
+    // Get the paragraph record
+    $paragraph = Paragraph::find($request->id);
+
+    if (!$paragraph) {
+        return response()->json(['message' => 'Paragraph not found'], 404);
+    }
+
+    // Store old description (optional)
+    $oldDescription = $paragraph->description;
+
+    // Only update if new_description is not null
+    if (!is_null($paragraph->new_description)) {
+        $paragraph->description = $paragraph->new_description;
+        $paragraph->new_description = null; // Clear after updating
+    }
+
+    // Update flag regardless
+    $paragraph->flag = 'A';
+    $paragraph->save();
+
+    return response()->json([
+        'message' => 'Paragraph approved successfully',
+        'old_description' => $oldDescription,
+        'updated_description' => $paragraph->description,
+    ]);
+}
+
 
 
     public function getNewsLetter()

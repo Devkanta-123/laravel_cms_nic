@@ -52,6 +52,7 @@ Route::get('/get_newsletter_detail/{newsId}', [HomeController::class, 'getNewsLe
 Route::get('/get_card_detail/{cardId}', [HomeController::class, 'getCardDetail']);
 Route::get('/get_paragraph_ByCardID/{cardId}', [HomeController::class, 'getparagraphByCardID']);
 Route::get('/get_notifications', action: [NotificationsController::class, 'getAllNotifications']);
+Route::put('/approved_noticeboard', action: [NotificationsController::class, 'approveNoticeBoard']); //adde by Dev on 08/05/25
 Route::get('/get_notificationsforcurrentmonth', action: [NotificationsController::class, 'getNotificationsForCurrentMonth']);
 Route::get('/get_recruitmentsforcurrentmonth', action: [NotificationsController::class, 'getRecruitmentsForCurrentMonth']);
 Route::get('/get_notificationbycategory/{pagename}', action: [NotificationsController::class, 'getNotificationsByCategory']);

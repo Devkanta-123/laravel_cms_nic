@@ -46,7 +46,7 @@
                                             <label>
                                                 <input type="checkbox" :checked="para.flag === 'A'"
                                                     :disabled="para.flag === 'A'"
-                                                    @change="approveParagraph(para.id, index)">
+                                                    @change="approveContent(para.id, index)">
                                                 <span></span>
                                             </label>
                                         </div>
@@ -127,12 +127,13 @@ const fetchPageContent = async () => {
 
 
 
-const approveParagraph = async (id, index) => {
+const approveContent = async (id, index) => {
     try {
         debugger;
         const response = await axios.post('/approved_paragraph', { id });
-        if (response.data.success) {
+        if (response) {
             paragraphData.value[index].flag = 'A'; // update UI immediately
+            fetchPageContent();
             toastr.success('Approved successfully');
         }
     } catch (error) {

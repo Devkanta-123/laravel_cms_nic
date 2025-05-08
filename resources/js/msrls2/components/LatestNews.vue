@@ -151,9 +151,11 @@ const getLatestNewsTitle = (newsItem) => {
 
 // Method to open the news item based on its type (link or file)
 const openNews = (item) => {
-  if (item.file) {
-    const filePath = '/storage/' + item.file.replace('public/', '');  // Build file URL based on Laravel's storage path
-    window.open(filePath, '_blank');  // Open the file in a new tab
+  if (item.link) {
+    window.open(item.link, '_blank');
+  } else if (item.file) {
+    const filePath = '/storage/' + item.file.replace('public/', '');
+    window.open(filePath, '_blank');
   }
 }
 

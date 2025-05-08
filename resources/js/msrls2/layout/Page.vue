@@ -141,7 +141,9 @@ const fetchPageContent = async () => {
                     break;
 
                 case "Notice Board":
-                    response = await axios.get(`/get_notifications`);
+                    // response = await axios.get(`/get_notifications`);
+                     response = await axios.get('/get_notifications', {params: { flag: 'A' }});
+
                     noticeboarddata.value = response.data;
                     console.log("Notice Board Data:", noticeboarddata.value);
                     break;
