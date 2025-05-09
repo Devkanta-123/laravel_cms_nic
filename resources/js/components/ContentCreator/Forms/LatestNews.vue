@@ -182,6 +182,7 @@ const saveLatestNews = () => {
         },
     })
         .then((response) => {
+            fetchLatestNews();
             toastr.success(response.data.message || 'News saved successfully.')
         })
         .catch((error) => {

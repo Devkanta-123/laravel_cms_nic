@@ -151,6 +151,7 @@ const approveLatestNews = async (id, index) => {
         const response = await axios.post('/approved_latestnews', { id });
         if (response.data.success) {
             latestnews.value[index].flag = 'A'; // update UI immediately
+            fetchLatestNews();
             toastr.success('Approved successfully');
         }
     } catch (error) {

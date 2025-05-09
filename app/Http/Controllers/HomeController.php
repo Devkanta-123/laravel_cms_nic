@@ -579,77 +579,88 @@ class HomeController extends Controller
     }
     //save Cards to database
     public function save_card(Request $request)
-    {
-        // Start the database transaction
-        DB::beginTransaction();
+{
+    DB::beginTransaction();
+    $user = Auth::user();
 
-        // Validate the incoming request data
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    // Determine flag based on role_id
+    if ($user->role_id == 2) {
+        $flag = 'A';
+    } elseif ($user->role_id == 3) {
+        $flag = 'N';
+    }
+
+    // Basic validation
+    $request->validate([
+        'card_title' => 'required|string',
+    ]);
+
+    // Validate file if it exists
+    if ($request->hasFile('file')) {
         $request->validate([
-            'card_title' => 'required|string',
+            'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240',
+        ]);
+    }
+
+    // Handle image upload
+    if ($request->image) {
+        $folderPath = storage_path('app/public/cards');
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+        $filename = time() . '-' . $request->image->getClientOriginalName();
+        $path = $request->image->storeAs('cards', $filename, 'public');
+        $type = "file";
+    } else {
+        $path = $filename = "";
+        $type = "link";
+    }
+
+    // Determine order value
+    $order = $request->order;
+    if (empty($order)) {
+        $latestOrder = Cards::max('order');
+        $order = $latestOrder ? $latestOrder + 1 : 1;
+    }
+
+    try {
+        Cards::create([
+            'card_title' => $request->card_title,
+            'card_description' => $request->card_description,
+            'image' => $path,
+            'more_link' => $request->more_link,
+            'type' => $type,
+            'order' => $order,
+            'status' => 1,
+            'menu_id' => $request->menu ?? 1,
+            'page_section_id' => $request->page_section ?? 1,
+            'hindi_title' => $request->hindi_title,
+            'khasi_title' => $request->khasi_title,
+            'other_title' => $request->other_title,
+            'hindi_description' => $request->hindi_description,
+            'khasi_description' => $request->khasi_description,
+            'other_description' => $request->other_description,
+            'flag' => $flag,
+            'user_id' => $user->id,
+            'role_id' => $user->role_id
         ]);
 
-        // Validate the file if it exists in the request
-        if ($request->hasFile('file')) {
-            $request->validate([
-                'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240', // 10 MB max
-            ]);
-        }
-
-        // Check if there is an image in the request
-        if ($request->image) {
-            // Define the folder path where the images will be stored
-            $folderPath = storage_path('app/public/cards');
-
-            // Check if the folder exists, if not create it with full permissions (0777)
-            if (!file_exists($folderPath)) {
-                mkdir($folderPath, 0777, true); // Create the directory with full permissions
-            }
-
-            // Set the filename and store the image
-            $filename = time() . '-' . $request->image->getClientOriginalName();
-            $path = $request->image->storeAs('cards', $filename, 'public');
-            $type = "file";
-        } else {
-            // If no image is provided, set the default values
-            $path = $filename = "";
-            $type = "link";
-        }
-
-        try {
-            // Insert the card data into the database
-            Cards::create([
-                'card_title' => $request->card_title,
-                'card_description' => $request->card_description,
-                'image' => $path,  //$filename
-                'more_link' => $request->more_link,
-                'type' => $type,
-                'order' => $request->order,
-                'status' => 1,
-                'menu_id' => 1,
-                'page_section_id' => 1,
-                'hindi_title' => $request->hindi_title,
-                'khasi_title' => $request->khasi_title,
-                'other_title' => $request->other_title,
-                'hindi_description' => $request->hindi_description,
-                'khasi_description' => $request->khasi_description,
-                'other_description' => $request->other_description
-            ]);
-
-            // Commit the transaction
-            DB::commit();
-        } catch (\Exception $e) {
-            // If an error occurs, rollback the transaction
-            DB::rollBack();
-            // Handle the exception by logging or returning an error response
-            return response()->json([
-                'title' => 'Some Error Occurred',
-                'content' => $e->getMessage(),
-            ], 500);
-        }
-
-        // Return a success response
-        return response()->json(['message' => 'New Cards added successfully']);
+        DB::commit();
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'title' => 'Some Error Occurred',
+            'content' => $e->getMessage(),
+        ], 500);
     }
+
+    return response()->json(['message' => 'New Cards added successfully']);
+}
+
 
 
     // public function getLatestNews()
@@ -740,12 +751,50 @@ class HomeController extends Controller
             ->get();
         return response()->json(['data' => $data]);
     }
-    public function getCards()
+    public function getCards(Request $request)
     {
-        $data = DB::table('cards')
-            ->get();
+        $flag = $request->input('flag');
+        $user = Auth::user();
+    
+        if ($user && in_array($user->role_id, [3, 4])) {
+            // Return cards joined with users if role_id is 3 or 4
+            $data = DB::table('cards as c')
+                ->join('users as u', 'u.id', '=', 'c.user_id')
+                ->select('c.*', 'u.name as addedby')
+                ->get();
+    
+            return response()->json(['data' => $data]);
+        }
+    
+        if ($flag === 'A') {
+            // Return only approved cards
+            $data = Cards::where('flag', 'A')->get();
+            return response()->json(['data' => $data]);
+        }
+    
+        // Default: return all cards
+        $data = DB::table('cards')->get();
         return response()->json(['data' => $data]);
     }
+     public function approveCards(Request $request){
+         $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        $request->validate([
+            'id' => 'required|exists:cards,id'
+        ]);
+
+        $cards = Cards::find($request->id);
+        $cards->flag = 'A'; // Approve
+        $cards->save();
+
+        return response()->json(['success' => true, 'message' => 'Approved successfully']);
+     }
+
+
+
+
     //get footer
     public function getFooter()
     {
@@ -993,5 +1042,10 @@ public function approvedParagraph(Request $request)
         }
 
         return response()->json(['message' => 'Logo uploaded successfully', 'filenames' => $uploadedImages]);
+    }
+
+    public function getAllPageMenu()
+    {
+        return Menu::where('menu_master', 4)->get();
     }
 }

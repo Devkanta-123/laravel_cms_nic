@@ -135,6 +135,7 @@ const removeImage = (index) => {
 
 // console.log("RoleID" + role_id);
 const uploadImages = () => {
+    debugger;
     // Check if images array is empty or contains invalid entries
     if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
         toastr.error('Please select at least one  image before uploading.');
@@ -151,8 +152,8 @@ const uploadImages = () => {
         }
     })
         .then(response => {
-            fetchSlides();
             console.log('Images uploaded successfully:', response.data);
+            fetchSlides();
             toastr.success('Images uploaded successfully');
             images.value = [];
         })

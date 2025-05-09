@@ -20,11 +20,10 @@ import Carousal from './Forms/Carousal.vue'
 import LatestNews from './Forms/LatestNews.vue'
 import Paragraph from './Forms/Paragraph.vue'
 import NoticeBoard from './Forms/NoticeBoard.vue'
-// Add more page imports here
+import Cards from './Forms/Cards.vue'
 
 // Dynamically resolve the component to load based on menuName
 const currentComponent = computed(() => {
-  debugger;
   switch (props.menuName?.toLowerCase()) {
     case 'carousel':
       return Carousal
@@ -34,7 +33,8 @@ const currentComponent = computed(() => {
       return Paragraph
     case 'notice board':
       return NoticeBoard
-
+    case 'cards':
+      return Cards
 
     // Add more cases here:
     // case 'gallery': return Gallery

@@ -65,7 +65,9 @@ const fetchCards = async () => {
   // If cache is invalid or expired, fetch new data from API
   loadingCards.value = true;
   try {
-    const response = await axios.get("/get_cards"); // Replace with your correct API endpoint
+    const response = await axios.get('/get_cards', {
+      params: { flag: 'A' }
+    });
     console.log("Fetched Cards:", response.data.data);
 
     if (response.data && Array.isArray(response.data.data)) {
