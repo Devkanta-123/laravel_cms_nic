@@ -84,7 +84,10 @@ const getGalleries = async () => {
 
   // Cache is either not found or expired, so fetch from API
   try {
-    const response = await axios.get("/get_galleries");  // Replace with your correct API endpoint
+    const response = await axios.get('/get_galleries', {
+      params: { flag: 'A' }
+    });
+
 
     // Process images and convert them to Base64
     const galleryDataWithBase64Images = await Promise.all(

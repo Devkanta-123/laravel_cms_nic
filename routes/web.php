@@ -46,6 +46,7 @@ Route::get('/get_cards', action: [HomeController::class, 'getCards']); //added b
 Route::put('/approved_cards', action: [HomeController::class, 'approveCards']); //added by dev on 09/05/25
 Route::get('/get_footer', action: [HomeController::class, 'getFooter']); //added by dev on 19/11/24
 Route::get('/get_galleries', action: [HomeController::class, 'getGalleries']); //added by dev on 22/11/24
+Route::post('/approved_gallery', action: [HomeController::class, 'approveGallery']); //added by dev on 22/11/24
 Route::get('/get_newsletter', action: [HomeController::class, 'getNewsLetter']); //added by dev on 04/12/24
 Route::get('/get_allpagemenu', action: [HomeController::class, 'getAllPageMenu']); //added by dev on 09/05/25
 // In routes/web.php or routes/api.php, depending on your setup

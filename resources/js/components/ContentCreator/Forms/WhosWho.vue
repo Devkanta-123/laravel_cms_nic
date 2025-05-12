@@ -66,7 +66,7 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
 import axios from 'axios';
-import { useToastr } from '../../toaster.js';
+import { useToastr } from '../../../toaster.js';
 
 // Initialize required references
 const imagePreview = ref(null); // Stores preview URL

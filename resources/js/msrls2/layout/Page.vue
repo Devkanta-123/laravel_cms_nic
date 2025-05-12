@@ -136,13 +136,15 @@ const fetchPageContent = async () => {
             // Otherwise, process based on pageName
             switch (pageName.value) {
                 case "Gallery":
-                    response = await axios.get(`/get_galleries`);
+                    response = await axios.get('/get_galleries', {
+                        params: { flag: 'A' }
+                    });
                     gallerydata.value = response.data.length > 0 ? response.data : [];
                     break;
 
                 case "Notice Board":
                     // response = await axios.get(`/get_notifications`);
-                     response = await axios.get('/get_notifications', {params: { flag: 'A' }});
+                    response = await axios.get('/get_notifications', { params: { flag: 'A' } });
 
                     noticeboarddata.value = response.data;
                     console.log("Notice Board Data:", noticeboarddata.value);

@@ -69,7 +69,6 @@ const fetchCards = async () => {
       params: { flag: 'A' }
     });
     console.log("Fetched Cards:", response.data.data);
-
     if (response.data && Array.isArray(response.data.data)) {
       // Process the fetched data and map the image URLs
       const cardData = await Promise.all(

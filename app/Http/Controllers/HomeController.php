@@ -21,7 +21,6 @@ use App\Models\PageSectionMaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
 class HomeController extends Controller
 {
     public function index()
@@ -437,6 +436,17 @@ class HomeController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
         ]);
 
+        $user = Auth::user(); // This will get the authenticated user
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        //before submit check roleid and set flag value
+        // Determine flag based on role_id
+        if ($user->role_id == 2) { //if admin upload 
+            $flag = 'A';
+        } elseif ($user->role_id == 3) { //if contentcreator upload
+            $flag = 'N';
+        }
         $galleryName = $request->input('gallery_name');
         $galleryDescription = $request->input('gallery_description');
 
@@ -462,7 +472,10 @@ class HomeController extends Controller
                     'order' => 1,
                     'status' => 1,
                     'gallery_description' => $galleryDescription,
-                    'gallery_name' => $galleryName // Assuming you have a 'gallery_name' field in your Gallery model
+                    'gallery_name' => $galleryName,
+                    'user_id' => $user->id,
+                    'role_id' => $user->role_id,
+                    'flag' => $flag
                 ]);
             }
         }
@@ -470,10 +483,41 @@ class HomeController extends Controller
         return response()->json(['message' => 'Gallery Images uploaded successfully', 'filenames' => $uploadedImages]);
     }
     //get galleries
-    public function getGalleries()
-    {
+   public function getGalleries(Request $request)
+{
+    $flag = $request->query('flag') ?? $request->input('flag');
+
+    $user = Auth::user();
+
+    if ($flag === 'A') {
+        $data = Gallery::where('flag', 'A')->get();
+        return response()->json( $data);
+    }
+
+    if ($user->role_id == 2) {
         $galleries = Gallery::all();
-        return response()->json($galleries);
+    } elseif (in_array($user->role_id, [3, 4])) {
+        $galleries = DB::table('gallery as g')
+            ->join('users as u', 'u.id', '=', 'g.user_id')
+            ->select('g.*', 'u.name as addedby')
+            ->get();
+    } else {
+        $galleries = [];
+    }
+
+    return response()->json($galleries);
+}
+
+    public function approveGallery(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:gallery,id'
+        ]);
+        $carousel = Gallery::find($request->id);
+        $carousel->flag = 'A'; // Approve
+        $carousel->save();
+        return response()->json(['success' => true, 'message' => 'Gallery approved successfully']);
+
     }
 
     //delete gallery image
@@ -579,87 +623,87 @@ class HomeController extends Controller
     }
     //save Cards to database
     public function save_card(Request $request)
-{
-    DB::beginTransaction();
-    $user = Auth::user();
+    {
+        DB::beginTransaction();
+        $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'Unauthorized'], 401);
-    }
-
-    // Determine flag based on role_id
-    if ($user->role_id == 2) {
-        $flag = 'A';
-    } elseif ($user->role_id == 3) {
-        $flag = 'N';
-    }
-
-    // Basic validation
-    $request->validate([
-        'card_title' => 'required|string',
-    ]);
-
-    // Validate file if it exists
-    if ($request->hasFile('file')) {
-        $request->validate([
-            'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240',
-        ]);
-    }
-
-    // Handle image upload
-    if ($request->image) {
-        $folderPath = storage_path('app/public/cards');
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0777, true);
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
-        $filename = time() . '-' . $request->image->getClientOriginalName();
-        $path = $request->image->storeAs('cards', $filename, 'public');
-        $type = "file";
-    } else {
-        $path = $filename = "";
-        $type = "link";
-    }
 
-    // Determine order value
-    $order = $request->order;
-    if (empty($order)) {
-        $latestOrder = Cards::max('order');
-        $order = $latestOrder ? $latestOrder + 1 : 1;
-    }
+        // Determine flag based on role_id
+        if ($user->role_id == 2) {
+            $flag = 'A';
+        } elseif ($user->role_id == 3) {
+            $flag = 'N';
+        }
 
-    try {
-        Cards::create([
-            'card_title' => $request->card_title,
-            'card_description' => $request->card_description,
-            'image' => $path,
-            'more_link' => $request->more_link,
-            'type' => $type,
-            'order' => $order,
-            'status' => 1,
-            'menu_id' => $request->menu ?? 1,
-            'page_section_id' => $request->page_section ?? 1,
-            'hindi_title' => $request->hindi_title,
-            'khasi_title' => $request->khasi_title,
-            'other_title' => $request->other_title,
-            'hindi_description' => $request->hindi_description,
-            'khasi_description' => $request->khasi_description,
-            'other_description' => $request->other_description,
-            'flag' => $flag,
-            'user_id' => $user->id,
-            'role_id' => $user->role_id
+        // Basic validation
+        $request->validate([
+            'card_title' => 'required|string',
         ]);
 
-        DB::commit();
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'title' => 'Some Error Occurred',
-            'content' => $e->getMessage(),
-        ], 500);
-    }
+        // Validate file if it exists
+        if ($request->hasFile('file')) {
+            $request->validate([
+                'file' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240',
+            ]);
+        }
 
-    return response()->json(['message' => 'New Cards added successfully']);
-}
+        // Handle image upload
+        if ($request->image) {
+            $folderPath = storage_path('app/public/cards');
+            if (!file_exists($folderPath)) {
+                mkdir($folderPath, 0777, true);
+            }
+            $filename = time() . '-' . $request->image->getClientOriginalName();
+            $path = $request->image->storeAs('cards', $filename, 'public');
+            $type = "file";
+        } else {
+            $path = $filename = "";
+            $type = "link";
+        }
+
+        // Determine order value
+        $order = $request->order;
+        if (empty($order)) {
+            $latestOrder = Cards::max('order');
+            $order = $latestOrder ? $latestOrder + 1 : 1;
+        }
+
+        try {
+            Cards::create([
+                'card_title' => $request->card_title,
+                'card_description' => $request->card_description,
+                'image' => $path,
+                'more_link' => $request->more_link,
+                'type' => $type,
+                'order' => $order,
+                'status' => 1,
+                'menu_id' => $request->menu ?? 1,
+                'page_section_id' => $request->page_section ?? 1,
+                'hindi_title' => $request->hindi_title,
+                'khasi_title' => $request->khasi_title,
+                'other_title' => $request->other_title,
+                'hindi_description' => $request->hindi_description,
+                'khasi_description' => $request->khasi_description,
+                'other_description' => $request->other_description,
+                'flag' => $flag,
+                'user_id' => $user->id,
+                'role_id' => $user->role_id
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'title' => 'Some Error Occurred',
+                'content' => $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json(['message' => 'New Cards added successfully']);
+    }
 
 
 
@@ -679,7 +723,7 @@ class HomeController extends Controller
         $flag = $request->input('flag');
         $user = Auth::user();
 
-            if ($flag == 'A') { //Approved{
+        if ($flag == 'A') { //Approved{
             return LatestNews::where('flag', 'A')->get();
         } elseif ($flag == '4' && $user->role_id == $flag) {
             return DB::table('latest_news as ln')
@@ -755,29 +799,30 @@ class HomeController extends Controller
     {
         $flag = $request->input('flag');
         $user = Auth::user();
-    
+
         if ($user && in_array($user->role_id, [3, 4])) {
             // Return cards joined with users if role_id is 3 or 4
             $data = DB::table('cards as c')
                 ->join('users as u', 'u.id', '=', 'c.user_id')
                 ->select('c.*', 'u.name as addedby')
                 ->get();
-    
+
             return response()->json(['data' => $data]);
         }
-    
+
         if ($flag === 'A') {
             // Return only approved cards
             $data = Cards::where('flag', 'A')->get();
             return response()->json(['data' => $data]);
         }
-    
+
         // Default: return all cards
         $data = DB::table('cards')->get();
         return response()->json(['data' => $data]);
     }
-     public function approveCards(Request $request){
-         $user = Auth::user();
+    public function approveCards(Request $request)
+    {
+        $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
@@ -790,7 +835,7 @@ class HomeController extends Controller
         $cards->save();
 
         return response()->json(['success' => true, 'message' => 'Approved successfully']);
-     }
+    }
 
 
 
@@ -856,7 +901,7 @@ class HomeController extends Controller
         if ($flag === 'A') { //for  website
             // Return Carousel records with flag 'A'
             return Carousel::where('flag', 'A')->get();
-        } elseif ($flag === '4'  && $user->role_id == $flag) {
+        } elseif ($flag === '4' && $user->role_id == $flag) {
             // Use query builder to join with users table and return specific fields
             return DB::table('carousel as cs')
                 ->join('users as u', 'cs.user_id', '=', 'u.id')
@@ -927,52 +972,52 @@ class HomeController extends Controller
     }
 
     public function getPageContentByPublisher()
-{
-    $paragraphs = DB::table('paragraph as ph')
-        ->join('users as u', 'u.id', '=', 'ph.user_id')
-        ->select('ph.*', 'u.name as addedby')
-        ->get();
+    {
+        $paragraphs = DB::table('paragraph as ph')
+            ->join('users as u', 'u.id', '=', 'ph.user_id')
+            ->select('ph.*', 'u.name as addedby')
+            ->get();
 
-    return response()->json($paragraphs);
-}
-
-public function approvedParagraph(Request $request)
-{
-    $user = Auth::user();
-    if (!$user) {
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json($paragraphs);
     }
 
-    $request->validate([
-        'id' => 'required|exists:paragraph,id',
-    ]);
+    public function approvedParagraph(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
-    // Get the paragraph record
-    $paragraph = Paragraph::find($request->id);
+        $request->validate([
+            'id' => 'required|exists:paragraph,id',
+        ]);
 
-    if (!$paragraph) {
-        return response()->json(['message' => 'Paragraph not found'], 404);
+        // Get the paragraph record
+        $paragraph = Paragraph::find($request->id);
+
+        if (!$paragraph) {
+            return response()->json(['message' => 'Paragraph not found'], 404);
+        }
+
+        // Store old description (optional)
+        $oldDescription = $paragraph->description;
+
+        // Only update if new_description is not null
+        if (!is_null($paragraph->new_description)) {
+            $paragraph->description = $paragraph->new_description;
+            $paragraph->new_description = null; // Clear after updating
+        }
+
+        // Update flag regardless
+        $paragraph->flag = 'A';
+        $paragraph->save();
+
+        return response()->json([
+            'message' => 'Paragraph approved successfully',
+            'old_description' => $oldDescription,
+            'updated_description' => $paragraph->description,
+        ]);
     }
-
-    // Store old description (optional)
-    $oldDescription = $paragraph->description;
-
-    // Only update if new_description is not null
-    if (!is_null($paragraph->new_description)) {
-        $paragraph->description = $paragraph->new_description;
-        $paragraph->new_description = null; // Clear after updating
-    }
-
-    // Update flag regardless
-    $paragraph->flag = 'A';
-    $paragraph->save();
-
-    return response()->json([
-        'message' => 'Paragraph approved successfully',
-        'old_description' => $oldDescription,
-        'updated_description' => $paragraph->description,
-    ]);
-}
 
 
 

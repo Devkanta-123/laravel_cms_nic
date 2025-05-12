@@ -44,5 +44,8 @@ class Gallery extends Model
         'hindi_description',
         'khasi_description',
         'other_description',
+        'user_id',
+        'role_id',
+        'flag'
     ];
 }

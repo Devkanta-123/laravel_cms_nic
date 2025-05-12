@@ -106,7 +106,6 @@ const formatDate = (dateStr) => {
   });
 };
 const onFileSelect = (event) => {
-    debugger;
     const files = event.target.files;
     if (!files || files.length === 0) return;
 

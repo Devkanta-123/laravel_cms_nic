@@ -21,6 +21,8 @@ import LatestNews from './Forms/LatestNews.vue'
 import Paragraph from './Forms/Paragraph.vue'
 import NoticeBoard from './Forms/NoticeBoard.vue'
 import Cards from './Forms/Cards.vue'
+import Gallery from './Forms/Gallery.vue'
+import WhosWho from './Forms/WhosWho.vue'
 
 // Dynamically resolve the component to load based on menuName
 const currentComponent = computed(() => {
@@ -35,9 +37,13 @@ const currentComponent = computed(() => {
       return NoticeBoard
     case 'cards':
       return Cards
+    case 'gallery':
+      return Gallery
+    case 'whoswho':
+      return WhosWho
 
-    // Add more cases here:
-    // case 'gallery': return Gallery
+
+
     default:
       return null
   }
