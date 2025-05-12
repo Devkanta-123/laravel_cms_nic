@@ -17,8 +17,12 @@ class WhosWho extends Model
         'email',
         'contact',
         'profile_image',
-        'district_name',  // Add this
-        'block_name'      // Add this
+        'district_name', 
+        'block_name',
+        'user_id',
+        'role_id',
+        'flag'
+		
     ];
 
 
