@@ -76,22 +76,48 @@ class WhosWhoController extends Controller
     }
 
 
-  public function getWhosWho()
+public function getWhosWho(Request $request)
 {
     $user = Auth::user();
+    $flag = $request->input('flag');
 
-    if (in_array($user->role_id, [3, 4])) {
-        // Return joined data with addedby
-        $whoswho = DB::table('whos_who as ww')
-            ->join('users as u', 'u.id', '=', 'ww.user_id')
-            ->select('ww.*', 'u.name as addedby')
-            ->get();
-    } else {
-        // Return all records without join
-        $whoswho = WhosWho::all();
+    if ($flag === 'A') {
+        $whoswho = WhosWho::where('flag', 'A')->get();
+        return response()->json($whoswho);
     }
 
-    return response()->json($whoswho);
+    if (in_array($user->role_id, [3, 4])) {
+        // Return joined data with addedby and level_name
+        $query = DB::table('whos_who as ww')
+            ->join('users as u', 'u.id', '=', 'ww.user_id')
+            ->leftJoin('level_master as lm', 'lm.id', '=', 'ww.level_id')
+            ->select('ww.*', 'u.name as addedby', 'lm.level_name');
+
+        $whoswho = $query->get();
+        return response()->json($whoswho);
+    } else {
+        // Return records without join
+        $query = WhosWho::leftJoin('level_master as lm', 'lm.id', '=', 'whos_who.level_id')
+            ->select('whos_who.*', 'lm.level_name');
+
+        if ($flag === 'A') {
+            $query->where('whos_who.flag', 'A');
+        }
+
+        $whoswho = $query->get();
+        return response()->json($whoswho);
+    }
+
 }
 
+    public function approveWhosWho(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:whos_who,id'
+        ]);
+        $whoswho = WhosWho::find($request->id);
+        $whoswho->flag = 'A'; // Approve
+        $whoswho->save();
+        return response()->json(['success' => true, 'message' => 'WhosWho approved successfully']);
+    }
 }

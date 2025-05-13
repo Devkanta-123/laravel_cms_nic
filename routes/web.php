@@ -60,7 +60,9 @@ Route::get('/get_notificationsforcurrentmonth', action: [NotificationsController
 Route::get('/get_recruitmentsforcurrentmonth', action: [NotificationsController::class, 'getRecruitmentsForCurrentMonth']);
 Route::get('/get_notificationbycategory/{pagename}', action: [NotificationsController::class, 'getNotificationsByCategory']);
 Route::get('/get_faq', action: [FAQController::class, 'getFAQData']); //added by dev on 19/11/24
+Route::put('/approved_faq', action: [FAQController::class, 'approveFAQ']); //added by dev on 19/11/24
 Route::get('/get_whoswho', action: [WhosWhoController::class, 'getWhosWho']); //added by dev on 25/03/25
+Route::put('/approved_whoswho', action: [WhosWhoController::class, 'approveWhosWho']); //added by dev on 13/05/25
 Route::get('/get_contactus', action: [MapController::class, 'getMapData']); //added by dev on 25/03/25
 
 

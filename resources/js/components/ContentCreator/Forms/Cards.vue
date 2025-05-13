@@ -14,7 +14,7 @@
                                         <label class="form-label">English Card Title <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" v-model="newCard.card_title" class="form-control"
-                                            placeholder="Enter Card Title" required>
+                                            placeholder="Enter Card Title">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">English Card Description</label>
@@ -184,6 +184,18 @@ const closeModal = () => {
 
 const addCard = () => {
     const formData = new FormData();
+      if (!newCard.value.card_title.trim()) {
+        toastr.error('Card title is required');
+        return;
+    }
+    if (!newCard.value.card_description.trim()) {
+        toastr.error('Card description is required');
+        return;
+    }
+    if (!newCard.value.more_link) {
+        toastr.error('Please select a page link');
+        return;
+    }
     for (const key in newCard.value) {
         formData.append(key, newCard.value[key]);
     }
@@ -246,7 +258,6 @@ const getAllPageMenu = async () => {
 
 const getCards = async () => {
     try {
-        debugger;
         const response = await axios.get("/get_cards");
         cardaData.value = response.data.data;
         await nextTick(); // Wait for DOM to update

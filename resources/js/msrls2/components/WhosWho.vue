@@ -87,7 +87,7 @@ const fetchWhosWho = async () => {
     }
 
     try {
-        const response = await axios.get("/get_whoswho");
+        const response = await axios.get("/get_whoswho",{params :{flag:'A'}});
         whoswhoData.value = response.data;
 
         localStorage.setItem(cacheKey, JSON.stringify(response.data));

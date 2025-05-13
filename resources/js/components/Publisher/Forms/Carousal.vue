@@ -24,7 +24,8 @@
                                 <td>{{ index + 1 }}</td>
                                 <td>
                                     <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
-                                        alt="Slide Image">
+                                        alt="Slide Image"  @click="openModal(`/storage/${slide.image}`)"
+                                            style="cursor: pointer;">
                                 </td>
                                 <td>{{ slide.addedby }}</td>
                                 <td>{{ formatDate(slide.addedon) }}</td>
@@ -45,6 +46,24 @@
                             </tr>
                         </tbody>
                     </table>
+                     <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
+                            :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header align-items-start">
+                                        <div class="modal-title">
+                                            <div class="mb-30">
+                                                <div class="blog-box blog-2">
+                                                    <img class="img-fluid w-100" :src="modalImage" alt="Modal Image" />
+                                                    <div class="blog-info pt-10"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-close" @click="closeModal"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -55,6 +74,15 @@ import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
+const showModal = ref(false);
+const modalImage = ref('');
+const openModal = (imageSrc) => {
+    modalImage.value = imageSrc;
+    showModal.value = true;
+}
+const closeModal = () => {
+    showModal.value = false;
+};
 
 const images = ref([]);
 const isDragging = ref(false);

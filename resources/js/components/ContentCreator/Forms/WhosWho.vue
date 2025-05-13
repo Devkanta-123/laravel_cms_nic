@@ -97,9 +97,11 @@
                                 <tr class="text-dark">
                                     <th>Profile</th>
                                     <th>Name</th>
-                                    <th>Designation</th>
+                                    <th>Level</th>
                                     <th>District Name</th>
                                     <th>Block Name</th>
+                                    <th>Designation</th>
+                                    <th>Added By</th>
                                     <th>Added On</th>
                                     <th>Status</th>
                                     <th>Action</th>
@@ -110,13 +112,16 @@
                                     <td>
                                         <img class="img-fluid avatar-small"
                                             :src="`/storage/${whoswho.profile_image.replace('public/', '')}`"
-                                            alt="Profile Image" @click="openModal(`/storage/${whoswho.profile_image.replace('public/','')}`)"
-                                             style="cursor: pointer;"/>
+                                            alt="Profile Image"
+                                            @click="openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
+                                            style="cursor: pointer;" />
                                     </td>
                                     <td>{{ whoswho.name }}</td>
-                                    <td>{{ whoswho.designation }}</td>
+                                    <td>{{ whoswho.level_name   ? whoswho.level_name  + ' Level ' : 'N/A' }}</td>
                                     <td>{{ whoswho.district_name ? whoswho.district_name : 'N/A' }}</td>
                                     <td>{{ whoswho.block_name ? whoswho.block_name : 'N/A' }}</td>
+                                    <td>{{ whoswho.designation }}</td>
+                                    <td>{{ whoswho.addedby }}</td>
                                     <td>{{ formatDate(whoswho.created_at) }}</td>
                                     <td>
                                         <label :class="whoswho.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
@@ -160,6 +165,7 @@
 import { onMounted, reactive, ref, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
+const toastr = useToastr();
 const showModal = ref(false);
 const modalImage = ref('');
 const formatDate = (dateStr) => {
@@ -259,7 +265,6 @@ const handleImageUpload = (event) => {
 };
 
 // Toastr for notifications
-const toastr = useToastr();
 
 // Fetch all level data when component is mounted
 onMounted(() => {
@@ -270,6 +275,14 @@ onMounted(() => {
 // Submit the form data to the backend
 const submitData = async () => {
     // Prepare form data to send to the backend
+     if (!formData.value.name.trim()) {
+        toastr.error('Name is required');
+        return;
+    }
+    if (!selectedLevel.value) {
+        toastr.error('Please select a level');
+        return;
+    }
     const dataToSend = new FormData();
     // Append standard form data values
     dataToSend.append('name', formData.value.name);
