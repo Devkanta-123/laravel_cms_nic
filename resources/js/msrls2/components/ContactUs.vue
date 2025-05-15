@@ -13,7 +13,7 @@ const iframeHtml = ref(""); // Store the iframe HTML string
 // Fetch contact details from API
 const fetchContactUs = async () => {
     try {
-        const response = await axios.get("/get_contactus"); // Replace with correct API endpoint
+        const response = await axios.get("/get_contactus",{params:{'flag': 'A'}}); 
         if (response.data && response.data[0]?.iframe) {
             iframeHtml.value = response.data[0].iframe; // Extract the iframe string
         } else {

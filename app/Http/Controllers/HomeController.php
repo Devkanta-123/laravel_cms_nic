@@ -483,30 +483,30 @@ class HomeController extends Controller
         return response()->json(['message' => 'Gallery Images uploaded successfully', 'filenames' => $uploadedImages]);
     }
     //get galleries
-   public function getGalleries(Request $request)
-{
-    $flag = $request->query('flag') ?? $request->input('flag');
+    public function getGalleries(Request $request)
+    {
+        $flag = $request->query('flag') ?? $request->input('flag');
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if ($flag === 'A') {
-        $data = Gallery::where('flag', 'A')->get();
-        return response()->json( $data);
+        if ($flag === 'A') {
+            $data = Gallery::where('flag', 'A')->get();
+            return response()->json($data);
+        }
+
+        if ($user->role_id == 2) {
+            $galleries = Gallery::all();
+        } elseif (in_array($user->role_id, [3, 4])) {
+            $galleries = DB::table('gallery as g')
+                ->join('users as u', 'u.id', '=', 'g.user_id')
+                ->select('g.*', 'u.name as addedby')
+                ->get();
+        } else {
+            $galleries = [];
+        }
+
+        return response()->json($galleries);
     }
-
-    if ($user->role_id == 2) {
-        $galleries = Gallery::all();
-    } elseif (in_array($user->role_id, [3, 4])) {
-        $galleries = DB::table('gallery as g')
-            ->join('users as u', 'u.id', '=', 'g.user_id')
-            ->select('g.*', 'u.name as addedby')
-            ->get();
-    } else {
-        $galleries = [];
-    }
-
-    return response()->json($galleries);
-}
 
     public function approveGallery(Request $request)
     {
@@ -934,9 +934,22 @@ class HomeController extends Controller
     {
         return (Banner::all());
     }
-    public function getLogo()
+    public function getLogo(Request $request)
     {
-        return (Logo::all());
+        $flag = $request->query('flag');
+        $user = Auth::user();
+        if ($flag === 'A') { //for  website
+            // Return Logo records with flag 'A'
+            return Logo::where('flag', 'A')->get();
+        } elseif (in_array($user->role_id,[3,4] )) {
+            return DB::table('logo as l')
+                ->join('users as u', 'u.id', '=', 'l.user_id')
+                ->select('l.*', 'u.name as addedby')
+                ->get();
+
+        }
+        // Default: return all Logo records
+        return Logo::all();
     }
 
 
@@ -1067,26 +1080,46 @@ class HomeController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
         ]);
 
-        $images = $request->images;
-        $menu_id = $request->menu_id;
-
-        // Handle file upload
-        $uploadedImages = [];
-        if ($request->hasFile('images')) {
-
-            $filename = $images[0]->getClientOriginalName();
-
-            $path = $images[0]->store('bannerlogo', 'public'); // Store in /public/storage/logo
-            $uploadedImages[] = $filename;
-
-
-            Logo::create([
-                'image' => $path,
-                'menu_id' => $menu_id
-            ]);
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        return response()->json(['message' => 'Logo uploaded successfully', 'filenames' => $uploadedImages]);
+        // Determine flag based on role_id
+        if ($user->role_id == 2) {
+            $flag = 'A';
+        } elseif ($user->role_id == 3) {
+            $flag = 'N';
+        } else {
+            $flag = 'N'; // default if needed
+        }
+
+        $menu_id = $request->menu;
+
+        $uploadedImages = [];
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $filename = $image->getClientOriginalName();
+                $path = $image->store('bannerlogo', 'public');
+
+                $uploadedImages[] = $filename;
+
+                // Save to database
+                Logo::create([
+                    'image' => $path,
+                    'menu_id' => $menu_id,
+                    'flag' => $flag,
+                    'user_id' => $user->id,
+                    'role_id' => $user->role_id,
+                ]);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Logos uploaded successfully',
+            'filenames' => $uploadedImages
+        ]);
     }
 
     public function getAllPageMenu()

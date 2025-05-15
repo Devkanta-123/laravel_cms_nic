@@ -64,6 +64,7 @@ Route::put('/approved_faq', action: [FAQController::class, 'approveFAQ']); //add
 Route::get('/get_whoswho', action: [WhosWhoController::class, 'getWhosWho']); //added by dev on 25/03/25
 Route::put('/approved_whoswho', action: [WhosWhoController::class, 'approveWhosWho']); //added by dev on 13/05/25
 Route::get('/get_contactus', action: [MapController::class, 'getMapData']); //added by dev on 25/03/25
+Route::put('/approved_map', action: [MapController::class, 'approveMap']); //added by dev on 25/03/25
 
 
 
