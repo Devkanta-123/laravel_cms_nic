@@ -1,5 +1,6 @@
 <template>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+        integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
 
     <br>
     <div style="display: flex;">
@@ -48,30 +49,32 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
-                        <table class="table center-aligned-table mb-0"  id="slidesTable">
+                        <table class="table center-aligned-table mb-0" id="slidesTable">
                             <thead>
                                 <tr class="text-dark">
                                     <th>Image</th>
                                     <th>Added On</th>
+                                    <th>Added By</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody> 
                                 <tr v-for="(slide, index) in slides" :key="index">
                                     <td>
-                                       <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
-                                        alt="Slide Image"  @click="openModal(`/storage/${slide.image}`)"
+                                        <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
+                                            alt="Slide Image" @click="openModal(`/storage/${slide.image}`)"
                                             style="cursor: pointer;">
                                     </td>
-                                    <td>{{ formatDate(slide.created_at) }}</td>
+                                    <td>{{ formatDate(slide.addedon) }}</td>
+                                    <td>{{slide.addedby }}</td>
                                     <td>
                                         <label :class="slide.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
                                             {{ slide.flag === 'A' ? 'Approved' : 'Pending' }}
                                         </label>
                                     </td>
                                     <td>
-                                        
+
                                         <i class="fas fa-trash-alt text-danger" @click="deleteSlide(slide.id)"></i>
                                     </td>
                                 </tr>
@@ -105,7 +108,7 @@
 
 </template>
 <script setup>
-import { ref, onMounted,nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
@@ -118,17 +121,18 @@ const openModal = (imageSrc) => {
 const closeModal = () => {
     showModal.value = false;
 };
+const fileInput = ref(null); // define ref at the top
 const images = ref([]);
 const isDragging = ref(false);
 // fileInput.value = null;
 const slides = ref([]);
 const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
 };
 const onFileSelect = (event) => {
     const files = event.target.files;
@@ -180,6 +184,9 @@ const uploadImages = () => {
             fetchSlides();
             toastr.success('Images uploaded successfully');
             images.value = [];
+             if (fileInput.value) {
+            fileInput.value.value = '';
+        }
         })
         .catch(error => {
             console.error('Error uploading images:', error);
@@ -201,14 +208,30 @@ const deleteDBImage = (slide, index) => {
 
 const fetchSlides = async () => {
     try {
-        const response = await axios.get('/get_carousel');
-        console.log(response.data);
-        slides.value = response.data;
-        await nextTick() // wait until DOM is updated
+        // Step 1: Destroy existing DataTable if it exists
         if ($.fn.dataTable.isDataTable('#slidesTable')) {
-            $('#slidesTable').DataTable().destroy()
+            $('#slidesTable').DataTable().destroy();
         }
-        $('#slidesTable').DataTable()
+
+        // Step 2: Clear existing data to force Vue to rebuild DOM
+        slides.value = [];
+
+        // Step 3: Wait for DOM to clear old rows
+        await nextTick();
+
+        // Step 4: Set new slide data
+        const response = await axios.get('/get_carousel');
+        slides.value = response.data;
+
+        // Step 5: Wait for DOM to fully update
+        await nextTick();
+
+        // Step 6: Initialize DataTable after DOM is updated
+        $('#slidesTable').DataTable({
+            destroy: true,
+            responsive: true
+        });
+
     } catch (error) {
         console.error('Failed to fetch slides:', error);
     }

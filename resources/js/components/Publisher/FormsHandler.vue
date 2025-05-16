@@ -25,6 +25,7 @@ import Gallery from './Forms/Gallery.vue'
 import WhosWho from './Forms/WhosWho.vue'
 import Faqs from './Forms/Faqs.vue'
 import Map from './Forms/Map.vue'
+import Logo from './Forms/Logo.vue'
 
 
 // Dynamically resolve the component to load based on menuName
@@ -48,6 +49,8 @@ const currentComponent = computed(() => {
       return Faqs
     case 'map':
       return Map
+    case 'logo':
+      return Logo
 
     // Add more cases here:
     // case 'gallery': return Gallery

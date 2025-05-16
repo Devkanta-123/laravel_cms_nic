@@ -1,5 +1,5 @@
 <template>
-    
+
     <br>
 
     <div>
@@ -95,7 +95,7 @@
                             <tbody>
                                 <tr v-for="(news, index) in latestnews" :key="index">
                                     <td>
-                                        <a v-if="news.type === 'file'" :href="`/storage/${news.file}`"  target="_blank"
+                                        <a v-if="news.type === 'file'" :href="`/storage/${news.file}`" target="_blank"
                                             class="text-primary">
                                             {{ news.title }}
                                         </a>
@@ -162,55 +162,73 @@ const validateInputs = () => {
 // Save function
 const saveLatestNews = () => {
     if (!validateInputs()) {
-        toastr.error('Please fill the required fields.')
-        return
-    }
-    const formData = new FormData()
-    if (showLinkInput.value) {
-        formData.append('link', link.value)
-    } else {
-        formData.append('file', file.value)
+        toastr.error('Please fill the required fields.');
+        return;
     }
 
-    formData.append('title', title.value)
-    formData.append('titleK', titleK.value)
-    formData.append('titleH', titleH.value)
+    const formData = new FormData();
+    if (showLinkInput.value) {
+        formData.append('link', link.value);
+    } else {
+        formData.append('file', file.value);
+    }
+
+    formData.append('title', title.value);
+    formData.append('titleK', titleK.value);
+    formData.append('titleH', titleH.value);
 
     axios.post('/api/save_latest_news', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
     })
-        .then((response) => {
-            fetchLatestNews();
-            toastr.success(response.data.message || 'News saved successfully.')
+        .then(async (response) => {
+            toastr.success(response.data.message || 'News saved successfully.');
+
+            // Step 1: Destroy existing DataTable
+            if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+                $('#latestNewsTable').DataTable().destroy();
+            }
+
+            // Step 2: Clear old news to force re-render
+            latestnews.value = [];
+
+            // Step 3: Wait for DOM to update
+            await nextTick();
+
+            // Step 4: Fetch new data
+            await fetchLatestNews();
+            title.value = '';
+            titleK.value = '';
+            titleH.value = '';
+            link.value = '';
+            file.value = null;
+            showLinkInput.value = false; // or true, based on your toggle
         })
         .catch((error) => {
-            console.error('Error saving news:', error)
-            toastr.error('An error occurred while saving the news.')
-        })
-}
+            console.error('Error saving news:', error);
+            toastr.error('An error occurred while saving the news.');
+        });
+};
+
 const fetchLatestNews = async () => {
     try {
         const response = await axios.post('/api/get_latest_news');
         latestnews.value = response.data;
 
-        await nextTick(); // Wait for DOM to update
+        await nextTick(); // Wait for DOM to render rows
 
-        // Destroy and reinitialize DataTable
-        if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
-            $('#latestNewsTable').DataTable().destroy();
-        }
         $('#latestNewsTable').DataTable({
             responsive: true,
-            pageLength: 10,
+            pageLength: 10
         });
 
-        console.log('Latest News data', response.data);
+        console.log('Latest News data:', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
+
 
 
 onMounted(() => {

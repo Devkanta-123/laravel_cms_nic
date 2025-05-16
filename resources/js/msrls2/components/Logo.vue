@@ -51,7 +51,7 @@ const fetchlogos = async () => {
     loadinglogos.value = true;
 
     try {
-        const response = await axios.get("/get_logo");
+        const response = await axios.get("/get_logo",{params:{flag:'A'}});
 
         if (response.data && Array.isArray(response.data)) {
             // Fetch images as base64 encoded strings

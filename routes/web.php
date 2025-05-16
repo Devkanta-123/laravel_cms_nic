@@ -29,6 +29,7 @@ Route::post('/approve_carousel', [HomeController::class, 'approveCarousel']); //
 
 Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);
+Route::put('approved_logo', [HomeController::class, 'approveLogo']);
 
 Route::get('get_website_description', [HomeController::class, 'getWebsiteDescription']);
 

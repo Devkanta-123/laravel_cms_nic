@@ -127,6 +127,7 @@ const fetchLatestNews = async () => {
     try {
         const response = await axios.post('/api/get_latest_news', { flag: 4 });
         latestnews.value = response.data;
+        console.log(response.data);
 
         await nextTick(); // Wait for DOM to update
 

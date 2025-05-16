@@ -725,10 +725,10 @@ class HomeController extends Controller
 
         if ($flag == 'A') { //Approved{
             return LatestNews::where('flag', 'A')->get();
-        } elseif ($flag == '4' && $user->role_id == $flag) {
+        } elseif (in_array($user->role_id, [3, 4])) {
             return DB::table('latest_news as ln')
                 ->join('users as u', 'ln.user_id', '=', 'u.id')
-                ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type')
+                ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link')
                 ->get();
         }
 
@@ -901,7 +901,7 @@ class HomeController extends Controller
         if ($flag === 'A') { //for  website
             // Return Carousel records with flag 'A'
             return Carousel::where('flag', 'A')->get();
-        } elseif ($flag === '4' && $user->role_id == $flag) {
+        } elseif (in_array($user->role_id, [3, 4])) {
             // Use query builder to join with users table and return specific fields
             return DB::table('carousel as cs')
                 ->join('users as u', 'cs.user_id', '=', 'u.id')
@@ -941,7 +941,7 @@ class HomeController extends Controller
         if ($flag === 'A') { //for  website
             // Return Logo records with flag 'A'
             return Logo::where('flag', 'A')->get();
-        } elseif (in_array($user->role_id,[3,4] )) {
+        } elseif (in_array($user->role_id, [3, 4])) {
             return DB::table('logo as l')
                 ->join('users as u', 'u.id', '=', 'l.user_id')
                 ->select('l.*', 'u.name as addedby')
@@ -950,6 +950,18 @@ class HomeController extends Controller
         }
         // Default: return all Logo records
         return Logo::all();
+    }
+
+    public function approveLogo(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:logo,id'
+        ]);
+        $carousel = Logo::find($request->id);
+        $carousel->flag = 'A'; // Approve
+        $carousel->save();
+        return response()->json(['success' => true, 'message' => 'Logo approved successfully']);
+
     }
 
 
