@@ -11,33 +11,63 @@
                     <div id="example-basic" role="application" class="wizard clearfix">
                         <div class="content clearfix">
                             <div class="row">
-                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
-                                    <label class="form-label" for="englishTitle">Gallery Name<span
+                                <!-- Gallery Name -->
+                                <div class="col-sm-4 mb-4">
+                                    <label class="form-label" for="galleryName">Gallery Name<span
                                             class="text-danger">*</span></label>
                                     <input type="text" id="galleryName" v-model="galleryName" placeholder="Gallery name"
                                         class="form-control" />
                                 </div>
-                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+
+                                <!-- Gallery Description -->
+                                <div class="col-sm-4 mb-4">
                                     <label for="galleryDescription">Gallery Description<span
                                             class="text-danger">*</span></label>
                                     <textarea id="galleryDescription" v-model="galleryDescription"
                                         placeholder="Enter gallery description" class="form-control"></textarea>
                                 </div>
-                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
-                                    <label class="form-label" for="hindiTitle">Image</label>
-                                    <input type="file" name="file" class="form-control" ref="fileInput" multiple
+
+                                <!-- Cover Image Upload -->
+                                <div class="col-sm-4 mb-4">
+                                    <label class="form-label">Cover Image</label>
+                                    <input type="file" class="form-control" ref="fileInput" multiple
                                         @change="onFileSelect">
                                 </div>
-                                <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
-                                    <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
-                                        <button type="button" @click="removeImage(index)"
-                                            class="btn-close btn-sm position-absolute top-0 end-0"
-                                            style="z-index: 2; background-color: white; border-radius: 50%;">
-                                        </button>
-                                        <img :src="image.url" alt="Preview" width="100" height="100"
-                                            class="img-thumbnail">
+                            </div>
+
+                            <!-- Cover Image Preview -->
+                            <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
+                                <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
+                                    <button type="button" @click="removeImage(index)"
+                                        class="btn-close btn-sm position-absolute top-0 end-0"
+                                        style="z-index: 2; background-color: white; border-radius: 50%;"></button>
+                                    <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Gallery Items Section -->
+                            <div class="mt-4">
+                                <h5>Gallery Items</h5>
+                                <div v-for="(item, index) in galleryItems" :key="index"
+                                    class="row mb-3 align-items-end">
+                                    <div class="col-sm-5">
+                                        <label>Gallery Item Name</label>
+                                        <input type="text" v-model="item.name" class="form-control"
+                                            placeholder="Enter item name">
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <label>Gallery Item Image</label>
+                                        <input type="file" @change="e => onGalleryItemImageSelect(e, index)"
+                                            class="form-control">
+                                        <div v-if="item.url" class="mt-2">
+                                            <img :src="item.url" alt="Item" width="100" class="img-thumbnail">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <i class="fas fa-trash-alt text-danger" @click="removeGalleryItem(index)"></i>
                                     </div>
                                 </div>
+                                <button type="button" class="btn btn-primary" @click="addGalleryItem">+ Add Row</button>
                             </div>
                         </div>
 
@@ -45,9 +75,7 @@
                         <div class="actions clearfix mt-3">
                             <ul role="menu" aria-label="Pagination">
                                 <li>
-                                    <button type="button" class="btn btn-success" role="menuitem" @click="uploadImages">
-                                        Save
-                                    </button>
+                                    <button type="button" class="btn btn-success" @click="uploadImages">Save</button>
                                 </li>
                             </ul>
                         </div>
@@ -123,11 +151,16 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
+import { getCurrentInstance } from 'vue';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
+const refs = getCurrentInstance().refs;
 const images = ref([]);
 const fileInput = ref(null);
 const galleryName = ref('');
+const galleryItems = ref([
+    { name: '', file: null, url: '' }
+]);
 const galleryDescription = ref('');
 const gallariesData = ref();
 const showModal = ref(false);
@@ -154,6 +187,27 @@ const onFileSelect = (event) => {
     }
 };
 
+const addGalleryItem = () => {
+    galleryItems.value.push({ name: '', file: null, url: '' });
+};
+
+const removeGalleryItem = (index) => {
+    if (galleryItems.value.length === 1) {
+        toastr.warning('At least one gallery item is required.');
+        return;
+    }
+
+    galleryItems.value.splice(index, 1);
+};
+
+const onGalleryItemImageSelect = (event, index) => {
+    const file = event.target.files[0];
+    if (!file || file.type.split('/')[0] !== 'image') return;
+    galleryItems.value[index].file = file;
+    galleryItems.value[index].url = URL.createObjectURL(file);
+}
+
+
 const uploadImages = () => {
     if (!galleryName.value || !galleryDescription.value) {
         toastr.error('Please enter gallery name and description');
@@ -163,24 +217,65 @@ const uploadImages = () => {
     const formData = new FormData();
     formData.append('gallery_name', galleryName.value);
     formData.append('gallery_description', galleryDescription.value);
+
+    // Append main gallery images
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);
     });
 
+    // Append item images
+    galleryItems.value.forEach((item, index) => {
+        if (item.name && item.file) {
+            formData.append(`items[${index}][name]`, item.name);
+            formData.append(`items[${index}][file]`, item.file);
+        }
+    });
+
+    // Log for verification
+    for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+            console.log(pair[0], pair[1].name);
+        } else {
+            console.log(pair[0], pair[1]);
+        }
+    }
+
+    // Submit to API
     axios.post('/api/upload_gallery', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
     })
-        .then((response) => {
-            // console.log('Images uploaded successfully:', response.data);
-            toastr.success('Gallery Image Upload Success');
-            images.value = [];
+        .then(async () => {
+            await getGalleries(); // Refresh table
+
+            // ✅ Reset all values
             galleryName.value = '';
             galleryDescription.value = '';
+            images.value = [];
+
+            // ✅ Reset main file input using ref
+            if (refs.fileInput) {
+                refs.fileInput.value = '';
+            }
+
+            // ✅ Reset item images and file inputs
+            galleryItems.value = [{
+                name: '',
+                file: null,
+                url: ''
+            }];
+
+            // Clear file inputs visually (for sub-items)
+            document.querySelectorAll('input[type="file"].form-control').forEach(input => {
+                input.value = '';
+            });
+
+            toastr.success('Gallery uploaded successfully');
         })
         .catch((error) => {
-            console.error('Error uploading images:', error);
+            console.error('Upload failed', error);
+            toastr.error('Upload failed');
         });
 };
 
@@ -202,24 +297,30 @@ const formatDate = (dateStr) => {
 const getGalleries = async () => {
     try {
         const response = await axios.get('/get_galleries');
-        gallariesData.value = response.data;
-
-        await nextTick(); // Wait for DOM to update
-
-        // Destroy and reinitialize DataTable
+        
+        // Step 1: Destroy the current DataTable if exists BEFORE updating data
         if ($.fn.dataTable.isDataTable('#galleriesTable')) {
             $('#galleriesTable').DataTable().destroy();
         }
+        
+        // Step 2: Update reactive data (this triggers Vue DOM update)
+        gallariesData.value = response.data;
+        
+        // Step 3: Wait for DOM update (Vue rendering)
+        await nextTick();
+        
+        // Step 4: Initialize DataTable after DOM is updated with new rows
         $('#galleriesTable').DataTable({
             responsive: true,
             pageLength: 10,
         });
-
-        console.log('gallariesData  data', response.data);
+        
+        console.log('gallariesData data', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
+
 
 
 onMounted(() => {

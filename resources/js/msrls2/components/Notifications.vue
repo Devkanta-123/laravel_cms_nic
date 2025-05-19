@@ -79,7 +79,7 @@
                         <div class="blog__post-two shine-animate-item">
                             <div class="blog__post-thumb-two">
                                 <a class="shine-animate" target="_blank">
-                                    <img src="https://img.freepik.com/free-photo/people-taking-part-high-protocol-event_23-2150951243.jpg?t=st=1745399048~exp=1745402648~hmac=c81dd61713a0532b0120fd7e3bbbd23ed8bd1d666e861245ec3c6ee5c364a0dc&w=996"
+                                    <img :src="event"
                                         alt="Apexa" />
                                 </a>
                             </div>
@@ -150,6 +150,7 @@
 import { ref, onMounted, inject, provide, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import event from '@/assets/images/event.png'
 const router = useRouter();
 const currentIndex = ref(0);
 const itemsPerPage = 3; // S

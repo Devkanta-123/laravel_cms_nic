@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ThemeHelper;
 use App\Models\Carousel;
 use App\Models\Gallery;
+use App\Models\GalleryItem;
 use App\Models\NewsletterDetails;
 use App\Models\Paragraph;
 use Illuminate\Support\Facades\DB;
@@ -428,60 +429,175 @@ class HomeController extends Controller
 
     //GALLERY
     //save gallery image
+    // public function uploadGallery(Request $request)
+    // {
+    //     $request->validate([
+    //         'gallery_name' => 'required|string|max:255',
+    //         'gallery_description' => 'required|string',
+    //         'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
+    //     ]);
+
+    //     $user = Auth::user(); // This will get the authenticated user
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Unauthorized'], 401);
+    //     }
+    //     //before submit check roleid and set flag value
+    //     // Determine flag based on role_id
+    //     if ($user->role_id == 2) { //if admin upload 
+    //         $flag = 'A';
+    //     } elseif ($user->role_id == 3) { //if contentcreator upload
+    //         $flag = 'N';
+    //     }
+    //     $galleryName = $request->input('gallery_name');
+    //     $galleryDescription = $request->input('gallery_description');
+
+    //     // Handle file upload
+    //     $uploadedImages = [];
+    //     if ($request->hasFile('images')) {
+    //         foreach ($request->file('images') as $image) {
+    //             $filename = $image->getClientOriginalName();
+
+    //             $folderPath = ThemeHelper::getFolderPath();
+    //             $viewPath = $folderPath . '/gallery';
+
+    //             $path = $image->store($viewPath, 'public'); // Store in /public/storage/gallery directory
+    //             $uploadedImages[] = $filename;
+
+    //             Gallery::create([
+    //                 'gallery_image' => $path,
+    //                 'link' => $path,
+    //                 'parent_id' => 2,
+    //                 'meta_title' => 'test gallery',
+    //                 'meta_description' => 'test gallery',
+    //                 'meta_keywords' => 'msrls gallery',
+    //                 'order' => 1,
+    //                 'status' => 1,
+    //                 'gallery_description' => $galleryDescription,
+    //                 'gallery_name' => $galleryName,
+    //                 'user_id' => $user->id,
+    //                 'role_id' => $user->role_id,
+    //                 'flag' => $flag
+    //             ]);
+    //         }
+    //     }
+
+    //     return response()->json(['message' => 'Gallery Images uploaded successfully', 'filenames' => $uploadedImages]);
+    // }
     public function uploadGallery(Request $request)
     {
         $request->validate([
             'gallery_name' => 'required|string|max:255',
             'gallery_description' => 'required|string',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Gallery main images
+            'items' => 'array', // expecting array of gallery items
+            'items.*.name' => 'required|string|max:255',
+            'items.*.file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $user = Auth::user(); // This will get the authenticated user
+        $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        //before submit check roleid and set flag value
-        // Determine flag based on role_id
-        if ($user->role_id == 2) { //if admin upload 
+
+        $flag = null;
+        if ($user->role_id == 2) { // admin
             $flag = 'A';
-        } elseif ($user->role_id == 3) { //if contentcreator upload
+        } elseif ($user->role_id == 3) { // content creator
             $flag = 'N';
         }
+
         $galleryName = $request->input('gallery_name');
         $galleryDescription = $request->input('gallery_description');
 
-        // Handle file upload
+        $folderPath = ThemeHelper::getFolderPath();
+
+        // Create main gallery folder if not exists
+        $galleryFolder = $folderPath . '/gallery';
+        $galleryStoragePath = storage_path('app/public/' . $galleryFolder);
+        if (!file_exists($galleryStoragePath)) {
+            mkdir($galleryStoragePath, 0755, true);
+        }
+
+        // Create gallery items folder if not exists
+        $itemFolder = $folderPath . '/gallery_items';
+        $itemStoragePath = storage_path('app/public/' . $itemFolder);
+        if (!file_exists($itemStoragePath)) {
+            mkdir($itemStoragePath, 0755, true);
+        }
+
         $uploadedImages = [];
+        $gallery = null;
+
+        // Handle main gallery images upload and Gallery record creation
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $filename = $image->getClientOriginalName();
+                $path = $image->store($galleryFolder, 'public');
 
-                $folderPath = ThemeHelper::getFolderPath();
-                $viewPath = $folderPath . '/gallery';
-
-                $path = $image->store($viewPath, 'public'); // Store in /public/storage/gallery directory
                 $uploadedImages[] = $filename;
+                if (!$gallery) {
+                    $gallery = Gallery::create([
+                        'gallery_image' => $path,
+                        'link' => $path,
+                        'parent_id' => 2,
+                        'meta_title' => 'test gallery',
+                        'meta_description' => 'test gallery',
+                        'meta_keywords' => 'msrls gallery',
+                        'order' => 1,
+                        'status' => 1,
+                        'gallery_description' => $galleryDescription,
+                        'gallery_name' => $galleryName,
+                        'user_id' => $user->id,
+                        'role_id' => $user->role_id,
+                        'flag' => $flag
+                    ]);
+                }
+            }
+        } else {
+            // If no images uploaded, still create a gallery record (optional)
+            $gallery = Gallery::create([
+                'gallery_image' => null,
+                'link' => null,
+                'parent_id' => 2,
+                'meta_title' => 'test gallery',
+                'meta_description' => 'test gallery',
+                'meta_keywords' => 'msrls gallery',
+                'order' => 1,
+                'status' => 1,
+                'gallery_description' => $galleryDescription,
+                'gallery_name' => $galleryName,
+                'user_id' => $user->id,
+                'role_id' => $user->role_id,
+                'flag' => $flag
+            ]);
+        }
 
-                Gallery::create([
-                    'gallery_image' => $path,
-                    'link' => $path,
-                    'parent_id' => 2,
-                    'meta_title' => 'test gallery',
-                    'meta_description' => 'test gallery',
-                    'meta_keywords' => 'msrls gallery',
-                    'order' => 1,
-                    'status' => 1,
-                    'gallery_description' => $galleryDescription,
-                    'gallery_name' => $galleryName,
-                    'user_id' => $user->id,
-                    'role_id' => $user->role_id,
-                    'flag' => $flag
-                ]);
+        // Handle gallery items upload
+        if ($request->has('items')) {
+            foreach ($request->items as $item) {
+                $itemName = $item['name'];
+
+                if (isset($item['file']) && $item['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    $itemFile = $item['file'];
+
+                    $itemImagePath = $itemFile->store($itemFolder, 'public');
+
+                    GalleryItem::create([
+                        'gallery_id' => $gallery->id,
+                        'name' => $itemName,
+                        'image' => $itemImagePath,
+                    ]);
+                }
             }
         }
 
-        return response()->json(['message' => 'Gallery Images uploaded successfully', 'filenames' => $uploadedImages]);
+        return response()->json([
+            'message' => 'Gallery Images and Items uploaded successfully',
+            'filenames' => $uploadedImages,
+        ]);
     }
+
+
     //get galleries
     public function getGalleries(Request $request)
     {
@@ -490,7 +606,13 @@ class HomeController extends Controller
         $user = Auth::user();
 
         if ($flag === 'A') {
-            $data = Gallery::where('flag', 'A')->get();
+            $data = DB::select("
+        SELECT g.*, gi.gallery_id, gi.name, gi.image 
+        FROM gallery g 
+        LEFT JOIN gallery_item gi ON g.id = gi.gallery_id 
+        WHERE g.flag = 'A'
+    ");
+
             return response()->json($data);
         }
 

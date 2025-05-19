@@ -34,7 +34,7 @@
             <div class="services-thumb">
               <a href="#" class="shine-animate" target="_blank">
                 <img
-                  src="https://img.freepik.com/free-vector/news-concept-landing-page_52683-20706.jpg?t=st=1745559655~exp=1745563255~hmac=14a7567655a2e0966fca1aad3dd2ccdc9a0810f9ee2c11a93d9dd156fa1e53f1&w=740"
+                  :src="logo"
                   alt="News Image" />
               </a>
             </div>
@@ -72,6 +72,7 @@
 import { ref, onMounted, computed, inject, provide } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import logo from '@/assets/images/latest_news.png'
 const language = inject("language");
 const router = useRouter();
 const currentIndex = ref(0);
@@ -166,57 +167,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Styling for the marquee effect */
-.swiper-container {
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-
-.list-wrap {
-  display: flex;
-  animation: marquee 20s linear infinite;
-  color: aliceblue;
-  white-space: nowrap;
-}
-
-
-.list-wrap:hover {
-  animation-play-state: paused;
-  /* Stop animation on hover */
-}
-
-.disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-.news-label {
-  font-weight: bold;
-  margin-left: -150px;
-  /* Adjust horizontal position */
-  position: relative;
-  /* Necessary for transform adjustments */
-  transform: translateY(40px);
-  /* Move label downward */
-  color: #014E4E;
-}
-
-
-
-.list-wrap li {
-  display: inline-block;
-  margin-right: 20px;
-  white-space: nowrap;
-}
-
-@keyframes marquee {
-  0% {
-    transform: translateX(100%);
-  }
-
-  100% {
-    transform: translateX(-100%);
-  }
-}
 </style>

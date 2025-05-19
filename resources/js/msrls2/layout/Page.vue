@@ -76,7 +76,6 @@ import Loader from '../../components/Loader.vue';
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
 import FAQS from '../components/FAQ.vue';
-import Accessibility from '../settings/Accessibility.vue';
 import WhosWho from '../components/WhosWho.vue';
 import ContactUs from '../components/ContactUs.vue';
 

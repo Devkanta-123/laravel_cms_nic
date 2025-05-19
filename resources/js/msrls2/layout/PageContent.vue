@@ -27,9 +27,7 @@
                   </select>
                 </li>
                 <li class="header-btn">
-                  <a href="#">
                     <Accessibility></Accessibility>
-                  </a>
                 </li>
               </ul>
             </div>
@@ -230,25 +228,6 @@
       <section class="services-area services-bg position-relative" v-if="currentId == '1'">
         <LatestNews :language="language" />
       </section>
-      <!-- HomeParagraph start here  -->
-      <!-- <section class="about__area-five" v-if="currentId == '1'" style="margin-top: -80px;">
-        <div class="container">
-          <div class="row align-items-start">
-            <div class="col-lg-12">
-              <div v-if="homepragraphdata" v-html="homepragraphdata" class="aos-init aos-animate"
-                style="color: #2A3335;"></div>
-
-              <br>
-              <a href="/page/3?page_name=About+Us" class="btn btn-two custom-btn">
-                Read More
-              </a>
-            </div>
-
-          </div> 
-        </div> 
-      </section> -->
-
-
       <section id="about" class="about-area pt-120 pb-120" v-if="currentId == '1'">
         <div class="container">
           <div class="row align-items-center">
@@ -256,7 +235,7 @@
               <div class="about-img-wrap">
                 <div class="shape">
                   <img
-                    src="https://img.freepik.com/free-vector/happy-woman-chatting-with-friends-online_74855-14073.jpg?t=st=1745560998~exp=1745564598~hmac=88d61d2fc78e9029c74df098e033710b5f68e9ada91c7e3b0f4772e7b352a5cb&w=826"
+                    :src="aboutus"
                     alt="Apexa">
                 </div>
                 <div class="experience-year">
@@ -413,8 +392,6 @@
           <Page :language="language" />
         </div>
       </div>
-
-
     </div>
   </div>
 </template>
@@ -441,6 +418,8 @@ import '../assets/css/default.css';
 import '../assets/css/main.css';
 import '../assets/js/swiper-bundle.js';
 import '../assets/css/swiper-bundle.css';
+import aboutus from '@/assets/images/aboutus.png';
+
 const menuItems = ref([]);
 const header = ref([]);
 const highContrastMode = ref(false);
