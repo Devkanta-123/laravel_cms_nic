@@ -226,10 +226,10 @@
 
       <!-- Latest news -->
 
-      <section class="services-area services-bg position-relative" v-if="currentId == '1'">
+      <section class="services-area services-bg position-relative mt-n2" v-if="currentId == '1'">
         <LatestNews :language="language" />
       </section>
-      <section id="about" class="about-area pt-120 pb-120" v-if="currentId == '1'">
+      <section id="about" class="about-area pt-120 pb-120 mt-n9" v-if="currentId == '1'">
         <div class="container">
           <div class="row align-items-center">
             <div class="col-lg-6">
@@ -238,7 +238,6 @@
                   <img :src="aboutus" alt="Apexa">
                 </div>
                 <div class="experience-year">
-
                   <div class="content">
                     <h6 class="circle rotateme"><span style="transform: rotate(0deg);">Y</span><span
                         style="transform: rotate(17deg);">e</span><span style="transform: rotate(34deg);">a</span><span
@@ -279,7 +278,7 @@
 
       </section>
 
-      <section class="about__area-five" v-if="currentId == '1'">
+      <section class="about__area-five mt-n12" v-if="currentId == '1'">
         <Notifications :language="language" />
       </section>
       <!-- HomeParagraph end here  -->

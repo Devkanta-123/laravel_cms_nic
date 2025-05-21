@@ -16,7 +16,7 @@
       </div>
     </div>
   </div> -->
-  <div class="bg-img position-absolute top-0 bottom-0 start-0 end-0 z-0"></div>
+  <div class="bg-img position-absolute top-0 bottom-0 start-0 end-0 z-0 "></div>
   <div class="container position-relative z-1">
     <div class="row justify-content-center">
       <div class="col-xl-6 col-lg-8">

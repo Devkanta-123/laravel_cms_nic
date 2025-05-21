@@ -637,9 +637,9 @@ class HomeController extends Controller
         $request->validate([
             'id' => 'required|exists:gallery,id'
         ]);
-        $carousel = Gallery::find($request->id);
-        $carousel->flag = 'A'; // Approve
-        $carousel->save();
+        $gallery = Gallery::find($request->id);
+        $gallery->flag = 'A'; // Approve
+        $gallery->save();
         return response()->json(['success' => true, 'message' => 'Gallery approved successfully']);
 
     }
@@ -963,9 +963,9 @@ class HomeController extends Controller
             'id' => 'required|exists:latest_news,id'
         ]);
 
-        $carousel = LatestNews::find($request->id);
-        $carousel->flag = 'A'; // Approve
-        $carousel->save();
+        $latestnews = LatestNews::find($request->id);
+        $latestnews->flag = 'A'; // Approve
+        $latestnews->save();
 
         return response()->json(['success' => true, 'message' => 'Slide approved successfully']);
     }
@@ -1138,9 +1138,9 @@ class HomeController extends Controller
         $request->validate([
             'id' => 'required|exists:logo,id'
         ]);
-        $carousel = Logo::find($request->id);
-        $carousel->flag = 'A'; // Approve
-        $carousel->save();
+        $logo = Logo::find($request->id);
+        $logo->flag = 'A'; // Approve
+        $logo->save();
         return response()->json(['success' => true, 'message' => 'Logo approved successfully']);
 
     }

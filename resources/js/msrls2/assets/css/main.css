@@ -17786,3 +17786,18 @@ blockquote p {
     height: 38px;
     border-radius: 10px;
 }
+
+
+/* custom css for website */
+
+.mt-n2 {
+    margin-top: -2% !important;
+}
+
+.mt-n9 {
+    margin-top: -9% !important;
+}
+
+.mt-n12 {
+    margin-top: -12% !important;
+}

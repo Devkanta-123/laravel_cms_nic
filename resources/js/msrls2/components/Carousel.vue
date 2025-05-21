@@ -24,7 +24,7 @@
     </div>
   </div>
 </section> -->
-  <section class="slider__area">
+<section class="slider__area mt-n2">
    <div class="swiper-container slider_baner__active">
   <div class="swiper-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
     <div v-for="(slide, index) in slides" :key="index" class="swiper-slide">
