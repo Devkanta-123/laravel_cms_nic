@@ -15,6 +15,8 @@ use App\Models\Menu;
 use App\Models\Banner;
 use App\Models\Logo;
 use App\Models\Cards;
+use App\Models\WebsiteSettings;
+use App\Models\LanguageMaster;
 use Carbon\Carbon;
 use App\Models\Footer;
 use App\Models\Newsletter;
@@ -488,10 +490,10 @@ class HomeController extends Controller
         $request->validate([
             'gallery_name' => 'required|string|max:255',
             'gallery_description' => 'required|string',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Gallery main images
-            'items' => 'array', // expecting array of gallery items
+            'images.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,mov,avi,webm|max:20480', // Images or videos
+            'items' => 'array',
             'items.*.name' => 'required|string|max:255',
-            'items.*.file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'items.*.file' => 'required|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi,webm|max:20480', // Images or videos
         ]);
 
         $user = Auth::user();
@@ -525,16 +527,17 @@ class HomeController extends Controller
             mkdir($itemStoragePath, 0755, true);
         }
 
-        $uploadedImages = [];
+        $uploadedFiles = [];
         $gallery = null;
 
-        // Handle main gallery images upload and Gallery record creation
+        // Handle main gallery images/videos and create gallery
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $filename = $image->getClientOriginalName();
-                $path = $image->store($galleryFolder, 'public');
+            foreach ($request->file('images') as $file) {
+                $filename = $file->getClientOriginalName();
+                $path = $file->store($galleryFolder, 'public');
 
-                $uploadedImages[] = $filename;
+                $uploadedFiles[] = $filename;
+
                 if (!$gallery) {
                     $gallery = Gallery::create([
                         'gallery_image' => $path,
@@ -554,7 +557,7 @@ class HomeController extends Controller
                 }
             }
         } else {
-            // If no images uploaded, still create a gallery record (optional)
+            // If no files uploaded, still create a gallery record
             $gallery = Gallery::create([
                 'gallery_image' => null,
                 'link' => null,
@@ -572,14 +575,13 @@ class HomeController extends Controller
             ]);
         }
 
-        // Handle gallery items upload
+        // Handle gallery item files
         if ($request->has('items')) {
             foreach ($request->items as $item) {
                 $itemName = $item['name'];
 
                 if (isset($item['file']) && $item['file'] instanceof \Illuminate\Http\UploadedFile) {
                     $itemFile = $item['file'];
-
                     $itemImagePath = $itemFile->store($itemFolder, 'public');
 
                     GalleryItem::create([
@@ -593,7 +595,7 @@ class HomeController extends Controller
 
         return response()->json([
             'message' => 'Gallery Images and Items uploaded successfully',
-            'filenames' => $uploadedImages,
+            'filenames' => $uploadedFiles,
         ]);
     }
 
@@ -829,23 +831,115 @@ class HomeController extends Controller
 
 
 
-    // public function getLatestNews()
+
+    // public function getLatestNews(Request $request)
     // {
-    //     // dd(1);
-    //     $data = DB::table('latest_news')
+    //     // Get the current month
+    //     $currentMonth = Carbon::now()->month; // Get the current month (1-12)
+    //     $currentYear = Carbon::now()->year; // Get the current year (e.g. 2024)
+    //     $flag = $request->input('flag');
+    //     $user = Auth::user();
+
+    //     if ($flag == 'A') { //Approved{
+    //         return LatestNews::where('flag', 'A')->get();
+    //     } elseif (in_array($user->role_id, [3, 4])) {
+    //         return DB::table('latest_news as ln')
+    //             ->join('users as u', 'ln.user_id', '=', 'u.id')
+    //             ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link')
+    //             ->get();
+    //     }
+
+
+    //     // 1. Migrate old news to archive_news table (news not from the current month)
+    //     $oldNews = DB::table('latest_news')
+    //         ->whereYear('created_at', '<>', $currentYear) // Filter by year
+    //         ->orWhereMonth('created_at', '<>', $currentMonth) // Filter by month
     //         ->get();
-    //     // dd($data);
-    //     return response()->json(['data' => $data]);
+
+    //     if ($oldNews->isNotEmpty()) {
+    //         // Move the old news to the archive_news table
+    //         foreach ($oldNews as $newsItem) {
+    //             $insertToArchive = DB::table('archive_news')->insert([
+    //                 'file' => $newsItem->file,
+    //                 'link' => $newsItem->link,
+    //                 'type' => $newsItem->type,
+    //                 'title' => $newsItem->title,
+    //                 'order' => $newsItem->order,
+    //                 'status' => $newsItem->status,
+    //                 'hindi_title' => $newsItem->hindi_title,
+    //                 'khasi_title' => $newsItem->khasi_title,
+    //                 'other_title' => $newsItem->other_title,
+    //                 'created_at' => $newsItem->created_at, // Preserve the created_at timestamp
+    //                 'updated_at' => $newsItem->updated_at, // Preserve the updated_at timestamp
+    //             ]);
+    //         }
+    //         // After migrating to archive, delete the old news from the latest_news table
+
+    //         if ($insertToArchive === true) {
+    //             DB::table('latest_news')
+    //                 ->whereYear('created_at', '<>', $currentYear)
+    //                 ->orWhereMonth('created_at', '<>', $currentMonth)
+    //                 ->delete();
+    //         }
+    //     }
+
+
+    //     // 2. Get the latest news from the current month
+    //     $data = DB::table('latest_news')
+    //         ->whereYear('created_at', $currentYear) // Only get news from the current year
+    //         ->whereMonth('created_at', $currentMonth) // Only get news from the current month
+    //         ->get();
+
+    //     // Return the current month news as JSON response
+    //     return response()->json($data);
     // }
+
     public function getLatestNews(Request $request)
     {
-        // Get the current month
-        $currentMonth = Carbon::now()->month; // Get the current month (1-12)
-        $currentYear = Carbon::now()->year; // Get the current year (e.g. 2024)
         $flag = $request->input('flag');
         $user = Auth::user();
+        // Step 1: Get archive duration from settings (in days)
+        $settings = DB::table('website_settings')->get();
+        $validSetting = $settings->first(function ($row) {
+            return !is_null($row->archieve_duration) && is_numeric($row->archieve_duration);
+        });
+        $archiveDuration = $validSetting->archieve_duration ?? null;
 
-        if ($flag == 'A') { //Approved{
+        if ($archiveDuration !== null && is_numeric($archiveDuration)) {
+            $thresholdDate = Carbon::now()->subDays($archiveDuration);
+
+            // Step 2: Find all news older than archive duration
+            $oldNews = DB::table('latest_news')
+                ->where('created_at', '<', $thresholdDate)
+                ->get();
+
+            if ($oldNews->isNotEmpty()) {
+                foreach ($oldNews as $newsItem) {
+                    $insertToArchive = DB::table('archive_news')->insert([
+                        'file' => $newsItem->file,
+                        'link' => $newsItem->link,
+                        'type' => $newsItem->type,
+                        'title' => $newsItem->title,
+                        'order' => $newsItem->order,
+                        'status' => $newsItem->status,
+                        'hindi_title' => $newsItem->hindi_title,
+                        'khasi_title' => $newsItem->khasi_title,
+                        'other_title' => $newsItem->other_title,
+                        'created_at' => $newsItem->created_at,
+                        'updated_at' => $newsItem->updated_at,
+                    ]);
+                }
+
+                // Delete from latest_news after archiving
+                if ($insertToArchive === true) {
+                    DB::table('latest_news')
+                        ->where('created_at', '<', $thresholdDate)
+                        ->delete();
+                }
+            }
+        }
+        // If Approved flag passed, return approved news only
+        if ($flag == 'A') {
             return LatestNews::where('flag', 'A')->get();
         } elseif (in_array($user->role_id, [3, 4])) {
             return DB::table('latest_news as ln')
@@ -855,47 +949,12 @@ class HomeController extends Controller
         }
 
 
-        // 1. Migrate old news to archive_news table (news not from the current month)
-        $oldNews = DB::table('latest_news')
-            ->whereYear('created_at', '<>', $currentYear) // Filter by year
-            ->orWhereMonth('created_at', '<>', $currentMonth) // Filter by month
-            ->get();
 
-        if ($oldNews->isNotEmpty()) {
-            // Move the old news to the archive_news table
-            foreach ($oldNews as $newsItem) {
-                $insertToArchive = DB::table('archive_news')->insert([
-                    'file' => $newsItem->file,
-                    'link' => $newsItem->link,
-                    'type' => $newsItem->type,
-                    'title' => $newsItem->title,
-                    'order' => $newsItem->order,
-                    'status' => $newsItem->status,
-                    'hindi_title' => $newsItem->hindi_title,
-                    'khasi_title' => $newsItem->khasi_title,
-                    'other_title' => $newsItem->other_title,
-                    'created_at' => $newsItem->created_at, // Preserve the created_at timestamp
-                    'updated_at' => $newsItem->updated_at, // Preserve the updated_at timestamp
-                ]);
-            }
-            // After migrating to archive, delete the old news from the latest_news table
-
-            if ($insertToArchive === true) {
-                DB::table('latest_news')
-                    ->whereYear('created_at', '<>', $currentYear)
-                    ->orWhereMonth('created_at', '<>', $currentMonth)
-                    ->delete();
-            }
-        }
-
-
-        // 2. Get the latest news from the current month
+        // Step 3: Return news that is within the archive duration
         $data = DB::table('latest_news')
-            ->whereYear('created_at', $currentYear) // Only get news from the current year
-            ->whereMonth('created_at', $currentMonth) // Only get news from the current month
+            ->where('created_at', '>=', Carbon::now()->subDays($archiveDuration))
             ->get();
 
-        // Return the current month news as JSON response
         return response()->json($data);
     }
     public function approvedLatestNews(Request $request)
@@ -1260,4 +1319,106 @@ class HomeController extends Controller
     {
         return Menu::where('menu_master', 4)->get();
     }
+
+    public function saveArchiveData(Request $request)
+    {
+        // If only language_id is set, insert new row with language_id only
+        if ($request->filled('language_id') && !$request->filled('archieve_duration')) {
+            $request->validate([
+                'language_id' => 'required|exists:language_master,id'
+            ]);
+
+            $setting = WebsiteSettings::create([
+                'language_id' => $request->language_id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Language setting added successfully.',
+                'website_setting' => $setting
+            ]);
+        }
+
+        // If archieve_duration is present (normal path)
+        if ($request->filled('archieve_duration')) {
+            $request->validate([
+                'archieve_duration' => 'required|integer|min:0'
+            ]);
+
+            $setting = WebsiteSettings::first();
+
+            if ($setting) {
+                $setting->update([
+                    'archieve_duration' => $request->archieve_duration
+                ]);
+            } else {
+                $data = [
+                    'archieve_duration' => $request->archieve_duration
+                ];
+
+                // Only insert language_id during creation if it's also sent
+                if ($request->filled('language_id')) {
+                    $data['language_id'] = $request->language_id;
+                }
+
+                $setting = WebsiteSettings::create($data);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Archive duration updated successfully.',
+                'website_setting' => $setting
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No valid data provided.'
+        ], 400);
+    }
+
+    public function getArchieveData()
+    {
+        // Assuming you have only one row of website settings
+        $settings = WebsiteSettings::all();
+        return response()->json($settings);
+    }
+    public function saveLanguage(Request $request)
+    {
+        // Validate incoming request
+        $request->validate([
+            'language_name' => 'required|string|max:255',
+        ]);
+
+        if ($request->has('id')) {
+            // Update existing language
+            $language = LanguageMaster::find($request->id);
+            $language->language_name = $request->language_name;
+            $language->save();
+        } else {
+            // Create new language
+            $language = LanguageMaster::create([
+                'language_name' => $request->language_name,
+            ]);
+        }
+
+        return response()->json(['success' => true, 'language' => $language]);
+    }
+    public function getMasterLanguages()
+    {
+        $languages = LanguageMaster::all();
+        return response()->json($languages);
+    }
+
+    public function getActivateLanguages()
+    {
+        $languages = DB::table('website_settings as ws')
+            ->join('language_master as lm', 'lm.id', '=', 'ws.language_id')
+            ->select('ws.language_id', 'lm.language_name')
+            ->get();
+
+        return response()->json($languages);
+    }
+
+
 }

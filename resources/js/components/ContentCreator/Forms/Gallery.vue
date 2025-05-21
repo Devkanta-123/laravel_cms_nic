@@ -31,17 +31,27 @@
                                 <div class="col-sm-4 mb-4">
                                     <label class="form-label">Cover Image</label>
                                     <input type="file" class="form-control" ref="fileInput" multiple
-                                        @change="onFileSelect">
+                                        @change="onFileSelect" accept="image/*,video/*">
                                 </div>
                             </div>
 
                             <!-- Cover Image Preview -->
                             <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
                                 <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
+                                    <!-- Remove Button -->
                                     <button type="button" @click="removeImage(index)"
                                         class="btn-close btn-sm position-absolute top-0 end-0"
                                         style="z-index: 2; background-color: white; border-radius: 50%;"></button>
-                                    <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+
+                                    <!-- Image Preview -->
+                                    <img v-if="image.type === 'image'" :src="image.url" alt="Preview" width="100"
+                                        height="100" class="img-thumbnail">
+
+                                    <!-- Video Preview -->
+                                    <video v-else-if="image.type === 'video'" :src="image.url" width="100" height="100"
+                                        controls class="img-thumbnail">
+                                        Your browser does not support the video tag.
+                                    </video>
                                 </div>
                             </div>
 
@@ -58,10 +68,16 @@
                                     <div class="col-sm-5">
                                         <label>Gallery Item Image</label>
                                         <input type="file" @change="e => onGalleryItemImageSelect(e, index)"
-                                            class="form-control">
+                                            class="form-control" accept="image/*,video/*">
                                         <div v-if="item.url" class="mt-2">
-                                            <img :src="item.url" alt="Item" width="100" class="img-thumbnail">
+                                            <img v-if="item.type === 'image'" :src="item.url" alt="Item" width="100"
+                                                class="img-thumbnail">
+                                            <video v-else-if="item.type === 'video'" width="100" controls>
+                                                <source :src="item.url" type="video/mp4">
+                                                Your browser does not support video.
+                                            </video>
                                         </div>
+
                                     </div>
                                     <div class="col-sm-2">
                                         <i class="fas fa-trash-alt text-danger" @click="removeGalleryItem(index)"></i>
@@ -104,10 +120,18 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(gallery, index) in gallariesData" :key="index">
-                                    <td>
-                                        <img class="img-fluid avatar-small" :src="`/storage/${gallery.gallery_image}`"
-                                            @click="openModal(`/storage/${gallery.gallery_image}`)"
-                                            style="cursor: pointer;" alt="Gallery">
+                                    <td @click="openModal(`/storage/${gallery.gallery_image}`)"
+                                        style="cursor: pointer;">
+                                        <template v-if="!isVideo(gallery.gallery_image)">
+                                            <img class="img-fluid avatar-small"
+                                                :src="`/storage/${gallery.gallery_image}`" alt="Gallery" />
+                                        </template>
+                                        <template v-else>
+                                            <video class="img-fluid avatar-small"
+                                                :src="`/storage/${gallery.gallery_image}`" muted playsinline
+                                                preload="metadata"
+                                                style="max-height: 50px; max-width: 80px; object-fit: cover;"></video>
+                                        </template>
                                     </td>
                                     <td>{{ gallery.gallery_name }}</td>
                                     <td>{{ formatDate(gallery.created_at) }}</td>
@@ -116,11 +140,10 @@
                                             {{ gallery.flag === 'A' ? 'Approved' : 'Pending' }}
                                         </label>
                                     </td>
-                                    <td>
-                                        {{ gallery.addedby }}
-                                    </td>
+                                    <td>{{ gallery.addedby }}</td>
                                 </tr>
                             </tbody>
+
                         </table>
                         <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
                             :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
@@ -130,7 +153,12 @@
                                         <div class="modal-title">
                                             <div class="mb-30">
                                                 <div class="blog-box blog-2">
-                                                    <img class="img-fluid w-100" :src="modalImage" alt="Modal Image" />
+                                                    <!-- Conditional rendering for video or image -->
+                                                    <video v-if="isVideo(modalImage)" class="img-fluid w-100"
+                                                        :src="modalImage" controls autoplay
+                                                        style="max-height: 70vh; width: 100%;"></video>
+                                                    <img v-else class="img-fluid w-100" :src="modalImage"
+                                                        alt="Modal Image" />
                                                     <div class="blog-info pt-10"></div>
                                                 </div>
                                             </div>
@@ -140,6 +168,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -172,20 +201,38 @@ const openModal = (imageSrc) => {
 const closeModal = () => {
     showModal.value = false;
 };
+const MAX_FILE_SIZE_MB = 20;
+function isVideo(url) {
+    if (!url) return false;
+    const ext = url.split('.').pop().toLowerCase();
+    return ['mp4', 'mov', 'avi', 'webm'].includes(ext);
+}
 const onFileSelect = (event) => {
     const files = event.target.files;
     if (files.length === 0) return;
+
     for (let i = 0; i < files.length; i++) {
-        if (files[i].type.split('/')[0] !== 'image') continue;
-        if (!images.value.some((e) => e.name === files[i].name)) {
+        const file = files[i];
+        const fileType = file.type.split('/')[0]; // image or video
+
+        if (!['image', 'video'].includes(fileType)) continue;
+
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            toastr.error(`${file.name} exceeds 20MB limit.`);
+            continue;
+        }
+
+        if (!images.value.some((e) => e.name === file.name)) {
             images.value.push({
-                name: files[i].name,
-                file: files[i],
-                url: URL.createObjectURL(files[i]),
+                name: file.name,
+                file,
+                url: URL.createObjectURL(file),
+                type: fileType
             });
         }
     }
 };
+
 
 const addGalleryItem = () => {
     galleryItems.value.push({ name: '', file: null, url: '' });
@@ -202,10 +249,20 @@ const removeGalleryItem = (index) => {
 
 const onGalleryItemImageSelect = (event, index) => {
     const file = event.target.files[0];
-    if (!file || file.type.split('/')[0] !== 'image') return;
+    if (!file) return;
+
+    const fileType = file.type.split('/')[0];
+    if (!['image', 'video'].includes(fileType)) return;
+
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        toastr.error(`${file.name} exceeds 20MB limit.`);
+        return;
+    }
+
     galleryItems.value[index].file = file;
     galleryItems.value[index].url = URL.createObjectURL(file);
-}
+    galleryItems.value[index].type = fileType;
+};
 
 
 const uploadImages = () => {
@@ -297,24 +354,24 @@ const formatDate = (dateStr) => {
 const getGalleries = async () => {
     try {
         const response = await axios.get('/get_galleries');
-        
+
         // Step 1: Destroy the current DataTable if exists BEFORE updating data
         if ($.fn.dataTable.isDataTable('#galleriesTable')) {
             $('#galleriesTable').DataTable().destroy();
         }
-        
+
         // Step 2: Update reactive data (this triggers Vue DOM update)
         gallariesData.value = response.data;
-        
+
         // Step 3: Wait for DOM update (Vue rendering)
         await nextTick();
-        
+
         // Step 4: Initialize DataTable after DOM is updated with new rows
         $('#galleriesTable').DataTable({
             responsive: true,
             pageLength: 10,
         });
-        
+
         console.log('gallariesData data', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);

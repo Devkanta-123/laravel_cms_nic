@@ -1,49 +1,69 @@
 <template>
-<section class="blog-grid-area pt-120 pb-120" style="margin-top: -4%;">
-  <div class="container">
-    <div class="row justify-content-center gy-4">
-      <div class="col-lg-4 col-md-6" v-for="gallery in galleriesData" :key="gallery.id">
-        <div class="project__item-two">
-          <div class="project__thumb-two">
-            <a href="#" data-toggle="modal" data-target="#galleryItems" @click="selectedGallery = gallery">
-              <img v-if="gallery.image" :src="gallery.image" :alt="gallery.gallery_name" />
-              <img v-else :src="'/storage/' + gallery.gallery_image" :alt="gallery.gallery_name" />
-            </a>
-          </div>
-          <div class="project__content-two">
-            <h2 class="title">
+  <section class="blog-grid-area pt-120 pb-120" style="margin-top: -4%;">
+    <div class="container">
+      <div class="row justify-content-center gy-4">
+        <div class="col-lg-4 col-md-6" v-for="gallery in galleriesData" :key="gallery.id">
+          <div class="project__item-two">
+            <div class="project__thumb-two">
               <a href="#" data-toggle="modal" data-target="#galleryItems" @click="selectedGallery = gallery">
-                {{ gallery.gallery_name }}
+                <!-- If it's a video -->
+                <template v-if="isVideo(gallery.gallery_image)">
+                  <video :src="'/storage/' + gallery.gallery_image" width="100" height="100" muted class="img-thumbnail"
+                    style="object-fit: cover;"></video>
+                </template>
+
+                <!-- If it's an image -->
+                <template v-else>
+                  <img v-if="gallery.image" :src="gallery.image" :alt="gallery.gallery_name" width="100" height="100"
+                    class="img-thumbnail" />
+                  <img v-else :src="'/storage/' + gallery.gallery_image" :alt="gallery.gallery_name" width="100"
+                    height="100" class="img-thumbnail" />
+                </template>
               </a>
-            </h2>
-            <span>{{ gallery.meta_title || 'Gallery' }}</span>
-            <div class="link-arrow link-arrow-two">
-              <a href="#" data-toggle="modal" data-target="#galleryItems" @click="selectedGallery = gallery">
-                <i class="fas fa-arrow-right"></i>
-              </a>
+
+            </div>
+            <div class="project__content-two">
+              <h2 class="title">
+                <a href="#" data-toggle="modal" data-target="#galleryItems" @click="selectedGallery = gallery">
+                  {{ gallery.gallery_name }}
+                </a>
+              </h2>
+              <span>{{ gallery.meta_title || 'Gallery' }}</span>
+              <div class="link-arrow link-arrow-two">
+                <a href="#" data-toggle="modal" data-target="#galleryItems" @click="selectedGallery = gallery">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
   <!--Gallery Item Modal -->
   <div class="modal fade" id="galleryItems" tabindex="-1" role="dialog" aria-labelledby="galleryItemsTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 700px;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"></h5>
-         <i class="far fa-window-close" data-dismiss="modal" aria-label="Close"></i>
+          <h5 class="modal-title">{{ selectedGallery?.gallery_name }}</h5>
+          <i class="far fa-window-close" data-dismiss="modal" aria-label="Close"></i>
         </div>
         <div class="modal-body">
           <div v-if="selectedGallery?.items.length > 0" class="gallery-slider">
             <div class="slide" v-for="(item, index) in selectedGallery.items" :key="index"
               v-show="currentSlide === index">
-              <img :src="'/storage/' + item.image" :alt="item.name" class="img-fluid" />
+
+              <!-- Video Support -->
+              <video v-if="isVideo(item.image)" :src="'/storage/' + item.image" class="img-fluid" controls
+                style="width: 100%; height: auto;"></video>
+
+              <!-- Image Support -->
+              <img v-else :src="'/storage/' + item.image" :alt="item.name" class="img-fluid" />
+
               <p class="mt-2 text-center">{{ item.name }}</p>
             </div>
+
             <div class="d-flex justify-content-between mt-3">
               <div class="testimonial__nav-four">
                 <div class="testimonial-two-button-prev button-swiper-prev" tabindex="0" role="button"
@@ -64,6 +84,7 @@
       </div>
     </div>
   </div>
+
 </template>
 
 
@@ -79,6 +100,11 @@ const CACHE_TIMEOUT = 10 * 60 * 1000; // 5 minutes in milliseconds
 // Reactive data for galleries
 const galleriesData = ref(null);
 
+function isVideo(filePath) {
+  if (!filePath) return false;
+  const ext = filePath.split('.').pop().toLowerCase();
+  return ['mp4', 'mov', 'avi', 'webm'].includes(ext);
+}
 // Function to get galleries data with caching
 // const getGalleries = async () => {
 //   // Try to load the cached data from localStorage

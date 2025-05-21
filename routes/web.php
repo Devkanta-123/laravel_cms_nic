@@ -36,6 +36,7 @@ Route::get('get_website_description', [HomeController::class, 'getWebsiteDescrip
 Route::get('/get_page_content/{menuId}', [HomeController::class, 'getPageContent']);
 Route::get('/get_page_content_bypublisher', [HomeController::class, 'getPageContentByPublisher']);
 Route::post('/approved_paragraph', [HomeController::class, 'approvedParagraph']);
+Route::get('/getActivateLanguages', [HomeController::class, 'getActivateLanguages']); 
 
 Route::get('/page/{id}', [HomeController::class, 'index']);
 
@@ -207,6 +208,11 @@ Route::post('/api/upload_logo', [HomeController::class, 'uploadLogo']);
 
     Route::post('/api/addMapData', [MapController::class, 'storeMapData']);
 
+    //Archieve Data saving
+        Route::post('/api/saveArchiveData', [HomeController::class, 'saveArchiveData']);
+        Route::get('/api/getArchieveData', [HomeController::class, 'getArchieveData']);
+        Route::post('/api/saveLanguage', [HomeController::class, 'saveLanguage']); 
+        Route::get('/api/getMasterLanguages', [HomeController::class, 'getMasterLanguages']); 
 
     Route::get('{view}', ApplicationController::class)->where('view', '(.*)');
 });

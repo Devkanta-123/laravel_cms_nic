@@ -20,10 +20,18 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(gallery, index) in gallariesData" :key="index">
-                                    <td>
-                                        <img class="img-fluid avatar-small" :src="`/storage/${gallery.gallery_image}`"
-                                            @click="openModal(`/storage/${gallery.gallery_image}`)"
-                                            style="cursor: pointer;" alt="Gallery">
+                                    <td @click="openModal(`/storage/${gallery.gallery_image}`)"
+                                        style="cursor: pointer;">
+                                        <template v-if="!isVideo(gallery.gallery_image)">
+                                            <img class="img-fluid avatar-small"
+                                                :src="`/storage/${gallery.gallery_image}`" alt="Gallery" />
+                                        </template>
+                                        <template v-else>
+                                            <video class="img-fluid avatar-small"
+                                                :src="`/storage/${gallery.gallery_image}`" muted playsinline
+                                                preload="metadata"
+                                                style="max-height: 50px; max-width: 80px; object-fit: cover;"></video>
+                                        </template>
                                     </td>
                                     <td>{{ gallery.gallery_name }}</td>
                                     <td>{{ formatDate(gallery.created_at) }}</td>
@@ -48,7 +56,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
+                       <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
                             :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -56,7 +64,12 @@
                                         <div class="modal-title">
                                             <div class="mb-30">
                                                 <div class="blog-box blog-2">
-                                                    <img class="img-fluid w-100" :src="modalImage" alt="Modal Image" />
+                                                    <!-- Conditional rendering for video or image -->
+                                                    <video v-if="isVideo(modalImage)" class="img-fluid w-100"
+                                                        :src="modalImage" controls autoplay
+                                                        style="max-height: 70vh; width: 100%;"></video>
+                                                    <img v-else class="img-fluid w-100" :src="modalImage"
+                                                        alt="Modal Image" />
                                                     <div class="blog-info pt-10"></div>
                                                 </div>
                                             </div>
@@ -85,6 +98,11 @@ const modalImage = ref('');
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
+}
+function isVideo(url) {
+    if (!url) return false;
+    const ext = url.split('.').pop().toLowerCase();
+    return ['mp4', 'mov', 'avi', 'webm'].includes(ext);
 }
 const closeModal = () => {
     showModal.value = false;

@@ -21,13 +21,14 @@
               <ul class="tg-header__top-right list-wrap">
                 <li>
                   <select v-model="language" @change="handleLanguageChanged" id="language-selector">
-                    <option value="English">English</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Khasi">Khasi</option>
+                    <option v-for="lang in activatelanguageData" :key="lang.language_id" :value="lang.language_name">
+                      {{ lang.language_name }}
+                    </option>
                   </select>
+
                 </li>
                 <li class="header-btn">
-                    <Accessibility></Accessibility>
+                  <Accessibility></Accessibility>
                 </li>
               </ul>
             </div>
@@ -148,7 +149,7 @@
         <Carousel></Carousel>
       </div>
       <!-- Statistic -->
-      <section class="features__area"  v-if="currentId == '1'">
+      <section class="features__area" v-if="currentId == '1'">
         <div class="container-fluid p-0">
           <div class="features__item-wrap">
             <div class="row g-0">
@@ -234,9 +235,7 @@
             <div class="col-lg-6">
               <div class="about-img-wrap">
                 <div class="shape">
-                  <img
-                    :src="aboutus"
-                    alt="Apexa">
+                  <img :src="aboutus" alt="Apexa">
                 </div>
                 <div class="experience-year">
 
@@ -289,10 +288,10 @@
         <br>
       </div>
 
-     
+
       <section class="project__area-two" v-if="currentId == '1'">
         <Cards :language="language" />
-            </section>
+      </section>
       <!-- Home FAQs -->
       <section class="faqs__area-six" v-if="currentId == '1'">
         <div class="circle" data-parallax="{&quot;x&quot; : 100 , &quot;y&quot; : 100 }"
@@ -430,6 +429,7 @@ const menuFontSize = ref(14); // Example font size
 const homepragraphdata = ref([]);
 const isMobileMenuOpen = ref(false);
 const windowWidth = ref(window.innerWidth);
+const activatelanguageData = ref();
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
@@ -451,15 +451,7 @@ const sortedSubmenus = (item) => {
       submenus: sortedSubmenus(subItem) // Apply sorting recursively
     }));
 };
-
 const loadingfaqData = ref(false);
-
-
-// Compute sorted nested menu for mobile
-// Function to toggle mobile menu visibility
-
-
-
 const handleLanguageChanged = () => {
   console.log('Language changed to:', language.value);
   fetchMenuItems();
@@ -470,9 +462,7 @@ const scrollToBottom = () => {
     behavior: 'smooth', // Ensures smooth scrolling
   });
 };
-
 provide('language', language);
-
 const currentId = ref(route.params.id || '1');
 watchEffect(() => {
   currentId.value = route.params.id || '1';
@@ -488,20 +478,8 @@ const props = defineProps({
 
 
 
-// const fetchMenuItems = async () => {
-//   try {
-//     debugger;
-//     const response = await axios.get('/get_mainmenus',);
-//     menuItems.value = response.data;
-//     console.log('Fetch Menu', response.data);
-//   } catch (error) {
-//     console.error('Failed to fetch menu items:', error);
-//   }
-// };
-
 const fetchMenuItems = async () => {
   try {
-    debugger;
     const cacheKey = 'menuItemsCache';
     const cacheExpiryKey = 'menuItemsCacheExpiry';
 
@@ -512,7 +490,6 @@ const fetchMenuItems = async () => {
     // Check if cache exists and is still valid
     if (cachedData && cacheExpiry && Date.now() < parseInt(cacheExpiry)) {
       menuItems.value = JSON.parse(cachedData);
-      console.log('Loaded from cache:', menuItems.value);
       return;
     }
 
@@ -525,7 +502,6 @@ const fetchMenuItems = async () => {
     localStorage.setItem(cacheKey, JSON.stringify(response.data));
     localStorage.setItem(cacheExpiryKey, (Date.now() + 1 * 60 * 1000).toString());
 
-    console.log('Fetched from API:', response.data);
   } catch (error) {
     console.error('Failed to fetch menu items:', error);
   }
@@ -533,10 +509,8 @@ const fetchMenuItems = async () => {
 
 
 const fetchPageContent = async () => {
-  debugger;
   const response = await axios.get(`/get_page_content/${currentId.value}`);
   if (response.data) {
-    debugger;
     homepragraphdata.value = response.data.content
       ? response.data.content
       : response.data.content;
@@ -574,20 +548,7 @@ const getMenuItemName = (item) => {
   }
 };
 
-const getLogoUrl = () => {
-  return `/storage/${header.value.logo}`;
-};
 
-
-const increaseFontSize = () => {
-  menuFontSize.value += 1; // Increase font size
-};
-
-const decreaseFontSize = () => {
-  if (menuFontSize.value > 10) {
-    menuFontSize.value -= 1; // Decrease font size but keep it above 10px
-  }
-};
 
 const resetFontSize = () => {
   menuFontSize.value = 14; // Reset to default font size
@@ -604,7 +565,6 @@ const updateWindowWidth = () => {
   windowWidth.value = window.innerWidth;
 };
 const fetchFAQs = async () => {
-  debugger;
   const cachedData = sessionStorage.getItem('faq');
   const cachedTimestamp = sessionStorage.getItem('faqHomeTimestamp');
   const now = Date.now();
@@ -639,19 +599,18 @@ const fetchFAQs = async () => {
   }
 };
 
-//  Create a computed property to format FAQ data dynamically
-const processedFaqData = computed(() => {
-  return (faqData.value || []).map(faq => ({
-    id: faq.id,
-    question: props.language === 'Hindi' ? faq.hindi_title_question || faq.english_title_question
-      : props.language === 'Khasi' ? faq.khasi_title_question || faq.english_title_question
-        : faq.english_title_question,
-    answer: props.language === 'Hindi' ? faq.hindi_answer || faq.english_answer
-      : props.language === 'Khasi' ? faq.khasi_answer || faq.english_answer
-        : faq.english_answer
-  }));
-});
-
+const getActivateLanguages = async () => {
+  try {
+    const response = await axios.get('/getActivateLanguages')
+    if (response.data) {
+      activatelanguageData.value = response.data;
+      console.log("Activated Language", response.data);
+    }
+  }
+  catch (error) {
+    console.log('Failed to fetch  activate languages', error)
+  }
+}
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateWindowWidth);
@@ -662,7 +621,7 @@ const isMobileView = computed(() => windowWidth.value <= 991);
 
 onMounted(async () => {
   try {
-    await Promise.all([fetchMenuItems(), fetchHeader(), fetchPageContent(), fetchFAQs(), window.addEventListener('resize', updateWindowWidth)]);
+    await Promise.all([fetchMenuItems(), fetchHeader(), fetchPageContent(), fetchFAQs(), getActivateLanguages(), window.addEventListener('resize', updateWindowWidth)]);
   } finally {
     isLoading.value = false;
   }
