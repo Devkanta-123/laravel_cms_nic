@@ -146,7 +146,7 @@
     <br>
     <div class="p_content-wrapper">
       <div v-if="currentId == '1'" class="content">
-        <Carousel></Carousel>
+    <Carousel @loaded="handleCarouselLoaded" />
       </div>
       <!-- Statistic -->
       <section class="features__area" v-if="currentId == '1'">
@@ -226,7 +226,7 @@
 
       <!-- Latest news -->
 
-      <section class="services-area services-bg position-relative mt-n2" v-if="currentId == '1'">
+      <section class="services-area services-bg position-relative mt-n2" v-if="currentId == '1' && isCarouselLoaded">
         <LatestNews :language="language" />
       </section>
       <section id="about" class="about-area pt-120 pb-120 mt-n9" v-if="currentId == '1'">
@@ -278,7 +278,7 @@
 
       </section>
 
-      <section class="about__area-five mt-n12" v-if="currentId == '1'">
+      <section class="about__area-five mt-n12" v-if="currentId == '1' && isCarouselLoaded">
         <Notifications :language="language" />
       </section>
       <!-- HomeParagraph end here  -->
@@ -417,7 +417,7 @@ import '../assets/css/main.css';
 import '../assets/js/swiper-bundle.js';
 import '../assets/css/swiper-bundle.css';
 import aboutus from '@/assets/images/aboutus.png';
-
+const isCarouselLoaded = ref(false);
 const menuItems = ref([]);
 const header = ref([]);
 const highContrastMode = ref(false);
@@ -476,7 +476,11 @@ const props = defineProps({
 });
 
 
+const handleCarouselLoaded = () => {
+    console.log("Parent received: Carousel is ready");
 
+  isCarouselLoaded.value = true;
+};
 const fetchMenuItems = async () => {
   try {
     const cacheKey = 'menuItemsCache';

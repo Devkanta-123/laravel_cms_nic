@@ -24,32 +24,31 @@
     </div>
   </div>
 </section> -->
-<section class="slider__area mt-n2">
-   <div class="swiper-container slider_baner__active">
-  <div class="swiper-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-    <div v-for="(slide, index) in slides" :key="index" class="swiper-slide">
-      <div class="banner__area-three banner__bg-five" 
-           :style="`background-image: url('${slide}')`" 
-           style="opacity: 0.85;">
-        <div class="container">
-          <div class="row">
-            <div class="col-xl-7 col-lg-6">
-              <div class="banner__content-three home-9">
-                <h2 class="title" data-aos="fade-up" data-aos-delay="300" >
-                  With MSRLS, Together for 
-                  <span id="typewriter">{{ displayText }}</span>
-                </h2>
-                <a href="about" class="btn" data-aos="fade-up" data-aos-delay="600">
-                  Learn More
-                </a>
+  <section class="slider__area mt-n2">
+    <div class="swiper-container slider_baner__active">
+      <div class="swiper-wrapper" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+        <div v-for="(slide, index) in slides" :key="index" class="swiper-slide">
+          <div class="banner__area-three banner__bg-five" :style="`background-image: url('${slide}')`"
+            style="opacity: 0.85;">
+            <div class="container">
+              <div class="row">
+                <div class="col-xl-7 col-lg-6">
+                  <div class="banner__content-three home-9">
+                    <h2 class="title" data-aos="fade-up" data-aos-delay="300">
+                      With MSRLS, Together for
+                      <span id="typewriter">{{ displayText }}</span>
+                    </h2>
+                    <a href="about" class="btn" data-aos="fade-up" data-aos-delay="600">
+                      Learn More
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
 
     <div class="box-button-slider-bottom home-9 d-none d-lg-block">
@@ -95,53 +94,154 @@
   </section> -->
 </template>
 
-
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, defineEmits } from 'vue';
 import axios from 'axios';
-import { loadOrCacheImage } from '../services/carousalCache.js';
-const fullText = "Sustainable Rural Growth."
-const displayText = ref("")
-let index = 0
-let slideInterval;
-const slides = ref([]); // Holds the image data
-const currentIndex = ref(0); // Tracks the index of the current slide
-// const cacheDuration = 24 * 60 * 60 * 1000; // Cache duration (1 day)
-const cacheDuration = 10 * 60 * 1000; // Cache duration (10 minute)
+const emit = defineEmits(['loaded']);
 
+const fullText = "Sustainable Rural Growth.";
+const displayText = ref("");
+let index = 0;
+
+const slides = ref([]);        // Array of image URLs for carousel
+const currentIndex = ref(0);   // Current slide index
+let slideInterval;
+
+const CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_KEY_TIMESTAMP = 'carouselCacheTimestamp';
+
+// Typewriter effect for the text
 const typeWriter = () => {
   if (index < fullText.length) {
-    displayText.value += fullText.charAt(index)
-    index++
-    setTimeout(typeWriter, 100)
-  }
-}
-// Fetch the carousel slides
-const fetchSlides = async () => {
-  try {
-    const response = await axios.get('/get_carousel', {
-      params: { flag: 'A' }
-    });
-    console.log('Fetched slides:', response.data);
-
-    if (response.data && Array.isArray(response.data)) {
-      const slideData = await Promise.all(response.data.map(async (slide) => {
-        const filePath = '/storage/' + slide.image.replace('public/', '');
-        const imageBase64 = await loadOrCacheImage(filePath);
-        return { filePath, imageBase64 };
-      }));
-
-      slides.value = slideData.map(slide => slide.imageBase64);
-    } else {
-      console.error('Invalid data format');
-    }
-  } catch (error) {
-    console.error('Failed to fetch slides:', error);
+    displayText.value += fullText.charAt(index);
+    index++;
+    setTimeout(typeWriter, 100);
   }
 };
 
+// IndexedDB helpers for caching carousel slides
 
-// Navigation functions to handle image sliding
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('CarouselDB', 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('slides')) {
+        db.createObjectStore('slides', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+  });
+}
+
+async function saveSlides(base64Slides) {
+  const db = await openDB();
+  const tx = db.transaction('slides', 'readwrite');
+  const store = tx.objectStore('slides');
+
+  await store.clear(); // Clear old cache before saving new
+
+  base64Slides.forEach(slide => {
+    store.add({ base64: slide });
+  });
+
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getSlides() {
+  const db = await openDB();
+  const tx = db.transaction('slides', 'readonly');
+  const store = tx.objectStore('slides');
+
+  return new Promise((resolve, reject) => {
+    const slides = [];
+    const cursorRequest = store.openCursor();
+    cursorRequest.onerror = () => reject(cursorRequest.error);
+    cursorRequest.onsuccess = () => {
+      const cursor = cursorRequest.result;
+      if (cursor) {
+        slides.push(cursor.value.base64);
+        cursor.continue();
+      } else {
+        resolve(slides);
+      }
+    };
+  });
+}
+
+function isCacheValid() {
+  const timestamp = localStorage.getItem(CACHE_KEY_TIMESTAMP);
+  if (!timestamp) return false;
+  const age = Date.now() - Number(timestamp);
+  return age < CACHE_EXPIRY_MS;
+}
+
+// Fetch slides from backend and cache in IndexedDB
+async function fetchSlides() {
+  try {
+    const response = await axios.get('/get_carousel', { params: { flag: 'A' } });
+
+    const base64Slides = response.data; // array of base64 strings
+
+    // Save to IndexedDB cache
+    await saveSlides(base64Slides);
+
+    // Update cache timestamp
+    localStorage.setItem(CACHE_KEY_TIMESTAMP, Date.now().toString());
+
+    // Decode base64 JSON, extract image URLs
+    const slideData = base64Slides
+      .map(base64Str => {
+        const decoded = JSON.parse(atob(base64Str));
+        return decoded.data.map(item => '/storage/' + item.image.replace('public/', ''));
+      })
+      .flat();
+
+    slides.value = slideData;
+  } catch (error) {
+    console.error('Fetch failed, loading cached slides:', error);
+
+    // Load from IndexedDB cache if fetch fails
+    const cachedBase64Slides = await getSlides();
+
+    if (cachedBase64Slides.length) {
+      const slideData = cachedBase64Slides
+        .map(base64Str => {
+          const decoded = JSON.parse(atob(base64Str));
+          return decoded.data.map(item => '/storage/' + item.image.replace('public/', ''));
+        })
+        .flat();
+      slides.value = slideData;
+    }
+  }
+}
+
+async function loadSlides() {
+  if (isCacheValid()) {
+    // Load from IndexedDB cache
+    const cachedBase64Slides = await getSlides();
+
+    if (cachedBase64Slides.length) {
+      const slideData = cachedBase64Slides
+        .map(base64Str => {
+          const decoded = JSON.parse(atob(base64Str));
+          return decoded.data.map(item => '/storage/' + item.image.replace('public/', ''));
+        })
+        .flat();
+      slides.value = slideData;
+      return;
+    }
+  }
+
+  // Cache invalid or empty, fetch fresh slides
+  await fetchSlides();
+}
+
+// Carousel navigation
 const prevImage = () => {
   currentIndex.value =
     currentIndex.value > 0 ? currentIndex.value - 1 : slides.value.length - 1;
@@ -152,19 +252,21 @@ const nextImage = () => {
     currentIndex.value < slides.value.length - 1 ? currentIndex.value + 1 : 0;
 };
 
-// Auto slide change every 5 seconds
-
+// Setup on component mount
 onMounted(async () => {
-  await fetchSlides();
-  typeWriter()
+  await loadSlides();
+  typeWriter();
+  emit('loaded');     // Notify parent that loading is done
+  console.log("Carousel loaded successfully, ready to call other APIs");
   slideInterval = setInterval(nextImage, 5000);
-
 });
+
+// Cleanup on unmount
 onUnmounted(() => {
-  // Clear interval when the component is unmounted
   clearInterval(slideInterval);
 });
 </script>
+
 
 
 

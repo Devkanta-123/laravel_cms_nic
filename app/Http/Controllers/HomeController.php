@@ -20,6 +20,7 @@ use App\Models\LanguageMaster;
 use Carbon\Carbon;
 use App\Models\Footer;
 use App\Models\Newsletter;
+use App\Models\WebsiteCache;
 use App\Models\PageSectionMaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -317,33 +318,73 @@ class HomeController extends Controller
         return response()->json(['success' => true, 'data' => $page]);
     }
 
+    // public function uploadCarousel(Request $request)
+    // {
+    //     $request->validate([
+    //         'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:20480' // 20MB
+    //     ]);
+    //     // Get logged-in user
+    //     $user = Auth::user(); // This will get the authenticated user
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Unauthorized'], 401);
+    //     }
+    //     //before submit check roleid and set flag value
+    //     // Determine flag based on role_id
+    //     if ($user->role_id == 2) { //if admin upload 
+    //         $flag = 'A';
+    //     } elseif ($user->role_id == 3) { //if contentcreator upload
+    //         $flag = 'N';
+    //     }
+    //     // Handle file upload
+    //     $uploadedImages = [];
+    //     if ($request->hasFile('images')) {
+    //         foreach ($request->file('images') as $image) {
+    //             $filename = $image->getClientOriginalName();
+    //             $path = $image->store('slides', 'public'); // Store in /public/storage/slides directory
+    //             $uploadedImages[] = $filename;
+
+
+    //             Carousel::create([
+    //                 'image' => $path,
+    //                 'link' => $path,
+    //                 'type' => 'Slider',
+    //                 'user_id' => $user->id,
+    //                 'role_id' => $user->role_id,
+    //                 'flag' => $flag
+    //             ]);
+    //         }
+    //     }
+
+    //     return response()->json(['message' => 'Images uploaded successfully', 'filenames' => $uploadedImages]);
+    // }
     public function uploadCarousel(Request $request)
     {
         $request->validate([
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:20480' // 20MB
         ]);
-        // Get logged-in user
-        $user = Auth::user(); // This will get the authenticated user
+
+        $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        //before submit check roleid and set flag value
-        // Determine flag based on role_id
-        if ($user->role_id == 2) { //if admin upload 
+
+        $flag = null;
+        if ($user->role_id == 2) {
             $flag = 'A';
-        } elseif ($user->role_id == 3) { //if contentcreator upload
+        } elseif ($user->role_id == 3) {
             $flag = 'N';
         }
-        // Handle file upload
+
         $uploadedImages = [];
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $filename = $image->getClientOriginalName();
-                $path = $image->store('slides', 'public'); // Store in /public/storage/slides directory
+                $path = $image->store('slides', 'public'); // e.g. slides/abcd.jpg
                 $uploadedImages[] = $filename;
 
-
-                Carousel::create([
+                // Save in Carousel table
+                $carousel = Carousel::create([
                     'image' => $path,
                     'link' => $path,
                     'type' => 'Slider',
@@ -351,11 +392,31 @@ class HomeController extends Controller
                     'role_id' => $user->role_id,
                     'flag' => $flag
                 ]);
+
+                // Prepare single record for cache
+                $carouselData = [
+                    'carousel_id' => $carousel->id,
+                    'image' => $carousel->image,
+                    'link' => $carousel->link,
+                    'type' => $carousel->type,
+                    'flag' => $carousel->flag
+                ];
+
+                // Insert as a new row (row-wise) into WebsiteCache
+                WebsiteCache::create([
+                    'carousel_id' => $carousel->id,
+                    'type' => 'carousel',
+                    'data' => base64_encode(json_encode(['data' => [$carouselData]]))
+                ]);
             }
         }
 
-        return response()->json(['message' => 'Images uploaded successfully', 'filenames' => $uploadedImages]);
+        return response()->json([
+            'message' => 'Images uploaded successfully',
+            'filenames' => $uploadedImages
+        ]);
     }
+
 
     public function deleteSlide(Request $request)
     {
@@ -1074,16 +1135,41 @@ class HomeController extends Controller
     //     return (Carousel::all());
     // }
 
+    // public function getCarousel(Request $request)
+    // {
+
+    //     $flag = $request->query('flag');
+    //     $user = Auth::user();
+    //     if ($flag === 'A') { //for  website
+    //         // Return Carousel records with flag 'A'
+    //         return Carousel::where('flag', 'A')->get();
+    //     } elseif (in_array($user->role_id, [3, 4])) {
+    //         // Use query builder to join with users table and return specific fields
+    //         return DB::table('carousel as cs')
+    //             ->join('users as u', 'cs.user_id', '=', 'u.id')
+    //             ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id')
+    //             ->get();
+    //     }
+
+    //     // Default: return all Carousel records
+    //     return Carousel::all();
+    // }
+
     public function getCarousel(Request $request)
     {
-
         $flag = $request->query('flag');
         $user = Auth::user();
-        if ($flag === 'A') { //for  website
-            // Return Carousel records with flag 'A'
-            return Carousel::where('flag', 'A')->get();
-        } elseif (in_array($user->role_id, [3, 4])) {
-            // Use query builder to join with users table and return specific fields
+
+        if ($flag === 'A') {
+            // Return all raw base64 data strings for carousel type with flag 'A'
+            $caches = WebsiteCache::where('type', 'carousel')
+                ->where('flag', 'A')
+                ->pluck('data');  // Just pluck the base64 data column
+
+            // Return as array of base64 strings directly
+            return response()->json($caches);
+        } elseif ($user && in_array($user->role_id, [3, 4])) {
+            // Return carousel records for specific roles
             return DB::table('carousel as cs')
                 ->join('users as u', 'cs.user_id', '=', 'u.id')
                 ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id')
@@ -1094,22 +1180,54 @@ class HomeController extends Controller
         return Carousel::all();
     }
 
+
+    // public function approveCarousel(Request $request)
+    // {
+    //     $user = Auth::user();
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Unauthorized'], 401);
+    //     }
+    //     $request->validate([
+    //         'id' => 'required|exists:carousel,id'
+    //     ]);
+
+    //     $carousel = Carousel::find($request->id);
+    //     $carousel->flag = 'A'; // Approve
+    //     $carousel->save();
+
+    //     return response()->json(['success' => true, 'message' => 'Approved successfully']);
+    // }
+
     public function approveCarousel(Request $request)
     {
         $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
+
         $request->validate([
             'id' => 'required|exists:carousel,id'
         ]);
 
+        // Approve the carousel
         $carousel = Carousel::find($request->id);
-        $carousel->flag = 'A'; // Approve
+        $carousel->flag = 'A';
         $carousel->save();
+
+        // Update the website_cache row where carousel_id matches
+        DB::table('website_cache')
+            ->where('type', 'carousel')
+            ->where('carousel_id', $carousel->id)
+            ->update([
+                'flag' => 'A',
+                'user_id' => $user->id,
+                'role_id' => $user->role_id
+            ]);
 
         return response()->json(['success' => true, 'message' => 'Approved successfully']);
     }
+
+
 
     public function getBanner()
     {
@@ -1420,5 +1538,46 @@ class HomeController extends Controller
         return response()->json($languages);
     }
 
+    public function getAdminDashboardData()
+    {
+        // Cards count
+        $cards = DB::table('cards')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+
+        // Latest News count
+        $latestNews = DB::table('latest_news')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+
+        // Notice Board count
+        $noticeBoard = DB::table('notifications')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+
+        return response()->json([
+            'cards' => [
+                'pending' => $cards->pendingcount,
+                'approved' => $cards->approvedcount,
+            ],
+            'latest_news' => [
+                'pending' => $latestNews->pendingcount,
+                'approved' => $latestNews->approvedcount,
+            ],
+            'notice_board' => [
+                'pending' => $noticeBoard->pendingcount,
+                'approved' => $noticeBoard->approvedcount,
+            ],
+        ]);
+    }
 
 }

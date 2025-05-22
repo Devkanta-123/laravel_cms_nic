@@ -1,14 +1,6 @@
 <template>
     <Loader v-if="isLoading" />
-
     <br><br><br><br>
-    <div v-if="route.params.id == 1 || route.params.id == null">
-        <Carousel></Carousel>
-        <br><br><br>
-        <!-- <LatestNews :menu="props.id" /> -->
-
-    </div>
-
     <section class="breadcrumb__area breadcrumb__bg" data-background="assets/img/bg/breadcrumb_bg.jpg"
         style="background-image: url(&quot;assets/img/bg/breadcrumb_bg.jpg&quot;);">
         <div class="container" style="margin-top: -130px;">
