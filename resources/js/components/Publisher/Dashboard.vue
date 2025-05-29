@@ -1,12 +1,6 @@
 <template>
-  <link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  crossorigin="anonymous"
-/>
-
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Poppins:200,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" />
   <nav class="admin-header navbar navbar-default col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
     <!-- logo -->
     <div class="text-start navbar-brand-wrapper">
@@ -90,8 +84,8 @@
         </a>
         <div class="dropdown-menu dropdown-menu-right">
           <div class="dropdown-header">
-            <h5 class="mt-0 mb-0">{{name}}</h5>
-            <span>{{email}}</span>
+            <h5 class="mt-0 mb-0">{{ name }}</h5>
+            <span>{{ email }}</span>
           </div>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="#"><i class="text-secondary ti-reload"></i>Activity</a>
@@ -107,185 +101,229 @@
     </ul>
   </nav>
 
-  <div class="container-fluid">
-    <div class="row" v-if="role == 4">
+  <div class="container-fluid ms-3" v-if="role == 4">
+    <div class="row">
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Carousel' })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
-                  <i class="fa fa-users highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-sliders-h highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-dark">Visitors</p>
-                <h4>65,650</h4>
+                <p class="card-text text-dark">Carousel</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.carousel.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.carousel.approved }}</p>
               </div>
             </div>
-            <!-- <p class="text-muted pt-3 mb-0 mt-2 border-top">
-              <i class="fa fa-exclamation-circle me-1" aria-hidden="true"></i> 81% lower growth
-            </p> -->
           </div>
         </div>
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Cards' })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-danger">
-                  <i class="fa fa-clipboard-list highlight-icon" aria-hidden="true"></i>
+                  <i class="fa fa-layer-group highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-dark">UnPublish Data </p>
-                <h4>10</h4>
+                <p class="card-text text-dark">Cards</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.cards.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.cards.approved }}</p>
               </div>
             </div>
-            <!-- <p class="text-muted pt-3 mb-0 mt-2 border-top">
-              <i class="fa fa-bookmark-o me-1" aria-hidden="true"></i> Total sales
-            </p> -->
           </div>
         </div>
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Latest News' })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-warning">
-                  <i class="fa fa-exclamation-circle highlight-icon" aria-hidden="true"></i>
+                  <i class="fa fa-newspaper highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-dark">Missing Content Alerts</p>
-                <h4>65</h4>
+                <p class="card-text text-dark">Latest News</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.latest_news.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.latest_news.approved }}</p>
               </div>
             </div>
-            <!-- <p class="text-muted pt-3 mb-0 mt-2 border-top">
-              <i class="fa fa-calendar me-1" aria-hidden="true"></i> Sales Per Week
-            </p> -->
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-primary">
-                  <i class="fa fa-envelope highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark"> Contact Form Submissions</p>
-                <h4>50+</h4>
-              </div>
-            </div>
-            <!-- <p class="text-muted pt-3 mb-0 mt-2 border-top">
-              <i class="fa fa-repeat me-1" aria-hidden="true"></i> Just Updated
-            </p> -->
           </div>
         </div>
       </div>
     </div>
-    <!-- <div class="row">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-30">
-        <div class="card card-statistics h-100 bg-danger">
-          <div class="card-body">
+    <div class="row">
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Notice Board' })">
             <div class="clearfix">
               <div class="float-start">
-                <span class="text-white">
-                  <i class="fa fa-bar-chart-o highlight-icon" aria-hidden="true"></i>
+                <span class="text-primary">
+                  <i class="fa fa-clipboard highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-white">Visitors</p>
-                <h4 class="text-white">65,650</h4>
+                <p class="card-text text-dark">Notice Board</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.notice_board.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.notice_board.approved }}</p>
+                <p class="card-text text-dark">Updated : {{ dashboardData.notice_board.updated }}</p>
               </div>
             </div>
-            <p class="mt-3 text-white pt-3 border-top border-white">
-              <i class="fa fa-exclamation-circle me-1" aria-hidden="true"></i> 81% lower growth
-            </p>
           </div>
         </div>
       </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-30">
-        <div class="card card-statistics h-100 bg-primary">
-          <div class="card-body">
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Gallery' })">
             <div class="clearfix">
               <div class="float-start">
-                <span class="text-white">
-                  <i class="fa fa-shopping-cart highlight-icon" aria-hidden="true"></i>
+                <span class="text-primary">
+                  <i class="fa fa-image highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-white">Orders</p>
-                <h4 class="text-white">656</h4>
+                <p class="card-text text-dark">Gallery</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.gallery.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.gallery.approved }}</p>
               </div>
             </div>
-            <p class="text-white mt-3 pt-3 border-top border-white">
-              <i class="fa fa-bookmark-o me-1" aria-hidden="true"></i> Total sales
-            </p>
           </div>
         </div>
       </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-30">
-        <div class="card card-statistics h-100 bg-warning">
-          <div class="card-body">
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Paragraph' })">
             <div class="clearfix">
               <div class="float-start">
-                <span class="text-white">
-                  <i class="fa fa-dollar highlight-icon" aria-hidden="true"></i>
+                <span class="text-primary">
+                  <i class="fa fa-file-text  highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-white">Revenue</p>
-                <h4 class="text-white">$65656</h4>
+                <p class="card-text text-dark">Paragraph</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.paragraph.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.paragraph.approved }}</p>
+                <p class="card-text text-dark">Updated : {{ dashboardData.paragraph.updated }}</p>
               </div>
             </div>
-            <p class="text-white mt-3 pt-3 border-top border-white">
-              <i class="fa fa-calendar me-1" aria-hidden="true"></i> Sales Per Week
-            </p>
           </div>
         </div>
       </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-30">
-        <div class="card card-statistics h-100 bg-dark">
-          <div class="card-body">
+
+    </div>
+    <div class="row">
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'WhosWho' })">
             <div class="clearfix">
               <div class="float-start">
-                <span class="text-white">
-                  <i class="fa fa-twitter highlight-icon" aria-hidden="true"></i>
+                <span class="text-danger">
+                  <i class="fa fa-users highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
-                <p class="card-text text-white">Followers</p>
-                <h4 class="text-white">62,500+</h4>
+                <p class="card-text text-dark">Whos Who</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.whos_who.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.whos_who.approved }}</p>
               </div>
             </div>
-            <p class="text-white mt-3 pt-3 border-top border-white">
-              <i class="fa fa-repeat me-1" aria-hidden="true"></i> Just Updated
-            </p>
           </div>
         </div>
       </div>
-    </div> -->
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Logo' })">
+            <div class="clearfix">
+              <div class="float-start">
+                <span class="text-warning">
+                  <i class="fa fa-globe highlight-icon" aria-hidden="true"></i>
+
+                </span>
+              </div>
+              <div class="float-end text-end">
+                <p class="card-text text-dark">Logo</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.logo.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.logo.approved }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Map' })">
+            <div class="clearfix">
+              <div class="float-start">
+                <span class="text-success">
+                  <i class="fa fa-map-marker highlight-icon" aria-hidden="true"></i>
+                </span>
+              </div>
+              <div class="float-end text-end">
+                <p class="card-text text-dark">Map</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.map.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.map.approved }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
+        <div class="card card-statistics h-100">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'FAQ' })">
+            <div class="clearfix">
+              <div class="float-start">
+                <span class="text-success">
+                  <i class="fa fa-question-circle highlight-icon" aria-hidden="true"></i> FAQs
+                </span>
+              </div>
+              <div class="float-end text-end">
+                <p class="card-text text-dark">FAQs</p>
+                <p class="card-text text-dark">Pending : {{ dashboardData.faqs.pending }}</p>
+                <p class="card-text text-dark">Approved : {{ dashboardData.faqs.approved }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { reactive, toRefs, onMounted, ref } from 'vue';
+import {onMounted, ref } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const role = ref(null)
 const email = ref('')
 const name = ref('')
+const dashboardData = ref({
+  cards: { approved: 0, pending: 0 },
+  carousel: { approved: 0, pending: 0 },
+  latest_news: { approved: 0, pending: 0 },
+  notice_board: { approved: 0, pending: 0 }
+})
+
+const openPageSection = (section) => {
+  router.push({
+    name: 'PublisherFormsHandler',
+    params: { menuId: section.menu_id, menuName: section.page_section_name }
+  });
+}
 // Duration in milliseconds (e.g., 15 minutes)
 const CACHE_DURATION = 15 * 60 * 1000
 
 const fetchUser = async () => {
-  debugger;
   const cachedUser = JSON.parse(sessionStorage.getItem('login_user_cache_data'))
   const now = new Date().getTime()
 
@@ -301,14 +339,10 @@ const fetchUser = async () => {
   try {
     const response = await axios.get('/api/get_user')
     const user = response.data[0]
-
-    console.log('Fetched from API', user)
-
     // Update refs
     role.value = user.role_id
     email.value = user.email
     name.value = user.name
-
     // Store in sessionStorage with timestamp
     sessionStorage.setItem(
       'user_data',
@@ -323,8 +357,19 @@ const fetchUser = async () => {
     console.error('Failed to fetch user:', error)
   }
 }
+
+const getDashboardData = async () => {
+  try {
+    const response = await axios.get('/getDashboardData')
+    console.log('Fetched  DashboardData', response.data)
+    dashboardData.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch DashboardData:', error)
+  }
+}
 onMounted(() => {
   fetchUser();
+  getDashboardData();
 });
 
 </script>

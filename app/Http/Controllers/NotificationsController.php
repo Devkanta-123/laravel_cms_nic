@@ -100,7 +100,12 @@ class NotificationsController extends Controller
         // Role-based logic
         if ($user->role_id == 2) {
             // Admin - all notifications
-            $notifications = Notifications::all();
+            $notifications = DB::select("
+                SELECT ns.*, cm.category_name, u.name as addedby 
+                FROM notifications ns
+                INNER JOIN category_master cm ON cm.id = ns.category_id
+                INNER JOIN users u ON u.id = ns.user_id
+            ");
         } elseif (in_array($user->role_id, [3, 4])) {
             // Content Creator and Publisher
             $notifications = DB::select("
@@ -151,16 +156,16 @@ class NotificationsController extends Controller
         }
     }
 
-   public function getNotificationsForCurrentMonth(Request $request)
-{
-    $flag = $request->query('flag', 'A'); // default to 'A'
+    public function getNotificationsForCurrentMonth(Request $request)
+    {
+        $flag = $request->query('flag', 'A'); // default to 'A'
 
-    $notifications = Notifications::whereMonth('date', date('m'))
-                                   ->where('flag', $flag)
-                                   ->get();
+        $notifications = Notifications::whereMonth('date', date('m'))
+            ->where('flag', $flag)
+            ->get();
 
-    return response()->json($notifications, 200);
-}
+        return response()->json($notifications, 200);
+    }
 
     public function getRecruitmentsForCurrentMonth()
     {

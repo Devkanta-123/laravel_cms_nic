@@ -107,7 +107,7 @@ const slides = ref([]);        // Array of image URLs for carousel
 const currentIndex = ref(0);   // Current slide index
 let slideInterval;
 
-const CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_EXPIRY_MS = 10 * 60 * 20000; // 20 minutes
 const CACHE_KEY_TIMESTAMP = 'carouselCacheTimestamp';
 
 // Typewriter effect for the text

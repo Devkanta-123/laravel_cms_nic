@@ -87,7 +87,7 @@
                                 <div class="blog-post-meta">
                                     <ul class="list-wrap">
                                         <li>
-                                            <a href="#" class="blog__post-tag-two">
+                                            <a href="#" class="blog__post-tag-two ">
                                                 {{ categoryNames[item.category_id] || 'Unknown' }}
                                             </a>
                                         </li>
@@ -97,7 +97,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <h2 class="title">
+                                <h2 class="title contactus">
                                     <a href="#" @click.prevent="openNews(item)">{{ item.title }}</a>
                                 </h2>
                             </div>

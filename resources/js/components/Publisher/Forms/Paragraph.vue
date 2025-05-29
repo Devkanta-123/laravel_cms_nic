@@ -26,19 +26,15 @@
                                     <td>{{ formatDate(para.created_at) }}</td>
                                     <td>{{ para.addedby }}</td>
                                     <td>
-                                        <label :class="{
-                                            'badge bg-success': para.flag === 'A',
-                                            'badge bg-info': para.flag === 'N',
-                                            'badge bg-warning': para.flag === 'U'
-                                        }">
-                                            {{
-                                                para.flag === 'A' ? 'Approved' :
-                                                    para.flag === 'N' ? 'New' :
-                                                        para.flag === 'U' ? 'Updated' :
-                                                            'Unknown'
-                                            }}
+                                        <label v-if="para.flag === 'A'" class="badge bg-success">
+                                            Approved
                                         </label>
-
+                                        <label v-else-if="para.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
+                                        </label>
                                     </td>
                                     <td>
                                         <!-- <i class="fas fa-trash-alt text-danger" @click="deleteSlide(news.id)"></i> -->

@@ -86,7 +86,7 @@ public function getWhosWho(Request $request)
         return response()->json($whoswho);
     }
 
-    if (in_array($user->role_id, [3, 4])) {
+    if (in_array($user->role_id, [2,3, 4])) {
         // Return joined data with addedby and level_name
         $query = DB::table('whos_who as ww')
             ->join('users as u', 'u.id', '=', 'ww.user_id')

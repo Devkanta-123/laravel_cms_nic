@@ -1,25 +1,9 @@
 <template>
     <div class="container">
-        <div class="row" style="margin-top: -110px;">
-            <div class="col-lg-4">
-                <div class="choose__content-five pe-0">
-                    <div class="section-title mb-30 tg-heading-subheading animation-style3">
-                        <h2 class="title tg-element-title" style="perspective: 400px;">
-                            <!-- <div class="split-line" style="display: block; text-align: start; position: relative;">
-                                <div style="position:relative;display:inline-block;">
-                                    Frequently Asked questions
-
-                                </div>
-                            </div> -->
-                        </h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-12 offset-lg-1 mt-lg-0 mt-9">
+        <div class="row">
                 <div class="accordion" style="opacity: 1;">
                     <div v-for="(faq, index) in processedFaqData" :key="faq.id"
                         class="px-0 card rounded-3 mb-3 collapse-custom py-2 flex-grow-1 position-relative">
-
                         <div class="faq-color-strip position-absolute"></div>
                         <div class="p-0 card-header border-0 rounded-3">
                             <a class="p-3 text-white fw-bold d-flex align-items-center collapsed"
@@ -39,7 +23,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
 
     </div>
@@ -72,10 +55,10 @@ const fetchFAQs = async () => {
     loadingfaqData.value = true;
     try {
         const response = await axios.get('/get_faq', {
-      params: {
-        flag: 2
-      }
-    });
+            params: {
+                flag: 2
+            }
+        });
         console.log('Fetched faqData:', response.data);
         if (response.data && Array.isArray(response.data)) {
             faqData.value = response.data;

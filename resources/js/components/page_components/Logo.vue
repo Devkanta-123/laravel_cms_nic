@@ -1,22 +1,22 @@
 <template>
     <div class="default-tab">
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-                <a href="#General" class="ME-Tabs nav-link active" data-bs-toggle="tab">Upload Logo</a>
-            </li>
+        <div class="tabs">
+            <div class="tab-item" :class="{ active: selectedTab === 'add' }" @click="selectedTab = 'add'">
+                Add Logo
+            </div>
+            <div class="tab-item" :class="{ active: selectedTab === 'manage' }" @click="selectedTab = 'manage'">
+                Manage Logo
+            </div>
 
-            <!-- <li class="nav-item">
-                      <a href="#Advance" class="ME-Tabs nav-link " data-bs-toggle="tab">Edit Banner</a>
-                  </li> -->
-        </ul>
+        </div>
     </div>
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="General" role="tabpanel">
+        <div v-show="selectedTab === 'add'">
             <div class="row">
                 <div class="col-md-12 mb-2 mb-md-3 " id="">
                     <div class="card">
                         <div class="top">
-                            Drag Logo to Upload
+                            Drag Logo to Upload (max 5mb)
                         </div>
 
                         <div class="drag-area" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave"
@@ -32,9 +32,6 @@
                                 <img :src="image.url" :alt="image.name" />
                             </div>
                         </div>
-
-
-
                         <button type="upload" @click="uploadImages">Upload</button>
                         <hr>
 
@@ -49,23 +46,88 @@
                 </div>
             </div>
         </div>
+        <div v-show="selectedTab === 'manage'">
+            <div class="card card-statistics h-100">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table center-aligned-table mb-0" id="logoTable">
+                            <thead>
+                                <tr class="text-dark">
+                                    <th>Image</th>
+                                    <th>Added On</th>
+                                    <th>Status</th>
+                                    <th>Added By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(logo, index) in logoData" :key="index">
+                                    <td>
+                                        <img class="direct-chat-img" :src="`/storage/${logo.image}`"
+                                            @click="openModal(`/storage/${logo.image}`)" style="cursor: pointer;"
+                                            alt="logo">
+                                    </td>
+                                    <td>{{ formatDate(logo.created_at) }}</td>
+                                    <td>
+                                        <label :class="logo.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
+                                            {{ logo.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        </label>
+                                    </td>
+                                    <td>
+                                        {{ logo.addedby }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
+                            :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header align-items-start">
+                                        <div class="modal-title">
+                                            <div class="mb-30">
+                                                <div class="blog-box blog-2">
+                                                    <img class="img-fluid w-100" :src="modalImage" alt="Modal Image" />
+                                                    <div class="blog-info pt-10"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="btn-success btn-sm" @click="closeModal">x</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
 
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
-
+const logoData = ref()
 const images = ref([]);
 const isDragging = ref(false);
 const fileInput = ref(null);
 const slides = ref([]);
 const toastr = useToastr();
-const props = defineProps(['menu']);
-
+const showModal = ref(false);
+const modalImage = ref('');
+const openModal = (imageSrc) => {
+    modalImage.value = imageSrc;
+    showModal.value = true;
+}
+const selectedTab = ref('add') // Default to 'add' tab
+const closeModal = () => {
+    showModal.value = false;
+};
+const props = defineProps({
+    menu: String
+});
 const selectFile = () => {
     fileInput.value.click();
 }
@@ -114,9 +176,20 @@ const onDrop = (e) => {
     }
 };
 
+
+const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+};
+
 const uploadImages = () => {
     debugger;
     const formData = new FormData();
+    formData.append("menu", props.menu);
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);
     });
@@ -128,18 +201,19 @@ const uploadImages = () => {
         }
     })
         .then(response => {
-            fetchBanner();
+            fetchLogo();
             toastr.success('Logo uploaded successfully');
             images.value = [];
             fileInput = ref(null);
         })
         .catch(error => {
             console.error('Error uploading Banner:', error);
+            toastr.error(error);
+
         });
 };
 
 const deleteDBImage = (slide, index) => {
-
     axios.post('/api/delete_banner', { id: slide.id })
         .then(response => {
             console.log('Banner deleted successfully:', response.data);
@@ -151,18 +225,26 @@ const deleteDBImage = (slide, index) => {
         });
 };
 
-const fetchBanner = async () => {
+const fetchLogo = async () => {
     try {
-        const response = await axios.get('/get_banner');
-        console.log(response.data);
-        slides.value = response.data;
+        const response = await axios.get('/get_logo');
+        logoData.value = response.data;
+        await nextTick(); // Wait for DOM to update
+
+        if ($.fn.dataTable.isDataTable('#logoTable')) {
+            $('#logoTable').DataTable().destroy();
+        }
+        $('#logoTable').DataTable({
+            responsive: true,
+            pageLength: 5,
+        });
     } catch (error) {
         console.error('Failed to fetch banner:', error);
     }
 };
 
 onMounted(() => {
-    fetchBanner();
+    fetchLogo();
 });
 
 </script>

@@ -4,7 +4,7 @@
         href="https://img1.digitallocker.gov.in/ux4g/UX4G-CDN-accessibility/css/accesibility-style-v2.1.css">
 
     <div class="uwaw uw-light-theme gradient-head uwaw-initial paid_widget" id="uw-main" v-show="isModalOpen">
-        <div class="relative second-panel" style="background-color: #348b62;">
+        <div class="relative second-panel accessibility">
             <h3>Accessibility options</h3>
             <div class="uwaw-close" onclick="closeMain()"></div>
         </div>

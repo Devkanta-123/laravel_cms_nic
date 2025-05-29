@@ -160,7 +160,7 @@
 
                   </div>
                   <div class="features__content">
-                    <h4 class="title"><a href="#">Households Mobilised</a></h4>
+                    <h4 class="title contactus"><a href="#">Households Mobilised</a></h4>
                     <h2 class="count"><span class="odometer odometer-auto-theme" data-count="45">
                         <div class="odometer-inside"><span class="odometer-digit"><span
                               class="odometer-digit-spacer">8</span><span class="odometer-digit-inner"><span
@@ -176,7 +176,7 @@
                     <i class="fa-solid fa-users"></i>
                   </div>
                   <div class="features__content">
-                    <h4 class="title"><a href="#"> Self Help Groups</a></h4>
+                    <h4 class="title contactus"><a href="#"> Self Help Groups</a></h4>
                     <h2 class="count"><span class="odometer odometer-auto-theme" data-count="45">
                         <div class="odometer-inside"><span class="odometer-digit"><span
                               class="odometer-digit-spacer">3</span><span class="odometer-digit-inner"><span
@@ -192,7 +192,7 @@
                     <i class="fa-solid fa-user-group"></i>
                   </div>
                   <div class="features__content">
-                    <h4 class="title"><a href="#">Village Organisations</a></h4>
+                    <h4 class="title contactus"><a href="#">Village Organisations</a></h4>
                     <h2 class="count"><span class="odometer odometer-auto-theme" data-count="45">
                         <div class="odometer-inside"><span class="odometer-digit"><span
                               class="odometer-digit-spacer">3</span><span class="odometer-digit-inner"><span
@@ -208,7 +208,7 @@
                     <i class="fa-solid fa-project-diagram"></i>
                   </div>
                   <div class="features__content">
-                    <h4 class="title"><a href="#"> Cluster Level Federations
+                    <h4 class="title contactus"><a href="#"> Cluster Level Federations
                       </a></h4>
                     <h2 class="count"><span class="odometer odometer-auto-theme" data-count="45">
                         <div class="odometer-inside"><span class="odometer-digit"><span

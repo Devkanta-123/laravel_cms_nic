@@ -25,6 +25,7 @@ use App\Models\PageSectionMaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+
 class HomeController extends Controller
 {
     public function index()
@@ -679,9 +680,7 @@ class HomeController extends Controller
             return response()->json($data);
         }
 
-        if ($user->role_id == 2) {
-            $galleries = Gallery::all();
-        } elseif (in_array($user->role_id, [3, 4])) {
+        if (in_array($user->role_id, [2, 3, 4])) {
             $galleries = DB::table('gallery as g')
                 ->join('users as u', 'u.id', '=', 'g.user_id')
                 ->select('g.*', 'u.name as addedby')
@@ -702,7 +701,6 @@ class HomeController extends Controller
         $gallery->flag = 'A'; // Approve
         $gallery->save();
         return response()->json(['success' => true, 'message' => 'Gallery approved successfully']);
-
     }
 
     //delete gallery image
@@ -1012,8 +1010,12 @@ class HomeController extends Controller
 
 
         // Step 3: Return news that is within the archive duration
-        $data = DB::table('latest_news')
-            ->where('created_at', '>=', Carbon::now()->subDays($archiveDuration))
+        // $data = DB::table('latest_news')
+        //     ->where('created_at', '>=', Carbon::now()->subDays($archiveDuration))
+        //     ->get();
+        $data = DB::table('latest_news as ln')
+            ->join('users as u', 'ln.user_id', '=', 'u.id')
+            ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link')
             ->get();
 
         return response()->json($data);
@@ -1059,7 +1061,12 @@ class HomeController extends Controller
         }
 
         // Default: return all cards
-        $data = DB::table('cards')->get();
+        // $data = DB::table('cards')->get();
+        $data = DB::table('cards as c')
+            ->join('users as u', 'u.id', '=', 'c.user_id')
+            ->select('c.*', 'u.name as addedby')
+            ->get();
+
         return response()->json(['data' => $data]);
     }
     public function approveCards(Request $request)
@@ -1240,12 +1247,11 @@ class HomeController extends Controller
         if ($flag === 'A') { //for  website
             // Return Logo records with flag 'A'
             return Logo::where('flag', 'A')->get();
-        } elseif (in_array($user->role_id, [3, 4])) {
+        } elseif (in_array($user->role_id, [2,3, 4])) {
             return DB::table('logo as l')
                 ->join('users as u', 'u.id', '=', 'l.user_id')
                 ->select('l.*', 'u.name as addedby')
                 ->get();
-
         }
         // Default: return all Logo records
         return Logo::all();
@@ -1260,7 +1266,6 @@ class HomeController extends Controller
         $logo->flag = 'A'; // Approve
         $logo->save();
         return response()->json(['success' => true, 'message' => 'Logo approved successfully']);
-
     }
 
 
@@ -1388,7 +1393,7 @@ class HomeController extends Controller
     public function uploadLogo(Request $request)
     {
         $request->validate([
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120' // Adjust max file size as needed
         ]);
 
         $user = Auth::user();
@@ -1538,7 +1543,7 @@ class HomeController extends Controller
         return response()->json($languages);
     }
 
-    public function getAdminDashboardData()
+    public function getDashboardData()
     {
         // Cards count
         $cards = DB::table('cards')
@@ -1560,9 +1565,71 @@ class HomeController extends Controller
         $noticeBoard = DB::table('notifications')
             ->selectRaw("
             COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount,
+            COUNT(CASE WHEN flag = 'U' THEN 1 END) AS updatedcount
+        ")
+            ->first();
+
+        //Carousel Count
+        $carousel = DB::table('carousel')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
             COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
         ")
             ->first();
+
+        //Gallery Count
+        $gallery = DB::table('gallery')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+
+        //Paragraph Count
+
+        $paragraph = DB::table('paragraph')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount,
+            COUNT(CASE WHEN flag = 'U' THEN 1 END) AS updatedcount
+
+        ")
+            ->first();
+
+
+        //Whos Who Count
+        $whos_who = DB::table('whos_who')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+
+        //Logo Count
+
+        $logo = DB::table('logo')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+        //Map Count
+        $map = DB::table('map')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+        //FAQs Count
+        $faqs = DB::table('faqs')
+            ->selectRaw("
+            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
+            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
+        ")
+            ->first();
+
+
 
         return response()->json([
             'cards' => [
@@ -1576,8 +1643,38 @@ class HomeController extends Controller
             'notice_board' => [
                 'pending' => $noticeBoard->pendingcount,
                 'approved' => $noticeBoard->approvedcount,
+                'updated' => $noticeBoard->updatedcount,
             ],
+            'carousel' => [
+                'pending' => $carousel->pendingcount,
+                'approved' => $carousel->approvedcount,
+            ],
+            'gallery' => [
+                'pending' => $gallery->pendingcount,
+                'approved' => $gallery->approvedcount,
+            ],
+            'paragraph' => [
+                'pending' => $paragraph->pendingcount,
+                'approved' => $paragraph->approvedcount,
+                'updated' => $paragraph->updatedcount,
+            ],
+            'whos_who' => [
+                'pending' => $whos_who->pendingcount,
+                'approved' => $whos_who->approvedcount,
+            ],
+            'logo' => [
+                'pending' => $logo->pendingcount,
+                'approved' => $logo->approvedcount,
+            ],
+            'map' => [
+                'pending' => $map->pendingcount,
+                'approved' => $map->approvedcount,
+            ],
+            'faqs' => [
+                'pending' => $faqs->pendingcount,
+                'approved' => $faqs->approvedcount,
+            ]
+
         ]);
     }
-
 }

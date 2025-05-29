@@ -8,7 +8,7 @@
             <template v-else>
                 <!-- State Level -->
                 <div v-if="stateLevel.length > 0">
-                    <h4 class="title">State Level</h4>
+                    <h4 class="title contactus">State Level</h4>
                     <div class="row justify-content-center">
                         <WhosWhoCard v-for="person in paginatedStateLevel" :key="person.id" :person="person" />
                     </div>
@@ -16,7 +16,7 @@
 
                 <!-- District Level -->
                 <div v-if="districtLevel.length > 0">
-                    <h4 class="title">District Level</h4>
+                    <h4 class="title contactus">District Level</h4>
                     <div class="row justify-content-center">
                         <WhosWhoCard v-for="person in paginatedDistrictLevel" :key="person.id" :person="person" />
                     </div>
@@ -25,7 +25,7 @@
 
                 <!-- Block Level -->
                 <div v-if="blockLevel.length > 0">
-                    <h4 class="title">Block Level</h4>
+                    <h4 class="title contactus">Block Level</h4>
                     <div class="row justify-content-center">
                         <WhosWhoCard v-for="person in paginatedBlockLevel" :key="person.id" :person="person" />
                     </div>

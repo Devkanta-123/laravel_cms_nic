@@ -65,7 +65,7 @@ class MapController extends Controller
     }
 
     // Step 2: Else apply role-based logic
-    if (in_array($user->role_id, [3, 4])) {
+    if (in_array($user->role_id, [2,3,4])) {
         // Roles 3 or 4 with join to get addedby
         $map = DB::table('map as m')
             ->select('m.*', 'u.name as addedby')

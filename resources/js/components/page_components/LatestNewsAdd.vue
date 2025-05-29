@@ -66,23 +66,7 @@
 
       <div>
         <!-- Bootstrap Select Dropdown -->
-        <div class="mb-3">
-          <label for="linkInput" class="form-label">Page Menu</label>
-          <select class="form-control" aria-label="Large select example" v-model="selectedMenu">
-            <option value="" disabled selected>Select The Page Menu</option>
-            <!-- Loop through fetched data and display menu options -->
-            <option v-for="menu in pagemenudata" :key="menu.id" :value="menu.id">
-              {{ menu.menu_name }}
-            </option>
-          </select>
-        </div>
-        <!-- /pagename -->
-        <div>
-          <label for="textInput" class="form-label">Page Name</label>
-          <input type="text" id="pagename" class="form-control" v-model="pagename" placeholder="Page Name" />
-          <!-- <ckeditor v-model="title" :config="editorConfig"></ckeditor> -->
-        </div>
-
+       
       </div>
     </fieldset>
 
@@ -226,26 +210,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.scrollable-content {
-  max-height: 500px;
-  overflow: auto;
-}
-
-.text-danger {
-  color: red;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.custom-fieldset {
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  padding: 16px;
-  margin-top: 16px;
-}
-
-.custom-fieldset legend {
-  font-weight: bold;
-  padding: 0 8px;
-}
 </style>

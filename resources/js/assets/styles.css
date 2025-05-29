@@ -463,3 +463,34 @@ input[type="checkbox"]:checked+.styled-checkbox::after {
     font-size: 14px;
     color: white;
 }
+
+.tabs {
+    display: flex;
+    margin-bottom: 1em;
+}
+
+.tab-item {
+    margin-right: 1em;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    background-color: #eee;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.tab-item.active {
+    background-color: #42b983;
+    color: white;
+}
+
+.tab-item:hover {
+    background-color: #ddd;
+}
+
+.custom-scroll-area {
+    max-height: 70vh;
+    /* Adjust this height based on screen */
+    overflow-y: auto;
+    padding-right: 10px;
+    /* Optional: ensures scrollbar doesn't overlap content */
+}

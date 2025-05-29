@@ -29,10 +29,17 @@
                                     <td>{{ formatDate(notice.created_at) }}</td>
                                     <td>{{ notice.category_name }}</td>
                                     <td>
-                                        <label :class="notice.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ notice.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="notice.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="notice.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
+
                                     <td>
                                         <!-- <i class="fas fa-trash-alt text-danger" @click="deleteSlide(news.id)"></i> -->
                                         <div class="checkbox checbox-switch switch-success">
@@ -85,6 +92,7 @@ const getAllCategoryMaster = async () => {
 
 const getAllNotifications = async () => {
     try {
+        debugger;
         const response = await axios.get('/get_notifications');
         noticeboarddata.value = response.data;
         await nextTick(); // Wait for DOM to update
@@ -97,7 +105,7 @@ const getAllNotifications = async () => {
             pageLength: 10,
         });
 
-        console.log('Latest News data', response.data);
+        console.log('Notice Board   data', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);
     }

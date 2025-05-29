@@ -8,6 +8,8 @@
           <th> Title</th>
           <th>Type</th>
           <th>File/Link</th>
+          <th>Status</th>
+          <th>Added By</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -26,8 +28,14 @@
             <a :href="item.link" target="_blank">{{ item.link }}</a>
           </td>
           <td>
+            <label :class="item.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
+              {{ item.flag === 'A' ? 'Approved' : 'Pending' }}
+            </label>
+          </td>
+          <td>{{ item.addedby }}</td>
+          <td>
             <a href="#" @click="deleteNews(item.id)"><i class="fa fa-trash text-danger"></i></a> &nbsp;
-            <a href="#" @click="onOpenModal(item.page)" class="btn btn-primary btn-xs"><i class="fa fa-plus"></i></a>
+            <!-- <a href="#" @click="onOpenModal(item.page)" class="btn btn-primary btn-xs"><i class="fa fa-plus"></i></a> -->
             <span class="drag-handle" draggable="true" @dragstart="onDragStart(index)" @dragend="onDragEnd">
 
             </span>
@@ -64,7 +72,7 @@ const onOpenModal = (id) => {
 const fetchData = async () => {
   try {
     const response = await axios.post('/api/get_latest_news'); // Replace with your API endpoint
-    items.value = response.data.data; // Assign the fetched data to the items array
+    items.value = response.data; // Assign the fetched data to the items array
   } catch (error) {
     console.error('Error fetching data:', error);
   }

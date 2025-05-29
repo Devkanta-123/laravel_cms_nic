@@ -5,7 +5,7 @@
         <img :src="imageUrl" :alt="person.name" :style="{ width: '100%', height: '100%' }" />
       </div>
       <div class="team__content-two" :style="{ fontSize: '14px', textAlign: 'center' }">
-        <h4 class="title">
+        <h4 class="title contactus">
           <a href="#" :style="{ fontSize: '16px' }">
             {{ person.name }}
           </a>

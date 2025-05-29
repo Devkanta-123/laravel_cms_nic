@@ -1,19 +1,18 @@
 <template>
-    <Loader v-if="isLoading" />
     <br><br><br><br>
-    <section class="breadcrumb__area breadcrumb__bg" data-background="assets/img/bg/breadcrumb_bg.jpg"
-        style="background-image: url(&quot;assets/img/bg/breadcrumb_bg.jpg&quot;);">
-        <div class="container" style="margin-top: -130px;">
+    <section class="breadcrumb__area breadcrumb__bg"
+        :style="{ backgroundImage: `url(${bgImage})`, marginTop: '-130px' }">
+        <div class="container">
             <div class="row">
                 <div class="col-lg-6">
                     <div class="breadcrumb__content">
-                        <h6 class="title">{{ pageName }}</h6>
+                        <h6 class="title text-white">{{ pageName }}</h6>
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
+                                <li class="breadcrumb-item active text-white">
                                     <router-link to="/page/1">Home</router-link>
                                 </li>
-                                <li class="breadcrumb-item active" aria-current="page">{{ pageName }}</li>
+                                <li class="breadcrumb-item active text-white" aria-current="page">{{ pageName }}</li>
                             </ol>
                         </nav>
                     </div>
@@ -22,30 +21,47 @@
         </div>
     </section>
     <br>
-    <section class="about__area-five" style="margin-top: -160px;">
+    <section class="blog__details-area mt-n100">
         <div class="container">
-            <div v-if="!activeComponent">
-                <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate" style="color: #2A3335;"></div>
+            <div class="blog__inner-wrap">
+                <div class="row">
+                    <div class="col-70">
+                        <div class="blog__details-wrap">
+                            <div class="blog__details-thumb" v-if="!activeComponent">
+                                <div class="blog-post-meta">
+                                    <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate"
+                                        style="color: #2A3335;"></div>
+                                    <div v-else-if="gallerydata.length > 0">
+                                        <PhotoGallery :galleries="gallerydata" />
+                                    </div>
+                                    <div v-if="noticeboarddata.length > 0">
+                                        <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey"
+                                            :pageName="route.query.page_name"  style="color: #2A3335;" />
+                                    </div>
 
-                <!-- Show Photo Gallery only if pageContent is unavailable -->
-                <div v-else-if="gallerydata.length > 0">
-                    <PhotoGallery :galleries="gallerydata" />
-                </div>
-
-                <div v-if="noticeboarddata.length > 0">
-                    <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey" :pageName="route.query.page_name" />
-                </div>
-
-                <div v-else-if="notificationdata.length > 0">
-                    <NoticeBoard :notification="notificationdata" :key="refreshKey" :pageName="route.query.page_name" />
-                </div>
-                <!-- whoswhodata -->
-                <div v-if="showWhosWho">
-                    <WhosWho />
-                </div>
-                <!-- contact us  -->
-                <div v-if="contactus">
-                    <ContactUs />
+                                    <div v-else-if="notificationdata.length > 0">
+                                        <NoticeBoard :notification="notificationdata" :key="refreshKey"
+                                            :pageName="route.query.page_name"  style="color: #2A3335;" />
+                                    </div>
+                                    <!-- whoswhodata -->
+                                    <div v-if="showWhosWho">
+                                        <WhosWho />
+                                    </div>
+                                    <!-- contact us  -->
+                                    <div v-if="contactus">
+                                        <ContactUs :data="contactUsData" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="blog__details-content" >
+                                
+                            </div> -->
+                        </div>
+                    </div>
+                    <div class="col-30">
+                       <!-- LeftSide Menu Data Content -->
+                       <LeftMenu></LeftMenu>
+                    </div>
                 </div>
             </div>
         </div>
@@ -60,7 +76,7 @@
 import { ref, onMounted, inject, watch, provide, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
-
+import bgImage from '../assets/images/msrls.jpg';
 import Carousel from '../components/Carousel.vue';
 import LatestNews from '../components/LatestNews.vue';
 import Footer from './Footer.vue';
@@ -70,10 +86,10 @@ import NoticeBoard from '../components/NoticeBoard.vue';
 import FAQS from '../components/FAQ.vue';
 import WhosWho from '../components/WhosWho.vue';
 import ContactUs from '../components/ContactUs.vue';
-
+import LeftMenu from './LeftMenu.vue';
 const route = useRoute();
 const isLoading = ref(true);
-
+const contactUsData = ref(null);
 // Accept props
 const props = defineProps({
     language: String,  // Language prop
@@ -161,15 +177,11 @@ const fetchPageContent = async () => {
                 case "Contact Us":
                     contactus.value = true;
                     response = await axios.get(`/get_page_content/${route.params.id}`);
+                    //  contactUsData.value = response.data|| null;
                     if (response.data) {
-                        debugger;
                         pageContent.value = response.data.content || '';
                     }
                     break;
-
-
-
-
                 default:
                     response = await axios.get(`/get_page_content/${route.params.id}`);
                     if (response.data) {
@@ -203,11 +215,6 @@ watch(
 );
 
 onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-    }, 500);
-    console.log("On Mounted of Page");
-    fetchPageContent();
 });
 </script>
 

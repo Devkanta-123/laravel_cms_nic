@@ -1,5 +1,5 @@
 <template>
-    <div class="left-menu">
+    <!-- <div class="left-menu">
         <ul class="list-group">
             <li
                 class="list-group-item"
@@ -11,41 +11,47 @@
                 </router-link>
             </li>
         </ul>
-    </div>
+    </div> -->
+    <aside class="blog__sidebar">
+        <div class="sidebar__widget">
+            <h4 class="sidebar__widget-title">Notice Board</h4>
+            <div class="sidebar__cat-list">
+                <ul class="list-wrap">
+                    <li>
+                        <a href="#"><i class="flaticon-arrow-button"></i>Business Solution (15)</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="flaticon-arrow-button"></i>Marketing Planning (11)</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="flaticon-arrow-button"></i>SEO Consulting (05)</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="flaticon-arrow-button"></i>Project Management (07)</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="flaticon-arrow-button"></i>Business Development
+                            (04)</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="flaticon-arrow-button"></i>Marketing Plan (22)</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </aside>
 </template>
 
 <script setup>
-import { ref } from "vue";
 
-// Dummy data for the left menu items
-const menuItems = ref([
-    { id: 1, name: "Organisation Chart", link: "/organisation-chart" },
-    { id: 2, name: "Regulations 1972", link: "/regulations-1972" },
-    { id: 3, name: "RTI ACT", link: "/rti-act" },
-    { id: 4, name: "Home", link: "/" },
-]);
+
+
+
+                    // response = await axios.get('/get_notifications', { params: { flag: 'A' } });
+
 </script>
 
 <style scoped>
-.left-menu {
-    width: 250px;
-    background-color: #f8f9fa;
-    border-right: 1px solid #ddd;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-}
 
-.left-menu li .list-group-item-action {
-    text-decoration: none;
-    color: #333;
-    font-size: 16px;
-    display: block;
-    padding: 10px 15px;
-    border-radius: 0.25rem;
-}
-
-.left-menu li:hover {
-    background-color: #e9ecef;
-}
 </style>
