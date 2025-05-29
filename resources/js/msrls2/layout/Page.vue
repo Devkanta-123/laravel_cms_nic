@@ -36,13 +36,19 @@
                                     </div>
                                     <div v-if="noticeboarddata.length > 0">
                                         <NoticeBoard :noticeboard="noticeboarddata" :key="refreshKey"
-                                            :pageName="route.query.page_name"  style="color: #2A3335;" />
+                                            :pageName="route.query.page_name" style="color: #2A3335;" />
                                     </div>
 
                                     <div v-else-if="notificationdata.length > 0">
                                         <NoticeBoard :notification="notificationdata" :key="refreshKey"
-                                            :pageName="route.query.page_name"  style="color: #2A3335;" />
+                                            :pageName="route.query.page_name" style="color: #2A3335;" />
                                     </div>
+
+                                    <div v-else-if="archivedata.length > 0">
+                                        <Archive :archive="archivedata" :key="refreshKey"
+                                            :pageName="route.query.page_name" style="color: #2A3335;" />
+                                    </div>
+                                    
                                     <!-- whoswhodata -->
                                     <div v-if="showWhosWho">
                                         <WhosWho />
@@ -53,14 +59,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- <div class="blog__details-content" >
-                                
-                            </div> -->
+                    
                         </div>
                     </div>
                     <div class="col-30">
-                       <!-- LeftSide Menu Data Content -->
-                       <LeftMenu></LeftMenu>
+                        <!-- LeftSide Menu Data Content -->
+                        <LeftMenu></LeftMenu>
                     </div>
                 </div>
             </div>
@@ -77,10 +81,7 @@ import { ref, onMounted, inject, watch, provide, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import bgImage from '../assets/images/msrls.jpg';
-import Carousel from '../components/Carousel.vue';
-import LatestNews from '../components/LatestNews.vue';
-import Footer from './Footer.vue';
-import Loader from '../../components/Loader.vue';
+import Archive from '../components/Achive.vue'
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
 import FAQS from '../components/FAQ.vue';
@@ -107,6 +108,7 @@ const pageContent = ref('');
 const gallerydata = ref([]);
 const noticeboarddata = ref([]);
 const notificationdata = ref([]);
+const archivedata = ref([]);
 const showWhosWho = ref(false);
 const refreshKey = ref(0); // Used to force re-render on data change
 const contactus = ref(false);
@@ -152,7 +154,6 @@ const fetchPageContent = async () => {
                 case "Notice Board":
                     // response = await axios.get(`/get_notifications`);
                     response = await axios.get('/get_notifications', { params: { flag: 'A' } });
-
                     noticeboarddata.value = response.data;
                     console.log("Notice Board Data:", noticeboarddata.value);
                     break;
@@ -182,6 +183,14 @@ const fetchPageContent = async () => {
                         pageContent.value = response.data.content || '';
                     }
                     break;
+
+                case "Archive Data":
+                    response = await axios.get(`/get_archivedata`);
+                    if (response.data) {
+                        archivedata.value = response.data;
+                    }
+                    break;
+
                 default:
                     response = await axios.get(`/get_page_content/${route.params.id}`);
                     if (response.data) {

@@ -81,8 +81,6 @@
 import { ref, onMounted, defineProps } from 'vue';
 import { component as ckeditor } from '@mayasabha/ckeditor4-vue3';
 import { useToastr } from '../../toaster.js';
-
-
 const title = ref('');
 const titleK = ref('');
 const titleH = ref('');
@@ -170,19 +168,13 @@ const saveLatestNews = () => {
   formData.append('titleK', titleK.value);
   formData.append('titleH', titleH.value);
   formData.append('titleO', titleO.value);
-  formData.append('page', selectedMenu.value);
-  formData.append('pagename', pagename.value);
-  formData.append('pagemenuid', pagemenuid);
-
-
-
   axios.post('/api/save_latest_news', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
     .then(response => {
-      console.log('News saved successfully:', response.data.message);
+      console.log('Latest News saved successfully:', response.data.message);
       toastr.success(response.data.message);
     })
     .catch(error => {
@@ -190,22 +182,8 @@ const saveLatestNews = () => {
       toastr.error('An error occurred while saving the news.');
     });
 };
-// Fetch the data from the API
-const fetchPageMenu = () => {
-  debugger;
-  axios.get(`/api/get_page_menu/${props.menu}`)
-    .then(response => {
-      console.log('API Response for Page Menu:', response.data); // Debug response
-      pagemenudata.value = response.data;
-    })
-    .catch(error => {
-      console.error('Error fetching page menu:', error.response || error);
-    });
-};
 
 onMounted(() => {
-  fetchPageMenu();
-
 });
 </script>
 

@@ -22,7 +22,14 @@
           <td>{{ item.title }}</td>
           <td>{{ item.type }}</td>
           <td v-if="item.type === 'file'">
-            <a :href="getAssetUrl(item.link)" target="_blank" rel="noopener noreferrer">{{ item.file }}</a>
+            <a :href="`/storage/${item.file}`" target="_blank" class="text-primary">
+              {{ item.title }}
+            </a>
+          </td>
+          <td v-else-if="item.type === 'link'">
+            <a :href="item.link" target="_blank" class="text-success">
+              {{ item.title }}
+            </a>
           </td>
           <td v-else>
             <a :href="item.link" target="_blank">{{ item.link }}</a>
@@ -71,6 +78,7 @@ const onOpenModal = (id) => {
 // Fetch data from the backend when the component is mounted
 const fetchData = async () => {
   try {
+    debugger;
     const response = await axios.post('/api/get_latest_news'); // Replace with your API endpoint
     items.value = response.data; // Assign the fetched data to the items array
   } catch (error) {

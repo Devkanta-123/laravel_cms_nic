@@ -27,15 +27,12 @@
     </div>
 
     <div class="position-relative">
-
       <div class="row justify-content-center">
         <div v-for="(item, index) in paginatedNews" :key="item.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-8">
           <div class="services-item shine-animate-item">
             <div class="services-thumb">
               <a href="#" class="shine-animate" target="_blank">
-                <img
-                  :src="logo"
-                  alt="News Image" />
+                <img :src="logo" alt="News Image" />
               </a>
             </div>
             <div class="services-content">
@@ -51,7 +48,6 @@
           </div>
         </div>
       </div>
-
       <div class="project__nav-wrap">
         <div class="project-button-prev" tabindex="0" role="button" aria-label="Previous slide" @click="prevSlide"
           :class="{ 'disabled': currentIndex === 0 }">
@@ -62,6 +58,10 @@
           <i class="fa fa-chevron-right"></i>
         </div>
       </div>
+      <router-link :to="{ name: 'Page', params: { id: 73 }, query: { page_name: 'Archive Data' } }" class="btn" data-aos="fade-up"
+        data-aos-delay="600">
+        See Archive data
+      </router-link>
 
     </div>
   </div>
@@ -166,5 +166,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

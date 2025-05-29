@@ -17817,3 +17817,13 @@ blockquote p {
 .relative.second-panel.accessibility {
     background-color: #014E4E;
 }
+
+.btn::before {
+    content: "";
+    /* some animation or background */
+}
+
+.btn::after {
+    content: "";
+    /* some animation or background */
+}

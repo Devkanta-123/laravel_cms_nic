@@ -146,7 +146,7 @@
     <br>
     <div class="p_content-wrapper">
       <div v-if="currentId == '1'" class="content">
-    <Carousel @loaded="handleCarouselLoaded" />
+        <Carousel @loaded="handleCarouselLoaded" />
       </div>
       <!-- Statistic -->
       <section class="features__area" v-if="currentId == '1'">
@@ -266,7 +266,10 @@
                   <h2 class="title tg-element-title" v-if="homepragraphdata" v-html="homepragraphdata"></h2>
                 </div>
                 <div class="about-bottom">
-                  <a href="/page/3?page_name=About+Us" class="btn btn-two">Read More</a>
+                  <router-link :to="{ name: 'Page', params: { id: 3 }, query: { page_name: 'About us' } }" class="btn"
+                    data-aos="fade-up" data-aos-delay="600">
+                    Read More
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -367,6 +370,11 @@
                   </div>
                 </div>
               </div>
+              <router-link :to="{ name: 'Page', params: { id: 65 }, query: { page_name: 'FAQ' } }" class="btn"
+                :style="{ position: 'relative', '--after-display': 'none', '--before-display': 'none' }"
+                data-aos="fade-up" data-aos-delay="600">
+                See All FAQs
+              </router-link>
             </div>
           </div>
         </div>
@@ -477,7 +485,7 @@ const props = defineProps({
 
 
 const handleCarouselLoaded = () => {
-    console.log("Parent received: Carousel is ready");
+  console.log("Parent received: Carousel is ready");
 
   isCarouselLoaded.value = true;
 };

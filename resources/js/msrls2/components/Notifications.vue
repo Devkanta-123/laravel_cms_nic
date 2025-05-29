@@ -58,7 +58,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="row position-relative">
                 <div class="d-flex justify-content-between align-items-center w-100 mb-3">
 
@@ -73,14 +72,12 @@
                         </div>
                     </div>
                 </div>
-
                 <template v-for="(item, index) in visibleNews" :key="item.id">
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="blog__post-two shine-animate-item">
                             <div class="blog__post-thumb-two">
                                 <a class="shine-animate" target="_blank">
-                                    <img :src="event"
-                                        alt="Apexa" />
+                                    <img :src="event" alt="Apexa" />
                                 </a>
                             </div>
                             <div class="blog__post-content-two">
@@ -103,15 +100,13 @@
                             </div>
                         </div>
                     </div>
-
                 </template>
-
             </div>
-            <a href="/page/45?page_name=Notice+Board" class="btn"
-                style="position: relative; --after-display: none; --before-display: none;" data-aos="fade-up"
-                data-aos-delay="600">
-                See All NoticeBoard
-            </a>
+            <router-link :to="{ name: 'Page', params: { id: 45 }, query: { page_name: 'Notice Board' } }" class="btn"
+                :style="{ position: 'relative', '--after-display': 'none', '--before-display': 'none' }"
+                data-aos="fade-up" data-aos-delay="600">
+                See All  Notification
+            </router-link>
         </div>
         <!-- <div class="container">
             <div class="row justify-content-center">
@@ -189,7 +184,7 @@ const fetchNotificationsForCurrentMonth = async () => {
     // If cache is invalid or expired, fetch new data
     loadingNewsLetter.value = true;
     try {
-        const response = await axios.get(`/get_notificationsforcurrentmonth`,{ params: { flag: 'A' }});
+        const response = await axios.get(`/get_notificationsforcurrentmonth`, { params: { flag: 'A' } });
         if (response.data && Array.isArray(response.data)) {
             newsData.value = response.data;
 
@@ -223,7 +218,7 @@ const fetchRecruitmentsForCurrentMonth = async () => {
     loadingRecruitments.value = true;
     try {
         debugger;
-        const response = await axios.get(`/get_recruitmentsforcurrentmonth`,{param:{flag:'A'}});
+        const response = await axios.get(`/get_recruitmentsforcurrentmonth`, { param: { flag: 'A' } });
         if (response.data && Array.isArray(response.data)) {
             recruitmentsData.value = response.data;
 
@@ -284,72 +279,4 @@ onMounted(() => {
 });
 
 </script>
-<style scoped>
-/* Only apply scrolling to .marquee-container (Dynamic List) */
-.marquee-container {
-    overflow: hidden;
-    height: 170px;
-    /* Adjust based on how many items should be visible */
-    position: relative;
-}
-
-.marquee-container .list-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    /* Spacing between items */
-    animation: scrollUp 10s linear infinite;
-}
-
-@keyframes scrollUp {
-    0% {
-        transform: translateY(100%);
-    }
-
-    100% {
-        transform: translateY(-100%);
-    }
-}
-
-/* Pause scrolling on hover */
-.marquee-container:hover .list-wrap {
-    animation-play-state: paused;
-}
-
-.custom-btn {
-    font-size: 12px;
-    /* Reduce font size */
-    padding: 4px 10px;
-    /* Reduce padding */
-    margin-left: 45%;
-    display: inline-block;
-    position: relative;
-    text-decoration: none;
-    border: 1px solid #000;
-    /* Optional border */
-    background: #f2f2f2;
-    /* Button color */
-    color: #333;
-}
-
-.custom-btn::before,
-.custom-btn::after {
-    display: none;
-    /* Initially hidden */
-}
-
-/* Hide the button when clicked */
-.custom-btn.hide {
-    display: none;
-}
-
-.btn::before {
-    content: "";
-    /* some animation or background */
-}
-
-.btn::after {
-    content: "";
-    /* some animation or background */
-}
-</style>
+<style scoped></style>

@@ -1,5 +1,4 @@
 <template>
-
     <div class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -28,7 +27,7 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label>Archieve Duration (no of days)</label>
+                                            <label>Archieve Duration for Latest news (no of days)</label>
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text">
@@ -71,7 +70,8 @@
                                                     <input class="form-check-input d-none" type="checkbox"
                                                         :id="'lang_' + language.id" :value="language.id"
                                                         :checked="isActivated(language.id)"
-                                                        @change="() => activateLanguage(language.id)" />
+                                                        @change="(e) => activateLanguage(language.id, e.target.checked)" />
+
                                                     <label class="form-check-label styled-checkbox"
                                                         :for="'lang_' + language.id">
                                                         {{ language.language_name }}
@@ -79,6 +79,7 @@
                                                 </div>
                                             </div>
                                         </div>
+
 
                                     </div>
                                 </div>
@@ -175,6 +176,7 @@ const getArchiveData = async () => {
 
 const getMasterLanguages = async () => {
     try {
+        debugger;
         const response = await axios.get('/api/getMasterLanguages')
         if (response.data) {
             languageData.value = response.data;
@@ -185,6 +187,27 @@ const getMasterLanguages = async () => {
     }
 }
 
+const isActivated = (languageId) => {
+    return activatelanguageData.value.some(item => item.language_id === languageId);
+};
+const activateLanguage = async (languageId, isChecked) => {
+    try {
+        debugger;
+        if (isChecked) {
+            await axios.post('/api/saveArchiveData', { language_id: languageId });
+            activatelanguageData.value.push({ language_id: languageId });
+            toastr.success('Language activated!');
+        } else {
+            await axios.post('/api/deleteArchiveData', { language_id: languageId });
+            activatelanguageData.value = activatelanguageData.value.filter(
+                item => item.language_id !== languageId
+            );
+            toastr.success('Language deactivated!');
+        }
+    } catch (error) {
+        toastr.error('Failed to update language');
+    }
+};
 const getActivateLanguages = async () => {
     try {
         const response = await axios.get('/getActivateLanguages')
@@ -196,24 +219,6 @@ const getActivateLanguages = async () => {
         toastr.error('Failed to fetch  activate languages')
     }
 }
-
-
-
-// Activate a language by ID when checkbox is clicked
-const activateLanguage = async (languageId) => {
-    try {
-        const response = await axios.post('/api/saveArchiveData', {
-            language_id: languageId,
-        })
-        toastr.success(response.data.message || 'Language activated!')
-    } catch (error) {
-        toastr.error('Failed to activate language')
-    }
-}
-
-const isActivated = (id) => {
-    return activatelanguageData.value.some(lang => lang.language_id === id);
-};
 
 
 onMounted(() => {

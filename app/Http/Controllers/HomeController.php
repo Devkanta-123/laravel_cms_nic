@@ -1247,7 +1247,7 @@ class HomeController extends Controller
         if ($flag === 'A') { //for  website
             // Return Logo records with flag 'A'
             return Logo::where('flag', 'A')->get();
-        } elseif (in_array($user->role_id, [2,3, 4])) {
+        } elseif (in_array($user->role_id, [2, 3, 4])) {
             return DB::table('logo as l')
                 ->join('users as u', 'u.id', '=', 'l.user_id')
                 ->select('l.*', 'u.name as addedby')
@@ -1500,6 +1500,21 @@ class HomeController extends Controller
         ], 400);
     }
 
+    public function deleteArchiveData(Request $request)
+{
+    $request->validate([
+        'language_id' => 'required|exists:language_master,id',
+    ]);
+
+    WebsiteSettings::where('language_id', $request->language_id)->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Language setting removed successfully.'
+    ]);
+}
+
+
     public function getArchieveData()
     {
         // Assuming you have only one row of website settings
@@ -1677,4 +1692,11 @@ class HomeController extends Controller
 
         ]);
     }
+
+    public function getArchiveData()
+    {
+        $data = DB::table('archive_news')->get();
+        return response()->json($data);
+    }
+
 }

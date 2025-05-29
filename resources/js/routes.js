@@ -4,6 +4,7 @@ import UpdateSetting from './pages/settings/UpdateSetting.vue';
 import Menu from './pages/menu/Menu.vue';
 import Website from './pages/website/Website.vue';
 import Pages from './pages/pages/Pages.vue';
+import Archive from './pages/pages/Archive.vue';
 import PagesForm from './pages/pages/PagesForm.vue';
 import Login from './pages/auth/Login.vue';
 import MainComponent from './pages/main_component/MainComponent.vue';
@@ -108,6 +109,15 @@ export default [
         component: UpdateSetting,
 
     },
+    {
+        path: '/admin/archive',
+        name: 'admin.archive',
+        component: Archive,
+
+    },
+
+
+
     //Content Creator  
     {
         path: '/contentcreator/dashboard',

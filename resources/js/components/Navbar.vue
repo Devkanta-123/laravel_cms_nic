@@ -148,6 +148,13 @@
                             </router-link>
                         </li>
                         <li class="nav-item" v-if="role == 2">
+                            <router-link to="/admin/archive" active-class="active" class="nav-link">
+                                <i class="nav-icon fas fa-folder-open"></i>
+                                <p>Archive Data</p>
+                            </router-link>
+                        </li>
+
+                        <li class="nav-item" v-if="role == 2">
                             <router-link to="/admin/settings" active-class="active" class="nav-link">
                                 <i class="nav-icon fas fa-cog"></i>
                                 <p>
@@ -156,6 +163,8 @@
                                 </p>
                             </router-link>
                         </li>
+
+
                         <!-- Content Creator -->
                         <li class="nav-item" v-if="role == 3">
                             <router-link to="/contentcreator/dashboard" active-class="active" class="nav-link">

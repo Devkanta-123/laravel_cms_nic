@@ -68,6 +68,7 @@ Route::get('/get_whoswho', action: [WhosWhoController::class, 'getWhosWho']); //
 Route::put('/approved_whoswho', action: [WhosWhoController::class, 'approveWhosWho']); //added by dev on 13/05/25
 Route::get('/get_contactus', action: [MapController::class, 'getMapData']); //added by dev on 25/03/25
 Route::put('/approved_map', action: [MapController::class, 'approveMap']); //added by dev on 25/03/25
+Route::get('/get_archivedata', action: [HomeController::class, 'getArchiveData']); //added by dev on 29/05/25
 
 
 
@@ -211,6 +212,7 @@ Route::middleware(('auth'))->group(function () {
 
     //Archieve Data saving
     Route::post('/api/saveArchiveData', [HomeController::class, 'saveArchiveData']);
+    Route::post('/api/deleteArchiveData', [HomeController::class, 'deleteArchiveData']);
     Route::get('/api/getArchieveData', [HomeController::class, 'getArchieveData']);
     Route::post('/api/saveLanguage', [HomeController::class, 'saveLanguage']);
     Route::get('/api/getMasterLanguages', [HomeController::class, 'getMasterLanguages']);

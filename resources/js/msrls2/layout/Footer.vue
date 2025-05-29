@@ -1,5 +1,5 @@
 <template>
-  <!-- <footer>
+  <footer>
 
     <div class="footer-area">
       <div class="footer-top" style="margin-top:-6%;height: 510px;">
@@ -59,8 +59,8 @@
         </div>
       </div>
     </div>
-  </footer> -->
-  <footer>
+  </footer>
+  <!-- <footer>
     <div class="footer-area">
       <div class="footer-top">
         <div class="container">
@@ -208,7 +208,7 @@
           style="transform:translate3d(0.029px, 0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scaleX(1) scaleY(1) scaleZ(1); -webkit-transform:translate3d(0.029px, 0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scaleX(1) scaleY(1) scaleZ(1); ">
       </div>
     </div>
-  </footer>
+  </footer> -->
 </template>
 
 <script setup>

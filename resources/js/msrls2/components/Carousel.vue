@@ -38,9 +38,11 @@
                       With MSRLS, Together for
                       <span id="typewriter">{{ displayText }}</span>
                     </h2>
-                    <a href="about" class="btn" data-aos="fade-up" data-aos-delay="600">
+                    <router-link :to="{ name: 'Page', params: { id: 3 }, query: { page_name: 'About us ' } }"
+                      class="btn"
+                      data-aos="fade-up" data-aos-delay="600">
                       Learn More
-                    </a>
+                    </router-link>
                   </div>
                 </div>
               </div>
