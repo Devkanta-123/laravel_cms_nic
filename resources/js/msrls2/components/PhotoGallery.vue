@@ -141,6 +141,7 @@ function isVideo(filePath) {
 //   }
 // }
 const getGalleries = async () => {
+  debugger;
   const now = new Date().getTime();
   const cachedData = localStorage.getItem(CACHE_KEY);
 
