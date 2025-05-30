@@ -163,7 +163,7 @@ const validateFields = () => {
 };
 
 const submitData = async () => {
-    debugger;
+    
     console.log("Current Form Data:", JSON.stringify(formData));
 
     if (!validateFields()) return;

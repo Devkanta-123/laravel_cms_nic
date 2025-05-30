@@ -41,7 +41,7 @@ const cacheDuration = 5 * 60 * 1000; // 5 minutes
 const now = Date.now();
 
 const fetchFAQs = async () => {
-    debugger;
+    
     const cachedData = sessionStorage.getItem('faq');
     const cachedTimestamp = sessionStorage.getItem('faqTimestamp');
 

@@ -187,7 +187,7 @@ const deleteDBImage = (slide, index) => {
 
 const fetchLogo = async () => {
     try {
-        debugger;
+        
         const response = await axios.get('/get_logo');
         logoData.value = response.data;
           await nextTick(); // Wait for DOM to update

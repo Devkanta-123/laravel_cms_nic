@@ -381,7 +381,7 @@ const handleSubmit = (values, actions) => {
 };
 
 const handleFooterSubmit = (values, actions) => {
-    debugger;
+    
     axios.post('/api/update_component/' + 2, formFooterValues.value, {
         headers: {
             'Content-Type': 'multipart/form-data'

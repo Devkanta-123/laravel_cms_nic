@@ -266,7 +266,7 @@ const onDrop = (e) => {
 
 
 const uploadImages = () => {
-    debugger;
+    
     if (!galleryName.value || !galleryDescription.value) {
         toastr.error('Please enter gallery name and description');
         return;

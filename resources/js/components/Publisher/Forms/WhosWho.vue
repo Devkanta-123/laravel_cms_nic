@@ -112,7 +112,7 @@ const closeModal = () => {
 
 const getWhosWho = async () => {
     try {
-        debugger;
+        
         const response = await axios.get('/get_whoswho');
         WhosWhoData.value = response.data;
         await nextTick(); // Wait for DOM to update
@@ -134,7 +134,7 @@ const getWhosWho = async () => {
 
 const approveWhosWho = async (id, index) => {
     try {
-        debugger;
+        
         const response = await axios.put('/approved_whoswho', { id });
         if (response.data.success) {
             WhosWhoData.value[index].flag = 'A'; // update UI immediately

@@ -81,7 +81,7 @@ const updateContent = async () => {
 
 //   const saveContent = async () => {
 //     try {
-//       debugger;
+//       
 //       const formData = new FormData();
 //       formData.append("content", editorContent.value);
 //       formData.append("menu", props.menuId);
@@ -109,7 +109,7 @@ const updateContent = async () => {
 //   };
 const fetchPageContent = async () => {
     try {
-        debugger;
+        
         const response = await axios.get(`/get_page_content/${props.menuId}`);
         if (response.data.content) {
             editorContent.value = response.data.content;

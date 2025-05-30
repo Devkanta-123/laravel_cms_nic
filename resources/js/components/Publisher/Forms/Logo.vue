@@ -107,7 +107,7 @@ const formatDate = (dateStr) => {
 
 const fetchLogo = async () => {
     try {
-        debugger;
+        
         const response = await axios.get('/get_logo');
         logoData.value = response.data;
         await nextTick(); // Wait for DOM to update
@@ -127,7 +127,7 @@ const fetchLogo = async () => {
 
 const approveLatestNews = async (id, index) => {
     try {
-        debugger;
+        
         const response = await axios.put('/approved_logo', { id });
         if (response) {
             logoData.value[index].flag = 'A'; // update UI immediately

@@ -224,7 +224,7 @@ const getImageUrl = (path) => {
 };
 
 const fetchFooterContent = async () => {
-  debugger;
+  
   const now = new Date().getTime()
 
   const cachedData = localStorage.getItem("footer")

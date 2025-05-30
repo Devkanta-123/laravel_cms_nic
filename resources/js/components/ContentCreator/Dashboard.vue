@@ -286,7 +286,7 @@ const name = ref('')
 const CACHE_DURATION = 15 * 60 * 1000
 
 const fetchUser = async () => {
-  debugger;
+  
   const cachedUser = JSON.parse(sessionStorage.getItem('login_user_cache_data'))
   const now = new Date().getTime()
 

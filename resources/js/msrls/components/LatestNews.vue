@@ -48,7 +48,7 @@ const fetchLatestNews = async () => {
   // If cache is invalid or expired, fetch new data
   loadingNews.value = true;
   try {
-    debugger;
+    
     const response = await axios.get('/get_latest_news');
     console.log('Fetched latest news:', response.data.data);
 

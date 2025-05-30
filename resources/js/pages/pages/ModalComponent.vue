@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref } from 'vue';
-debugger;
+
 const props = defineProps({
   isOpen: Boolean,
   title: String,

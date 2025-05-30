@@ -56,7 +56,7 @@ const loadingNewsLetter = ref(false); // Tracks loading state
 const cacheDuration = 1 * 60 * 1000; // Cache duration (1 minute)
 // Fetch newsletter data from API
 const fetchNewsLetter = async () => {
-    debugger;
+    
     const now = new Date().getTime();
 
     // Check if cached data exists and is valid
@@ -101,7 +101,7 @@ const props = defineProps({
 
 // Get title based on selected language
 const getNewsLetterTitle = (newsItem) => {
-    debugger;
+    
     switch (props.language) {
         case 'Hindi':
             return newsItem.hindi_title || newsItem.english_title; // Fallback to English if Hindi title is missing

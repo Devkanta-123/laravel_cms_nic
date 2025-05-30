@@ -187,7 +187,7 @@ const formatDate = (dateStr) => {
 };
 
 const uploadImages = () => {
-    debugger;
+    
     const formData = new FormData();
     formData.append("menu", props.menu);
     images.value.forEach((image) => {

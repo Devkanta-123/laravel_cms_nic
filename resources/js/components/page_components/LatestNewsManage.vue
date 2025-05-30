@@ -78,7 +78,7 @@ const onOpenModal = (id) => {
 // Fetch data from the backend when the component is mounted
 const fetchData = async () => {
   try {
-    debugger;
+    
     const response = await axios.post('/api/get_latest_news'); // Replace with your API endpoint
     items.value = response.data; // Assign the fetched data to the items array
   } catch (error) {

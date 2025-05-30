@@ -44,7 +44,7 @@ const fetchNewsDetail = async () => {
     errorMessage.value = ''; // Reset error message
 
     try {
-        debugger;
+        
         const response = await axios.get(`/get_newsletter_detail/${props.newsId}`);
         if (response.data.length > 0) {
             newsDetailData.value = response.data;

@@ -137,7 +137,7 @@ const formValues = ref({ name: '', email: '', id: '', password: '', roles: [] })
 const form = ref(null);
 
 const onRoleChange = (event) => {
-    debugger;
+    
     selectedRole.value = parseInt(event.target.value); // or just event.target.value if string is fine
 };
 
@@ -193,7 +193,7 @@ const handleSubmit = (values, actions) => {
 
 
 const createUser = (values, { resetForm, setErrors }) => {
-    debugger;
+    
     const payload = {
         name: values.name,
         email: values.email,

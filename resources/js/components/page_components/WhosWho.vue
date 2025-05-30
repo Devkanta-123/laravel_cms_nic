@@ -229,7 +229,7 @@ const getAllLevelMaster = async () => {
 
 // Watch for changes in selectedLevel and update dynamic fields accordingly
 watch(selectedLevel, (newVal) => {
-    debugger;
+    
     console.log("Selected level changed to:", newVal); // Check if the watch is triggered
     if (newVal === 2) {
         dynamicFields.value = [

@@ -39,7 +39,7 @@ import Loader from "../components/Loader.vue";
 
 // Determine the current component
 const currentComponent = computed(() => {
-    debugger;
+    
     const id = route.params.id;
 
     switch (id) {
@@ -99,7 +99,7 @@ const logos = [
 
 const fetchPageContent = async () => {
     try {
-        debugger;
+        
         const response = await axios.get(
             `/get_page_content/${route.params.id}`
         );

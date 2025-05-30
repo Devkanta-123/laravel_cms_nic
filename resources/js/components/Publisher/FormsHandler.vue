@@ -30,7 +30,7 @@ import Logo from './Forms/Logo.vue'
 
 // Dynamically resolve the component to load based on menuName
 const currentComponent = computed(() => {
-  debugger;
+  
   switch (props.menuName?.toLowerCase()) {
     case 'carousel':
       return Carousal

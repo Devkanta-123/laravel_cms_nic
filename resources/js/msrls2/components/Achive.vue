@@ -22,7 +22,7 @@
 
 <script setup>
 import { computed, defineProps } from 'vue';
-debugger;
+
 const props = defineProps({
     archive: {
         type: Array,

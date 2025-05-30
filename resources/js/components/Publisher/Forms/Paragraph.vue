@@ -125,7 +125,7 @@ const fetchPageContent = async () => {
 
 const approveContent = async (id, index) => {
     try {
-        debugger;
+        
         const response = await axios.post('/approved_paragraph', { id });
         if (response) {
             paragraphData.value[index].flag = 'A'; // update UI immediately

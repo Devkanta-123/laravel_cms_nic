@@ -224,7 +224,7 @@ const getAllCategoryMaster = async () => {
 
 const getAllNotifications = async () => {
     try {
-        debugger;
+        
         const response = await axios.get('/get_notifications');
         noticeboarddata.value = response.data;
         await nextTick(); // Wait for DOM to update

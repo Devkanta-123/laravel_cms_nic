@@ -238,7 +238,7 @@ const onBack = () => {
     router.push('/admin/pages')
 }
 const openModal = (section) => {
-    debugger;
+    
     selectedSection.value = section;
     modalTitle.value = section.page_section_name;
     switch (section.page_section_name) {

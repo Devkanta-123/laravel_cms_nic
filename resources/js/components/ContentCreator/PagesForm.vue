@@ -122,7 +122,7 @@ const isLoading = ref(true);
 const toastr = useToastr();
 
 const getPageDetails = () => {
-    debugger;
+    
     axios.post(`/api/get_page_details/${props.menuId}`)
         .then((response) => {
             pageSections.value = response.data

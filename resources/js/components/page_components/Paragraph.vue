@@ -53,7 +53,7 @@ const props = defineProps({
 
 const saveContent = async () => {
   try {
-    debugger;
+    
     const formData = new FormData();
     formData.append("content", editorContent.value);
     formData.append("menu", props.menu);

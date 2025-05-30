@@ -22,7 +22,7 @@ const searchQuery = computed({
 });
 
 function submitSearch() {
-    debugger;
+    
     console.log('Searching for:', searchQuery.value);
     // You can also trigger other actions like filtering content or sending the query to an API
 }

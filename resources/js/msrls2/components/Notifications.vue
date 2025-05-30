@@ -217,7 +217,7 @@ const fetchRecruitmentsForCurrentMonth = async () => {
     // If cache is invalid or expired, fetch new data
     loadingRecruitments.value = true;
     try {
-        debugger;
+        
         const response = await axios.get(`/get_recruitmentsforcurrentmonth`, { param: { flag: 'A' } });
         if (response.data && Array.isArray(response.data)) {
             recruitmentsData.value = response.data;

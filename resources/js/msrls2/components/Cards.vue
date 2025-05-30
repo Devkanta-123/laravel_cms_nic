@@ -49,7 +49,7 @@ const props = defineProps({
 
 // Fetch cards data from API with caching
 const fetchCards = async () => {
-  debugger;
+  
   const now = new Date().getTime();
 
   // Check if cached data exists and is valid

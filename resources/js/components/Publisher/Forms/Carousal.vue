@@ -131,7 +131,7 @@ const fetchSlides = async () => {
 }
 const approveSlide = async (id, index) => {
     try {
-        debugger;
+        
         const response = await axios.post('/approve_carousel', { id });
         if (response.data.success) {
             slides.value[index].flag = 'A'; // update UI immediately

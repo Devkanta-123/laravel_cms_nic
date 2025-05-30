@@ -85,7 +85,7 @@ const archiveData = ref();
 const toastr = useToastr();
 const getArchiveData = async () => {
     try {
-        debugger;
+        
         const response = await axios.get('/get_archivedata');
         if (response.data) {
             archiveData.value = response.data;

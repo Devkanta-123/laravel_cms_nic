@@ -100,7 +100,7 @@ const formData = ref({
 // Submit form data to the backend
 const submitData = async () => {
     try {
-        debugger;
+        
         const response = await axios.post('/api/addMapData', formData.value, {
             headers: {
                 'Content-Type': 'application/json',

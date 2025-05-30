@@ -95,7 +95,7 @@ const selectedMenu = ref(null);
 const editorConfig = {
   height: 200,
 };
-debugger;
+
 const props = defineProps({
   menu: String
 });

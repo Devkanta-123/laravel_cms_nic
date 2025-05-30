@@ -148,7 +148,7 @@ const fetchLatestNews = async () => {
 
 const approveLatestNews = async (id, index) => {
     try {
-        debugger;
+        
         const response = await axios.post('/approved_latestnews', { id });
         if (response.data.success) {
             latestnews.value[index].flag = 'A'; // update UI immediately

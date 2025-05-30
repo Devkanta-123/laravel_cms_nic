@@ -138,7 +138,7 @@ const saveArchiveData = async () => {
 
 const saveLanguageData = async () => {
     try {
-        debugger;
+        
         if (languageName.value === null) {
             toastr.error('Please enter a language')
             return
@@ -176,7 +176,7 @@ const getArchiveData = async () => {
 
 const getMasterLanguages = async () => {
     try {
-        debugger;
+        
         const response = await axios.get('/api/getMasterLanguages')
         if (response.data) {
             languageData.value = response.data;
@@ -192,7 +192,7 @@ const isActivated = (languageId) => {
 };
 const activateLanguage = async (languageId, isChecked) => {
     try {
-        debugger;
+        
         if (isChecked) {
             await axios.post('/api/saveArchiveData', { language_id: languageId });
             activatelanguageData.value.push({ language_id: languageId });

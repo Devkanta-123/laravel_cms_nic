@@ -192,7 +192,7 @@ onMounted(async () => {
     }
 });
 const increaseFontSize = () => {
-    debugger;
+    
     menuFontSize.value += 1; // Increase font size
 };
 

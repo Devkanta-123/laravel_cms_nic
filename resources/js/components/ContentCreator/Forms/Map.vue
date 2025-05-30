@@ -148,7 +148,7 @@ const getMaps = async () => {
 const loading = ref(false);
 const submitData = async () => {
     try {
-        debugger;
+        
         loading.value = true;
         const response = await axios.post('/api/addMapData', formData.value, {
             headers: {

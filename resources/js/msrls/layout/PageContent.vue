@@ -414,7 +414,7 @@ watch(language, (newLang) => {
 });
 // Watch for changes in the `props.id` to update `localId` if necessary
 watch(() => props.id, (newId) => {
-    debugger;
+    
     localId.value = newId;
 });
 </script>

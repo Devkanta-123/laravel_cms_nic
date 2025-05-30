@@ -116,7 +116,7 @@ const onDrop = (e) => {
 
 
 const uploadImages = () => {
-  debugger;
+  
   const formData = new FormData();
   images.value.forEach((image) => {
     formData.append('images[]', image.file, image.name);

@@ -114,7 +114,7 @@ const maxIndex = computed(() =>
 
 // Handlers for navigation
 const nextSlide = () => {
-    debugger;
+    
     if (currentIndex.value < maxIndex.value) {
         currentIndex.value++;
     }
@@ -170,7 +170,7 @@ const fetchNewsLetter = async () => {
 
 // Get title based on selected language
 const getNewsLetterTitle = (newsItem) => {
-    debugger;
+    
     switch (props.language) {
         case 'Hindi':
             return newsItem.hindi_title || newsItem.english_title; // Fallback to English if Hindi title is missing

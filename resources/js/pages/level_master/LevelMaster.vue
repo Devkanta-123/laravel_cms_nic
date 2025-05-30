@@ -162,7 +162,7 @@ const editpageformValues = reactive({
 });
 
 const handleLevelDataSubmit = async (values, actions) => {
-    debugger;
+    
 
     let formData = new FormData();
     formData.append("level_name", values.level_name || "");
@@ -194,7 +194,7 @@ const handleLevelDataSubmit = async (values, actions) => {
 
 const getAllCategoryMaster = async () => {  // Add async here
     try {
-        debugger;
+        
         const response = await axios.get("/api/getAllLevelMaster");
         levelmasterdatas.value = response.data;
         await nextTick(); // Ensure DOM updates before initializing DataTable

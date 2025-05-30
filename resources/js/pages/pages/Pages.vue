@@ -190,7 +190,7 @@ const router = useRouter();
 const isLoading = ref(true);
 
 const getPageSection = () => {
-    debugger;
+    
     menus.value = '';
     sub_menus.value = '';
     axios.get('/api/get_menus')

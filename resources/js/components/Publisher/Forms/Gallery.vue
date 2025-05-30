@@ -141,7 +141,7 @@ const getGalleries = async () => {
 };
 const approveGallery = async (id, index) => {
     try {
-        debugger;
+        
         const response = await axios.post('/approved_gallery', { id });
         if (response) {
             gallariesData.value[index].flag = 'A'; // update UI immediately
