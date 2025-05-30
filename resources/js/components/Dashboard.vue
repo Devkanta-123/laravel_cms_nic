@@ -1,5 +1,4 @@
 <template>
-  
        <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -17,7 +16,7 @@
             </div>
             <div class="content">
                 <div class="container-fluid ">
-                    <Loader v-if="isLoading" />
+                    <!-- <Loader v-if="isLoading" /> -->
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="card">
@@ -83,7 +82,6 @@ import Loader from './Loader.vue';
 const isLoading = ref(true); 
 
 onMounted(() => {
-
   setTimeout(() => {
     isLoading.value = false;
   }, 500); 

@@ -205,7 +205,7 @@ Route::middleware(('auth'))->group(function () {
 
     Route::post('/api/save_component', [PagesController::class, 'saveComponent']);
 
-    Route::post('/api/delete_component', [PagesController::class, 'deleteComponent']);
+    // Route::post('/api/delete_component', [PagesController::class, 'deleteComponent']);
     //MAP Controller
 
     Route::post('/api/addMapData', [MapController::class, 'storeMapData']);

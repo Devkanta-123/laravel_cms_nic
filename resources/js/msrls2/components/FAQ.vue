@@ -1,9 +1,9 @@
 <template>
-    <div class="container">
+<div class="container ms-5 custom-pull-up">
         <div class="row">
                 <div class="accordion" style="opacity: 1;">
                     <div v-for="(faq, index) in processedFaqData" :key="faq.id"
-                        class="px-0 card rounded-3 mb-3 collapse-custom py-2 flex-grow-1 position-relative">
+                     class="px-0 card rounded-3 mb-3 collapse-custom py-2 flex-grow-1 position-relative custom-width-60">
                         <div class="faq-color-strip position-absolute"></div>
                         <div class="p-0 card-header border-0 rounded-3">
                             <a class="p-3 text-white fw-bold d-flex align-items-center collapsed"
@@ -24,7 +24,6 @@
                     </div>
                 </div>
         </div>
-
     </div>
 </template>
 
@@ -94,30 +93,3 @@ watch(() => props.language, () => {
     fetchFAQs();
 });
 </script>
-
-<style scoped>
-.faq-color-strip {
-    width: 6px;
-    /* Thickness of the strip */
-    height: 100%;
-    /* Full height of the card */
-    background-color: #014E4E;
-    /* Change to your desired color */
-    position: absolute;
-    top: 0;
-    left: 0;
-    border-top-left-radius: 8px;
-    /* Optional rounded corner */
-    border-bottom-left-radius: 8px;
-    /* Optional rounded corner */
-}
-
-.btn::before,
-.btn::after {
-    content: none !important;
-}
-
-.p-0.card-header.border-0.rounded-3 {
-    background-color: white;
-}
-</style>

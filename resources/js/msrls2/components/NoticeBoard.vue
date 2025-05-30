@@ -94,14 +94,5 @@ const isNewNotice = (noticeDate) => {
     }
 }
 
-.new-badge {
-    background: linear-gradient(90deg, #c8ff00, #ee0979);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 5px;
-    margin-left: 8px;
-    animation: blink 1s infinite;
-}
+
 </style>

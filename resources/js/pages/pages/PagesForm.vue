@@ -1,5 +1,5 @@
 <template>
-    <Loader v-if="isLoading" />
+    <!-- <Loader v-if="isLoading" /> -->
     <br>
     <div class="content ml-4 mr-4">
         <div class="container-fluid ">
@@ -56,7 +56,6 @@
                                             <p v-if="pageSections.length === 0" class="text-center text-muted">
                                                 No components found under this menu.
                                             </p>
-
                                             <!-- Loop through sections if available -->
                                             <template v-else v-for="(section) in pageSections" :key="section.id">
                                                 <div class="col-lg-12 me-element-item mb-2">
@@ -66,7 +65,7 @@
                                                                 <!-- <img :src="`/storage/${section.icon}`" alt="Image"> -->
                                                             </div>
                                                             <p class="m-b15"><strong>{{ section.page_section_name
-                                                            }}</strong></p>
+                                                                    }}</strong></p>
                                                         </div>
                                                         <div class="icon-content">
                                                             <a href="#" @click="openModal(section)"
@@ -76,7 +75,7 @@
                                                             <a href="javascript:void(0);"
                                                                 @click="deleteComponent(section)"
                                                                 class="ME-DeleteElement btn btn-danger shadow btn-xs sharp me-1">
-                                                                <i class="fa fa-times"></i>
+                                                                <i class="fa fa-trash"></i>
                                                             </a>
                                                         </div>
                                                     </div>
@@ -187,7 +186,7 @@ import Content from '@/components/page_components/Content.vue';
 import FAQ from "../../components/page_components/FAQ.vue";
 import Map from "../../components/page_components/Map.vue";
 import Logo from "../../components/page_components/Logo.vue";
-
+import Swal from 'sweetalert2';
 import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
@@ -209,6 +208,7 @@ const getPageDetails = () => {
         .then((response) => {
             pageSections.value = response.data;
             menu_id.value = props.menuId;
+            console.log("get_page_details data ", response.data);
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -219,6 +219,8 @@ const getAllComponents = () => {
     axios.get('/api/getAllComponents')
         .then(response => {
             allComponents.value = response.data;
+            console.log("allComponents data ", response.data);
+
         })
         .catch(error => {
             console.error('Error fetching menu data:', error);
@@ -319,26 +321,66 @@ const addComponent = (component) => {
         });
 };
 
-const deleteComponent = (component) => {
-    const payload = {
-        menu_id: menu_id.value,
-        component_id: component.id,
-        component_name: component.page_section_name
-    };
+// const deleteComponent = (component) => {
+//     const payload = {
+//         menu_id: menu_id.value,
+//         component_id: component.id,
+//         component_name: component.page_section_name
+//     };  
 
-    axios.post('/api/delete_component', payload)
-        .then(response => {
+//     axios.post('/api/delete_component', payload)
+//         .then(response => {
 
-            toastr.success('Component deleted successfully');
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+//             toastr.success('Component deleted successfully');
+//             setTimeout(() => {
+//                 location.reload();
+//             }, 1000);
 
-        })
-        .catch(error => {
-            console.error('Error saving component:', error);
-        });
+//         })
+//         .catch(error => {
+//             console.error('Error saving component:', error);
+//         });
+// };
+
+// 🔥 DELETE COMPONENT LOGIC
+const deleteComponent = async (component) => {
+    const usedInDetails = pageSections.value.some(section =>
+        section.menu_id === component.menu_id
+    );
+
+    const message = usedInDetails
+        ? "This component is used in page details. Are you sure you want to delete it? This action cannot be undone."
+        : "Are you sure you want to delete this component? This action cannot be undone.";
+
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await axios.post('/api/delete_component', {
+                component_id: component.id,
+                menu_id: props.menuId,
+                page_section_master_id: component.page_section_master.id,
+                has_dependency: usedInDetails
+            });
+
+            await getPageDetails();
+            await getAllComponents();
+
+            Swal.fire('Deleted!', 'Component has been deleted.', 'success');
+        } catch (error) {
+            console.error('Error deleting component:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
 };
+
 
 onMounted(() => {
     setTimeout(() => {

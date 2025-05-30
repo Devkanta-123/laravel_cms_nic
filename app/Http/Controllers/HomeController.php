@@ -136,20 +136,45 @@ class HomeController extends Controller
         }
     }
 
-    public function deleteComponent(Request $request)
-    {
-        if ($request->id) {
-            $footer = Footer::where('id', $request->id)->first();
-            if ($footer) {
+    // public function deleteComponent(Request $request)
+    // {
+    //     if ($request->id) {
+    //         $footer = Footer::where('id', $request->id)->first();
+    //         if ($footer) {
 
-                if (Storage::disk('smb_footer')->exists($footer->link)) {
-                    Storage::disk('smb_footer')->delete($footer->link);
-                }
-            }
-            $footer->delete();
-            return response()->noContent();
-        }
+    //             if (Storage::disk('smb_footer')->exists($footer->link)) {
+    //                 Storage::disk('smb_footer')->delete($footer->link);
+    //             }
+    //         }
+    //         $footer->delete();
+    //         return response()->noContent();
+    //     }
+    // }
+
+  
+// Example PHP Laravel controller
+
+public function deleteComponent(Request $request)
+{
+    $componentId = $request->input('component_id');
+    $menuId = $request->input('menu_id');
+    $hasDependency = $request->input('has_dependency');
+    $page_section_master_id = $request->input('page_section_master_id');
+
+    if ($hasDependency) {
+        // Delete from details table first
+        DB::table('page_section')
+            ->where('id', $componentId)
+            ->where('menu_id', $menuId)
+            ->delete();
     }
+
+    // Then delete from master component table
+    DB::table('page_section_master')->where('id', $page_section_master_id)->delete();
+
+    return response()->json(['status' => 'success']);
+}
+
     // public function saveContent(Request $request)
     // {
 

@@ -24,7 +24,7 @@
         "i": "^0.3.7",
         "idb": "^8.0.2",
         "jquery": "^3.7.1",
-        "sweetalert2": "^11.11.0",
+        "sweetalert2": "^11.22.0",
         "vee-validate": "^4.12.8",
         "vue": "^3.4.27",
         "vue-media-upload": "^2.2.4",
