@@ -109,7 +109,7 @@ const slides = ref([]);        // Array of image URLs for carousel
 const currentIndex = ref(0);   // Current slide index
 let slideInterval;
 
-const CACHE_EXPIRY_MS = 10 * 60 * 20000; // 20 minutes
+const CACHE_EXPIRY_MS = 10 * 60 * 10000; // 10 minutes
 const CACHE_KEY_TIMESTAMP = 'carouselCacheTimestamp';
 
 // Typewriter effect for the text
@@ -185,6 +185,7 @@ function isCacheValid() {
 // Fetch slides from backend and cache in IndexedDB
 async function fetchSlides() {
   try {
+    debugger;
     const response = await axios.get('/get_carousel', { params: { flag: 'A' } });
 
     const base64Slides = response.data; // array of base64 strings

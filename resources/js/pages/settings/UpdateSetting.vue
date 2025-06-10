@@ -27,7 +27,7 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label>Archieve Duration for Latest news (no of days)</label>
+                                            <label>Archive Duration for Latest news (no of days)</label>
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text">

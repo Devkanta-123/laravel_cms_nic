@@ -56,11 +56,11 @@
                                                         <div class="card card-statistics h-100 mb-4">
                                                             <div class="card-body">
                                                                 <div class="clearfix">
-                                                                    <div>
-                                                                        <img :src="`/storage/${section.page_section_master.icon}`"
+                                                                    <!-- <div>
+                                                                        <img :src="`/storage/${section.icon}`"
                                                                             alt="section icon"
                                                                             style="width: 60px; height: 50px;" />
-                                                                    </div>
+                                                                    </div> -->
                                                                     <div class="float-end text-end">
                                                                         <p class="card-text text-dark">{{
                                                                             section.page_section_name }}</p><a
@@ -82,7 +82,6 @@
                         </div>
                     </div>
                 </div>
-
 
             </div>
 
@@ -144,6 +143,7 @@ const groupedSections = computed(() => {
 })
 
 const getAllComponents = () => {
+    debugger;
     axios.get('/api/getAllComponents')
         .then(response => {
             allComponents.value = response.data;

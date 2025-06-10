@@ -151,29 +151,29 @@ class HomeController extends Controller
     //     }
     // }
 
-  
-// Example PHP Laravel controller
 
-public function deleteComponent(Request $request)
-{
-    $componentId = $request->input('component_id');
-    $menuId = $request->input('menu_id');
-    $hasDependency = $request->input('has_dependency');
-    $page_section_master_id = $request->input('page_section_master_id');
+    // Example PHP Laravel controller
 
-    if ($hasDependency) {
-        // Delete from details table first
-        DB::table('page_section')
-            ->where('id', $componentId)
-            ->where('menu_id', $menuId)
-            ->delete();
+    public function deleteComponent(Request $request)
+    {
+        $componentId = $request->input('component_id');
+        $menuId = $request->input('menu_id');
+        $hasDependency = $request->input('has_dependency');
+        $page_section_master_id = $request->input('page_section_master_id');
+
+        if ($hasDependency) {
+            // Delete from details table first
+            DB::table('page_section')
+                ->where('id', $componentId)
+                ->where('menu_id', $menuId)
+                ->delete();
+        }
+
+        // Then delete from master component table
+        DB::table('page_section_master')->where('id', $page_section_master_id)->delete();
+
+        return response()->json(['status' => 'success']);
     }
-
-    // Then delete from master component table
-    DB::table('page_section_master')->where('id', $page_section_master_id)->delete();
-
-    return response()->json(['status' => 'success']);
-}
 
     // public function saveContent(Request $request)
     // {
@@ -432,7 +432,10 @@ public function deleteComponent(Request $request)
                 WebsiteCache::create([
                     'carousel_id' => $carousel->id,
                     'type' => 'carousel',
-                    'data' => base64_encode(json_encode(['data' => [$carouselData]]))
+                    'data'=> base64_encode(json_encode(['data' => [$carouselData]])),
+                    'user_id'=> $user->id,
+                    'role_id'=> $user->role_id,
+                    'flag'=> $flag
                 ]);
             }
         }
@@ -1526,18 +1529,18 @@ public function deleteComponent(Request $request)
     }
 
     public function deleteArchiveData(Request $request)
-{
-    $request->validate([
-        'language_id' => 'required|exists:language_master,id',
-    ]);
+    {
+        $request->validate([
+            'language_id' => 'required|exists:language_master,id',
+        ]);
 
-    WebsiteSettings::where('language_id', $request->language_id)->delete();
+        WebsiteSettings::where('language_id', $request->language_id)->delete();
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Language setting removed successfully.'
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Language setting removed successfully.'
+        ]);
+    }
 
 
     public function getArchieveData()
@@ -1723,5 +1726,4 @@ public function deleteComponent(Request $request)
         $data = DB::table('archive_news')->get();
         return response()->json($data);
     }
-
 }

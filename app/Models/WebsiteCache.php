@@ -15,6 +15,9 @@ class WebsiteCache extends Model
     protected $fillable = [
         'type',
         'data',
-        'carousel_id'
+        'carousel_id',
+        'user_id',
+        'role_id',
+        'flag'
     ];
 }

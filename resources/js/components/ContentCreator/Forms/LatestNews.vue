@@ -105,7 +105,7 @@
                                         </a>
                                         <span v-else>{{ news.title }}</span>
                                     </td>
-                                    <td>{{ formatDate(news.created_at) }}</td>
+                                    <td>{{ formatDate(news.addedon) }}</td>
                                     <td>
                                         <label :class="news.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
                                             {{ news.flag === 'A' ? 'Approved' : 'Pending' }}

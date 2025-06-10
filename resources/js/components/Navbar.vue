@@ -185,7 +185,7 @@
                                 </p>
                             </router-link>
                         </li>
-                        <li class="nav-item" v-if="role == 3">
+                        <!-- <li class="nav-item" v-if="role == 3">
                             <router-link to="/contentcreator/menu"
                                 :class="$route.path.startsWith('/contentcreator/menu') ? 'active' : ''"
                                 class="nav-link">
@@ -194,7 +194,7 @@
                                     Menu
                                 </p>
                             </router-link>
-                        </li>
+                        </li> -->
 
                         <!-- Publisher -->
                         <li class="nav-item" v-if="role == 4">
