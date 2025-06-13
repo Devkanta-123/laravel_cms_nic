@@ -69,6 +69,7 @@ Route::put('/approved_whoswho', action: [WhosWhoController::class, 'approveWhosW
 Route::get('/get_contactus', action: [MapController::class, 'getMapData']); //added by dev on 25/03/25
 Route::put('/approved_map', action: [MapController::class, 'approveMap']); //added by dev on 25/03/25
 Route::get('/get_archivedata', action: [HomeController::class, 'getArchiveData']); //added by dev on 29/05/25
+Route::get('/generateCaptcha', [UserController::class, 'generateCaptcha']);
 
 
 
@@ -80,7 +81,6 @@ Route::get('/get_archivedata', action: [HomeController::class, 'getArchiveData']
 Route::middleware(('auth'))->group(function () {
 
     Route::get('/api/get_users', [UserController::class, 'index']);
-
     Route::get('/api/get_user', [UserController::class, 'get_user']);
 
     Route::get('/api/get_roles', [UserController::class, 'get_roles']);
@@ -91,6 +91,7 @@ Route::middleware(('auth'))->group(function () {
 
     Route::post('/api/update_users/{user}', [UserController::class, 'update']);
 
+    Route::post('/api/update_user_status', [UserController::class, 'updateUserStatus']);
     Route::post('/api/update_roles/{role}', [UserController::class, 'updateRole']);
 
     Route::post('/api/delete_user/{user}', [UserController::class, 'destroy']);
@@ -129,6 +130,8 @@ Route::middleware(('auth'))->group(function () {
     //EDIT CATEGORY MASTER MENU
     Route::post('/api/editCategoryMaster', [CategoryMasterController::class, 'editCategoryMaster']); //added by Dev on 18/02/2025
     Route::post('/api/submitNotificationsData', [NotificationsController::class, 'submitNotificationsData']); //added by Dev on 24/02/2025
+    Route::post('/api/updateNotice', [NotificationsController::class, 'updateNotice']); //added by Dev on 12/06/2025
+    Route::post('/api/deleteNotification', [NotificationsController::class, 'deleteNotification']); //added by Dev on 12/06/2025
     Route::post('/api/submitFAQData', [FAQController::class, 'submitFAQData']); //added by Dev on 03/03/2025
 
     //ADD LEVEL MASTER 
@@ -219,3 +222,4 @@ Route::middleware(('auth'))->group(function () {
 
     Route::get('{view}', ApplicationController::class)->where('view', '(.*)');
 });
+

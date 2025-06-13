@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Loader v-if="isLoading" />
+        <!-- <Loader v-if="isLoading" /> -->
         <nav class="main-header navbar navbar_admin navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
 
@@ -63,6 +63,15 @@
                                 <i class="nav-icon fas fa-user"></i>
                                 <p>
                                     Admin Management
+
+                                </p>
+                            </router-link>
+                        </li>
+                          <li class="nav-item" v-if="role == 2">
+                            <router-link to="/admin/manage" active-class="active" class="nav-link">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>
+                                    User Management
 
                                 </p>
                             </router-link>

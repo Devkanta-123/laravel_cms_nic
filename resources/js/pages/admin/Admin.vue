@@ -31,9 +31,9 @@
                                 <td>Name</td>
                                 <td>Email</td>
                                 <td>Role</td>
-                                <td>Enable/Disable</td>
+                                <td>Status</td>
                                 <!-- <td>Role</td> -->
-                                <td>Options</td>
+                                <td>Actions</td>
                             </tr>
                         </thead>
                         <tbody>
@@ -75,16 +75,13 @@
                             <span class="invalid-feedback">{{ errors.name }}</span>
                         </div>
 
-                        <div class="form-group">
-                            <label for="roles">Roles</label>
-                            <select v-model="formValues.roles" @change="onRoleChange" class="form-control">
-                                <option disabled value="">--Select a role --</option>
-                                <option v-for="role in availableRoles" :key="role.id" :value="role.id">
-                                    {{ role.role_name }}
-                                </option>
-                            </select>
+                        <select v-model="formValues.roles" @change="onRoleChange" class="form-control">
+                            <option disabled value="">--Select a role--</option>
+                            <option v-for="role in filteredRoles" :key="role.id" :value="role.id">
+                                {{ role.role_name }}
+                            </option>
+                        </select>
 
-                        </div>
 
 
 
@@ -126,18 +123,18 @@ import { Form, Field, useSetFieldError } from 'vee-validate';
 import { useToastr } from '../../toaster.js';
 import AdminItem from "./AdminItem.vue";
 const selectedRole = ref(null);
-
-
 const toastr = useToastr();
 const users = ref([]);
+const loginUser = ref();
 const availableRoles = ref([]);
+const filteredRoles = ref([]);
 const editing = ref(false);
 const formValues = ref({ name: '', email: '', id: '', password: '', roles: [] });
 
 const form = ref(null);
 
 const onRoleChange = (event) => {
-    
+
     selectedRole.value = parseInt(event.target.value); // or just event.target.value if string is fine
 };
 
@@ -155,29 +152,48 @@ const editUserschema = yup.object({
 
 const currentSchema = computed(() => editing.value ? editUserschema : createUserschema);
 
-const getUsers = () => {
-    axios.get('/api/get_users')
-        .then((response) => {
-            users.value = response.data;
-            console.log('USERS');
-            console.log(users.value);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-}
+const getUsers = async () => {
+  try {
+    const response = await axios.get('/api/get_users');
+    users.value = response.data;
+    console.log('USERS', users.value);
+  } catch (error) {
+    console.error('Error:', error);
+    throw error; // propagate error if needed
+  }
+};
+
+
+const fetchUser = async () => {
+    try {
+        const response = await axios.get('/api/get_user');
+        loginUser.value = response.data[0];
+        console.log("👤 Login User Data:", loginUser.value);
+        getRoles(); // Call getRoles only after loginUser is available
+    } catch (error) {
+        console.error('Failed to fetch user:', error);
+    }
+};
 
 const getRoles = () => {
     axios.get('/api/get_roles')
         .then((response) => {
             availableRoles.value = response.data;
-            console.log('ROLES');
-            console.log(availableRoles.value);
+
+            // Filter out loginUser's role
+            if (loginUser.value) {
+                filteredRoles.value = availableRoles.value.filter(
+                    role => role.id !== loginUser.value.role_id
+                );
+            }
+
+            console.log('Filtered Roles:', filteredRoles.value);
         })
         .catch((error) => {
-            console.error('Error:', error);
+            console.error('Error fetching roles:', error);
         });
 };
+
 
 const handleSubmit = (values, actions) => {
 
@@ -192,28 +208,34 @@ const handleSubmit = (values, actions) => {
 };
 
 
-const createUser = (values, { resetForm, setErrors }) => {
-    
-    const payload = {
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        role: selectedRole.value  // ✅ from onChange
-    };
+const createUser = async (values, { resetForm, setErrors }) => {
+    debugger;
+  const payload = {
+    name: values.name,
+    email: values.email,
+    password: values.password,
+    role: selectedRole.value  // ✅ from onChange
+  };
 
-    axios.post('/api/users', payload)
-        .then((response) => {
-            users.value.unshift(response.data);
-            resetForm();
-            $('#userFormModal').modal('hide');
-            toastr.success('User created successfully');
-        })
-        .catch((error) => {
-            if (error.response?.data?.errors) {
-                setErrors(error.response.data.errors);
-            }
-        });
+  try {
+    const response = await axios.post('/api/users', payload);
+
+    users.value.unshift(response.data); // or remove this if getUsers() refreshes all
+    resetForm();
+    $('#userFormModal').modal('hide');
+
+    await getUsers(); // ✅ await used inside async function
+
+    toastr.success('User created successfully');
+  } catch (error) {
+    if (error.response?.data?.errors) {
+      setErrors(error.response.data.errors);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+  }
 };
+
 
 const updateUser = (values) => {
     axios.post('/api/update_users/' + formValues.value.id, formValues.value)
@@ -258,5 +280,6 @@ const userDeleted = (userId) => {
 onMounted(() => {
     getUsers();
     getRoles();
+    fetchUser();
 });
 </script>

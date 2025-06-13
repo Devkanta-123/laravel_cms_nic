@@ -432,10 +432,10 @@ class HomeController extends Controller
                 WebsiteCache::create([
                     'carousel_id' => $carousel->id,
                     'type' => 'carousel',
-                    'data'=> base64_encode(json_encode(['data' => [$carouselData]])),
-                    'user_id'=> $user->id,
-                    'role_id'=> $user->role_id,
-                    'flag'=> $flag
+                    'data' => base64_encode(json_encode(['data' => [$carouselData]])),
+                    'user_id' => $user->id,
+                    'role_id' => $user->role_id,
+                    'flag' => $flag
                 ]);
             }
         }
@@ -449,7 +449,6 @@ class HomeController extends Controller
 
     public function deleteSlide(Request $request)
     {
-
         $request->validate([
             'id' => 'required'
         ]);
@@ -464,6 +463,8 @@ class HomeController extends Controller
             }
 
             $slide->delete();
+            // Delete related cache entry
+            WebsiteCache::where('carousel_id', $request->id)->delete();
             return response()->json(['message' => 'Slide deleted successfully']);
         }
     }

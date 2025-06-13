@@ -75,7 +75,7 @@
                                     </td>
                                     <td>
 
-                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(slide.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger" @click="deleteCarousel(slide.id)"></i>
                                     </td>
                                 </tr>
 
@@ -110,6 +110,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
@@ -193,17 +194,30 @@ const uploadImages = () => {
         });
 };
 
-const deleteDBImage = (slide, index) => {
+const deleteCarousel = async (id) => {
+    debugger;
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this slide? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
 
-    axios.post('/api/delete_slide', { id: slide.id })
-        .then(response => {
-            console.log('Slide deleted successfully:', response.data);
-            toastr.success('Slide deleted successfully');
-            slides.value.splice(index, 1);
-        })
-        .catch(error => {
-            console.error('Error deleting slide:', error);
-        });
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/api/delete_slide', {
+                id: id
+            });
+
+            await fetchSlides(); // refresh the list
+            Swal.fire('Deleted!', response.data.message || 'Slide has been deleted.', 'success');
+        } catch (error) {
+            console.error('Error deleting notice:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
 };
 
 const fetchSlides = async () => {

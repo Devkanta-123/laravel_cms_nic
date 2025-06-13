@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Notifications;
 use App\Models\CategoryMaster;
@@ -82,6 +82,36 @@ class NotificationsController extends Controller
         return response()->json(['message' => 'Notifications save successfully'], 201);
     }
 
+    public function updateNotice(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:notifications,id',
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|integer',
+            'date' => 'nullable|date',
+            'file' => 'nullable|file|mimes:pdf,docx,jpeg,png,jpg|max:2048'
+        ]);
+
+        $notice = Notifications::findOrFail($request->id);
+        $notice->title = $request->title;
+        $notice->category_id = $request->category_id;
+        $notice->date = $request->date;
+
+        if ($request->hasFile('file')) {
+            //delete old fil
+            if ($notice->file && Storage::disk('public')->exists($notice->file)) {
+                Storage::disk('public')->delete($notice->file);
+            }
+
+            $path = $request->file('file')->store('public/notifications');
+            $notice->file = str_replace('public/', '', $path); // store path without "public/"
+        }
+
+        $notice->save();
+
+        return response()->json(['status' => 'success']);
+    }
+
     public function getAllNotifications(Request $request)
     {
         $user = Auth::user();
@@ -93,9 +123,12 @@ class NotificationsController extends Controller
 
         // If flag=A is explicitly passed, return only approved notifications
         if ($flag === 'A') {
-            $notifications = Notifications::where('flag', 'A')->get();
+            $notifications = Notifications::where('flag', 'A')
+                ->orderBy('date', 'desc')
+                ->get();
             return response()->json($notifications, 200);
         }
+
 
         // Role-based logic
         if ($user->role_id == 2) {
@@ -149,7 +182,9 @@ class NotificationsController extends Controller
 
         if ($category_id) {
             // Fetch notifications where category_id matches the retrieved category ID
-            $notifications = Notifications::where('category_id', $category_id)->get();
+            $notifications = Notifications::where('category_id', $category_id)
+              ->orderBy('date', 'desc')
+              ->get();
             return response()->json($notifications, 200);
         } else {
             return response()->json(['message' => 'Data for this Category not found'], 404);
@@ -171,5 +206,25 @@ class NotificationsController extends Controller
     {
         $notifications = Notifications::where('category_id', 3)->whereMonth('date', date('m'))->get();
         return response()->json($notifications, 200);
+    }
+
+    public function deleteNotification(Request $request)
+    {
+        $id = $request->input('id');
+        $notice = Notifications::find($id);
+
+        if (!$notice) {
+            return response()->json(['message' => 'Notice not found'], 404);
+        }
+
+        // Delete the file if it exists
+        if ($notice->file && Storage::disk('public')->exists($notice->file)) {
+            Storage::disk('public')->delete($notice->file);
+        }
+
+        // Delete the record
+        $notice->delete();
+
+        return response()->json(['message' => 'Notice deleted successfully']);
     }
 }

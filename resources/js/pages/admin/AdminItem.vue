@@ -1,58 +1,66 @@
 <template>
     <tr>
-            <td>
-                {{ index + 1}}
-            </td>
-            <td>
-                {{ user.name}}
-            </td>
-            <td>
-                {{ user.email}}
-            </td>
-            <td>
-                        {{ user.roles.role_name }}
-            </td>
-            <td> 
-                 
-              
-                   <label for="active" v-if="user.is_enabled==1 "> Active</label>
+        <td>
+            {{ index + 1 }}
+        </td>
+        <td>
+            {{ user.name }}
+        </td>
+        <td>
+            {{ user.email }}
+        </td>
+        <td>
+            {{ user.roles.role_name }}
+        </td>
+        <td>
 
-                   <label for="active" v-else> Disabled</label>
-                               
-            </td>
 
-            <td>
-                <a href="#" @click.prevent="$emit('editUser', user)"><i class="fa fa-edit"></i></a>
+            <label for="active" v-if="user.is_enabled == 1"> Active</label>
 
-                <a href="#" @click.prevent="confirmUserDeletion(user)"><i class="fa fa-trash text-danger ml-2"></i></a>
-            </td>
+            <label for="active" v-else> InActive</label>
+
+        </td>
+
+        <td>
+            <a href="#" @click.prevent="$emit('editUser', user)"><i class="fa fa-edit"></i></a>
+
+            <!-- <a href="#" @click.prevent="confirmUserDeletion(user)"><i class="fa fa-trash text-danger ml-2"></i></a> -->
+            <!-- Inside <td> -->
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" :id="'switch-' + user.id"
+                    :checked="user.is_enabled == 1" @change="toggleUserStatus(user)">
+                <label class="custom-control-label" :for="'switch-' + user.id"></label>
+            </div>
+
+        </td>
     </tr>
 
-      <!-- DeleteModal -->
-      <div class="modal fade" id="deleteUserModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">
-                             Delete User
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-
-                    <div class="modal-body">
-                       <h5>Are you sure you want to delete this user?</h5>
-                    </div>
-                    <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-
-                            <button type="button" @click.prevent="deleteUser" class="btn btn-primary" >Delete User</button>
-                        </div>
-                   
+    <!-- DeleteModal -->
+    <div class="modal fade" id="deleteUserModal" data-backdrop="static" tabindex="-1" role="dialog"
+        aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">
+                        Delete User
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
+
+                <div class="modal-body">
+                    <h5>Are you sure you want to delete this user?</h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                    <button type="button" @click.prevent="deleteUser" class="btn btn-primary">Delete User</button>
+                </div>
+
             </div>
         </div>
+    </div>
 </template>
 <style>
 /* Hide the default checkbox */
@@ -83,7 +91,7 @@
 }
 
 /* Move the handle to the right when the checkbox is checked */
-.toggle-checkbox:checked + .toggle-switch .toggle-handle {
+.toggle-checkbox:checked+.toggle-switch .toggle-handle {
     transform: translateX(30px);
 }
 
@@ -114,52 +122,67 @@ import { formatDate } from '../../helper';
 import { ref } from 'vue';
 import { useToastr } from '../../toaster.js';
 import axios from 'axios';
+const toastr = useToastr();
 
 
-    defineProps({
-        user: Object,
-        index: Number
-    })
+defineProps({
+    user: Object,
+    index: Number
+})
+const toggleUserStatus = async (user) => {
+    try {
+        const newStatus = user.is_enabled === 1 ? 0 : 1;
+        await axios.post('/api/update_user_status', {
+            user_id: user.id,
+            is_enabled: newStatus,
+        });
 
-    const toastr = useToastr();
-    const userIdBeingDeleted = ref(null);
-    const emit = defineEmits(['userDeleted', 'editUser']);
+        // Update local status
+        user.is_enabled = newStatus;
+        toastr.success('Updated successfully');
+    } catch (error) {
+        console.error("Failed to update user status:", error);
+        alert("Something went wrong. Please try again.");
+    }
+}
+const userIdBeingDeleted = ref(null);
+const emit = defineEmits(['userDeleted', 'editUser']);
 
-    const confirmUserDeletion = (user) => {
-        userIdBeingDeleted.value = user.id;
-        $('#deleteUserModal').modal('show');
-     }
+const confirmUserDeletion = (user) => {
+    userIdBeingDeleted.value = user.id;
+    $('#deleteUserModal').modal('show');
+}
 
-    const deleteUser = (user) => {
-        // axios.post('http://10.179.2.187:8000/api/delete_user/'+ userIdBeingDeleted.value)
-        axios.post('/api/delete_user/'+ userIdBeingDeleted.value)
+const deleteUser = (user) => {
+    // axios.post('http://10.179.2.187:8000/api/delete_user/'+ userIdBeingDeleted.value)
+    axios.post('/api/delete_user/' + userIdBeingDeleted.value)
         .then(() => {
             $('#deleteUserModal').modal('hide');
             // users.value = users.value.filter(user => user.id !== userIdBeingDeleted.value);
             toastr.success("User Deleted Successfully");
             emit('userDeleted', userIdBeingDeleted.value);
         })
-    }
-        
-    const roles = ref([
-        {
-            name: 'ADMIN',
-            value: 1 
-        },
-        {
-            name: 'USER',
-            value: 2 
-        }
-    ]);
+}
 
-    const changeRole = (user, role) =>{
-            
-            axios.post("/api/change_role/"+user.id,{
-                role: role
-            })
-            .then(() => {
-                toastr.success('Role changed successfully!')
-            })
+const roles = ref([
+    {
+        name: 'ADMIN',
+        value: 1
+    },
+    {
+        name: 'USER',
+        value: 2
     }
+]);
+
+const changeRole = (user, role) => {
+
+    axios.post("/api/change_role/" + user.id, {
+        role: role
+    })
+        .then(() => {
+            toastr.success('Role changed successfully!')
+        })
+}
 
 </script>

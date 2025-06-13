@@ -96,7 +96,7 @@
                                         </a>
                                     </td>
                                     <td>{{ notice.addedby }}</td>
-                                    <td>{{ formatDate(notice.created_at) }}</td>
+                                    <td>{{ notice.date }}</td>
                                     <td>{{ notice.category_name }}</td>
                                     <td>
                                         <label :class="notice.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
@@ -104,12 +104,76 @@
                                         </label>
                                     </td>
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(news.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger"
+                                            @click="deleteNotification(notice.id)"></i>&nbsp;&nbsp;
+                                        <i class="fas fa-pencil-alt text-success" data-toggle="modal"
+                                            data-target="#editModal" @click="editModal(notice)">
+                                        </i>
+
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">
+                                        {{ selectedNotice.title }}
+                                    </h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <!-- Title and Date in a row -->
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <label>Title</label>
+                                            <input type="text" class="form-control" v-model="selectedNotice.title" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Date</label>
+                                            <input type="date" class="form-control" v-model="selectedNotice.date" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Category -->
+                                    <div class="form-group">
+                                        <label>Category</label>
+                                        <select class="form-select my-1 me-sm-2" v-model="selectedNotice.category_id">
+                                            <option value="" disabled>Select the category</option>
+                                            <option v-for="category in categorydata" :key="category.id"
+                                                :value="category.id">
+                                                {{ category.category_name }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- File Upload -->
+                                    <div class="form-group">
+                                        <label>Upload File</label>
+                                        <input type="file" class="form-control" @change="edithandleFileUpload"
+                                            ref="fileInput" />
+                                    </div>
+
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="updateNotice">Save
+                                        changes</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
         </div>
@@ -120,6 +184,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
+import Swal from 'sweetalert2';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const selectedCategory = ref("");
@@ -129,10 +194,23 @@ const showLinkInput = ref(false)
 const file = ref(null)
 const link = ref('')
 const title = ref('')
+const fileInput = ref(null) // this will reference the file input
 const noticeboarddata = ref([]);
 const addRow = () => {
     rows.value.push({ title: "", date: "", files: [] });
 };
+const selectedNotice = ref({}) // To store the clicked notice
+
+const editModal = (notice) => {
+    debugger;
+    selectedNotice.value = { ...notice }
+}
+const clearFileInput = () => {
+    file.value = null;
+    if (fileInput.value) {
+        fileInput.value.value = ''; // reset the actual input element
+    }
+}
 
 // Remove a row
 const removeRow = (index) => {
@@ -148,6 +226,10 @@ const handleFileUpload = (event, index) => {
     rows.value[index].files = files;
 };
 
+
+const edithandleFileUpload = (e) => {
+    file.value = e.target.files[0]
+}
 // Validate input fields before submission
 const validateFields = () => {
     if (!selectedCategory.value) {
@@ -224,7 +306,6 @@ const getAllCategoryMaster = async () => {
 
 const getAllNotifications = async () => {
     try {
-        
         const response = await axios.get('/get_notifications');
         noticeboarddata.value = response.data;
         await nextTick(); // Wait for DOM to update
@@ -240,6 +321,61 @@ const getAllNotifications = async () => {
         console.log('Latest News data', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);
+    }
+};
+const updateNotice = async () => {
+    const formData = new FormData()
+    formData.append('id', selectedNotice.value.id)
+    formData.append('title', selectedNotice.value.title)
+    formData.append('category_id', selectedNotice.value.category_id)
+    formData.append('date', selectedNotice.value.date)
+    if (file.value) {
+        formData.append('file', file.value)
+    }
+    console.log('FormData to send:');
+    for (let pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
+    }
+
+    try {
+        await axios.post('/api/updateNotice', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        getAllNotifications();
+        clearFileInput(); // ✅ clear file input
+        toastr.success("Successfully Updated");
+        $('#editModal').modal('hide')
+    } catch (error) {
+        console.error('Error updating notice:', error)
+        toastr.error("Failed to update data");
+
+    }
+}
+
+const deleteNotification = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this notice? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/api/deleteNotification', {
+                id: id
+            });
+
+            await getAllNotifications(); // refresh the list
+            Swal.fire('Deleted!', response.data.message || 'Notice has been deleted.', 'success');
+        } catch (error) {
+            console.error('Error deleting notice:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
     }
 };
 

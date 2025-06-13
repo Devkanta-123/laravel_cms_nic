@@ -46,6 +46,9 @@
                                                 :disabled="news.flag === 'A'" @change="approveLatestNews(news.id, index)">
                                             <span></span>
                                         </label>
+                                         <i class="fas fa-pencil-alt text-success" data-toggle="modal"
+                                            data-target="#editModal" @click="editModal(news)">
+                                        </i>
                                     </div>
                                     </td>
                                 </tr>
