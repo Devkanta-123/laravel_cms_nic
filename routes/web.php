@@ -82,7 +82,7 @@ Route::middleware(('auth'))->group(function () {
 
     Route::get('/api/get_users', [UserController::class, 'index']);
     Route::get('/api/get_user', [UserController::class, 'get_user']);
-
+    Route::get('/api/get_allpublisher', [UserController::class, 'getAllPublisher']);
     Route::get('/api/get_roles', [UserController::class, 'get_roles']);
 
     Route::post('/api/users', [UserController::class, 'store']);
@@ -131,6 +131,8 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/editCategoryMaster', [CategoryMasterController::class, 'editCategoryMaster']); //added by Dev on 18/02/2025
     Route::post('/api/submitNotificationsData', [NotificationsController::class, 'submitNotificationsData']); //added by Dev on 24/02/2025
     Route::post('/api/updateNotice', [NotificationsController::class, 'updateNotice']); //added by Dev on 12/06/2025
+    Route::post('/api/rejectedNotification', [NotificationsController::class, 'rejectedNotification']); //added by Dev on 16/06/2025
+    Route::get('/api/get_archivitylog', [NotificationsController::class, 'getActivityLog']); //added by Dev on 16/06/2025
     Route::post('/api/deleteNotification', [NotificationsController::class, 'deleteNotification']); //added by Dev on 12/06/2025
     Route::post('/api/submitFAQData', [FAQController::class, 'submitFAQData']); //added by Dev on 03/03/2025
 

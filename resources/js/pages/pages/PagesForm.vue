@@ -163,7 +163,7 @@
             </div>
         </div>
     </div>
-    <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection"
+    <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection" 
         :menu="menu_id" @close="isModalOpen = false" />
 </template>
 
@@ -238,7 +238,7 @@ const onBack = () => {
     router.push('/admin/pages')
 }
 const openModal = (section) => {
-    
+    debugger;
     selectedSection.value = section;
     modalTitle.value = section.page_section_name;
     switch (section.page_section_name) {

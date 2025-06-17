@@ -161,7 +161,7 @@ const onBack = () => {
 const openPageSection = (section) => {
     router.push({
         name: 'PublisherFormsHandler',
-        params: { menuId: section.menu_id, menuName: section.page_section_name }
+        params: { menuId: section.menu_id, menuName: section.page_section_name,page_section_id:section.page_section_id}
     });
 }
 const addComponent = (component) => {

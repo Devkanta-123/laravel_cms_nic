@@ -4,8 +4,9 @@
   <nav class="admin-header navbar navbar-default col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
     <!-- logo -->
     <div class="text-start navbar-brand-wrapper">
-      <a class="navbar-brand brand-logo" href="index.html"><img src="images/logo-dark.png" alt=""></a>
-      <a class="navbar-brand brand-logo-mini" href="index.html"><img src="images/logo-icon-dark.png" alt=""></a>
+      <a class="navbar-brand brand-logo" href="#"><img src="images/logo-dark.png" alt=""></a>
+      <a class="navbar-brand brand-logo-mini" href="#"><img
+          src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" alt=""></a>
     </div>
     <!-- Top bar left -->
     <ul class="nav navbar-nav me-auto">
@@ -13,42 +14,29 @@
         <a id="button-toggle" class="button-toggle-nav inline-block ml-20 pull-left" href="javascript:void(0);"><i
             class="zmdi zmdi-menu ti-align-right"></i></a>
       </li>
-      <li class="nav-item">
-        <div class="search">
-          <a class="search-btn not_click" href="javascript:void(0);"></a>
-          <div class="search-box not-click">
-            <input type="text" class="not-click form-control" placeholder="Search" value="" name="search">
-            <button class="search-button" type="submit"> <i class="fa fa-search not-click"></i></button>
-          </div>
-        </div>
-      </li>
+
     </ul>
     <!-- top bar right -->
     <ul class="nav navbar-nav ms-auto">
-      <li class="nav-item fullscreen">
-        <a id="btnFullscreen" href="#" class="nav-link"><i class="ti-fullscreen"></i></a>
-      </li>
+      
       <li class="nav-item dropdown ">
         <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
           aria-expanded="false">
-          <i class="ti-bell"></i>
-          <span class="badge bg-danger notification-status"> </span>
-        </a>
+          <i class="fa fa-bell"></i> </a>
         <div class="dropdown-menu dropdown-menu-right dropdown-big dropdown-notifications">
           <div class="dropdown-header notifications">
             <strong>Notifications</strong>
-            <span class="badge bg-warning">05</span>
+            <span class="badge bg-warning">{{ activityLogData.length }}</span>
           </div>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">New registered user <small class="float-end text-muted time">Just
-              now</small> </a>
-          <a href="#" class="dropdown-item">New invoice received <small class="float-end text-muted time">22
-              mins</small> </a>
-          <a href="#" class="dropdown-item">Server error report<small class="float-end text-muted time">7 hrs</small>
+
+          <a v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index" href="#" class="dropdown-item">
+            {{ activity.remarks }} by {{ activity.user_from_name }}
+            <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </a>
-          <a href="#" class="dropdown-item">Database report<small class="float-end text-muted time">1 days</small> </a>
-          <a href="#" class="dropdown-item">Order confirmation<small class="float-end text-muted time">2 days</small>
-          </a>
+          <router-link class="dropdown-item" :to="{ path: '/admin/activitylog' }">
+            View All
+          </router-link>
         </div>
       </li>
       <li class="nav-item dropdown ">
@@ -67,20 +55,20 @@
               <h5>Assign Task</h5>
             </a>
           </div>
-          <div class="nav-grid">
+          <!-- <div class="nav-grid">
             <a href="#" class="nav-grid-item"><i class="ti-pencil-alt text-warning"></i>
               <h5>Add Orders</h5>
             </a>
             <a href="#" class="nav-grid-item"><i class="ti-truck text-danger "></i>
               <h5>New Orders</h5>
             </a>
-          </div>
+          </div> -->
         </div>
       </li>
       <li class="nav-item dropdown mr-30">
         <a class="nav-link nav-pill user-avatar" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
           aria-expanded="false">
-          <img src="images/profile-avatar.jpg" alt="avatar">
+          <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" alt="avatar">
         </a>
         <div class="dropdown-menu dropdown-menu-right">
           <div class="dropdown-header">
@@ -161,7 +149,8 @@
     <div class="row">
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Notice Board' })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Notice Board', page_section_id: 6 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
@@ -300,7 +289,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -314,10 +303,34 @@ const dashboardData = ref({
   notice_board: { approved: 0, pending: 0 }
 })
 
+const activityLogData = ref([]);
+const getActivityLog = async () => {
+  try {
+    const response = await axios.get('/api/get_archivitylog');
+    if (response.data && response.data.status === 'success') {
+      activityLogData.value = response.data.data;
+    }
+  } catch (error) {
+    toastr.error('Failed to fetch activity log.');
+  }
+}
+
+const formatRelativeTime = (dateStr) => {
+  const now = new Date();
+  const then = new Date(dateStr);
+  const seconds = Math.floor((now - then) / 1000);
+
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min${seconds < 120 ? '' : 's'} ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hour${seconds < 7200 ? '' : 's'} ago`;
+  return then.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
 const openPageSection = (section) => {
+  debugger;
   router.push({
     name: 'PublisherFormsHandler',
-    params: { menuId: section.menu_id, menuName: section.page_section_name }
+    params: { menuId: section.menu_id, menuName: section.page_section_name, page_section_id: section.page_section_id }
   });
 }
 // Duration in milliseconds (e.g., 15 minutes)
@@ -370,6 +383,7 @@ const getDashboardData = async () => {
 onMounted(() => {
   fetchUser();
   getDashboardData();
+  getActivityLog();
 });
 
 </script>

@@ -58,6 +58,9 @@
                                 </p>
                             </router-link>
                         </li>
+
+
+
                         <li class="nav-item" v-if="role == 1">
                             <router-link to="/admin/manage" active-class="active" class="nav-link">
                                 <i class="nav-icon fas fa-user"></i>
@@ -67,7 +70,7 @@
                                 </p>
                             </router-link>
                         </li>
-                          <li class="nav-item" v-if="role == 2">
+                        <li class="nav-item" v-if="role == 2">
                             <router-link to="/admin/manage" active-class="active" class="nav-link">
                                 <i class="nav-icon fas fa-user"></i>
                                 <p>
@@ -225,7 +228,14 @@
                                 </p>
                             </router-link>
                         </li>
-
+                        <li class="nav-item">
+                            <router-link to="/app/activitylog" active-class="active" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Activity Log
+                                </p>
+                            </router-link>
+                        </li>
                         <li class="nav-item">
                             <!-- <form method="POST" action="{{route('logout')}}" class="nav-link"> -->
 

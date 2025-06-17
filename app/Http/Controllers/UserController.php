@@ -119,7 +119,7 @@ class UserController extends Controller
     public function generateCaptcha()
     {
         $captcha = Captcha::create('default', true);
-        
+
         return response()->json([
             'captcha_img' => $captcha['img'],
             'captcha_key' => $captcha['key'],
@@ -127,19 +127,28 @@ class UserController extends Controller
     }
 
     public function updateUserStatus(Request $request)
-{
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'is_enabled' => 'required|boolean',
-    ]);
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'is_enabled' => 'required|boolean',
+        ]);
 
-    $user = User::find($request->user_id);
-    $user->is_enabled = $request->is_enabled;
-    $user->save();
+        $user = User::find($request->user_id);
+        $user->is_enabled = $request->is_enabled;
+        $user->save();
 
-    return response()->json([
-        'message' => 'User status updated successfully',
-        'status' => $user->is_enabled,
-    ]);
-}
+        return response()->json([
+            'message' => 'User status updated successfully',
+            'status' => $user->is_enabled,
+        ]);
+    }
+    public function getAllPublisher()
+    {
+        $publishers = User::where('role_id', 4)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $publishers
+        ]);
+    }
 }

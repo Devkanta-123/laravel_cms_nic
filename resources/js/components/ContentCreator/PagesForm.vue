@@ -157,9 +157,10 @@ const onBack = () => {
     router.push('/contentcreator/pages')
 }
 const openPageSection = (section) => {
+    debugger;
     router.push({
         name: 'CCFormsHandler',
-        params: { menuId: section.menu_id, menuName: section.page_section_name }
+        params: { menuId: section.menu_id, menuName: section.page_section_name,page_section_id:section.page_section_id}
     });
 }
 const addComponent = (component) => {

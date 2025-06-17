@@ -8,6 +8,8 @@ use App\Models\CategoryMaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon; // Make sure this is imported
+use App\Models\AppTrack;
+use App\Models\User;
 
 class NotificationsController extends Controller
 {
@@ -22,39 +24,43 @@ class NotificationsController extends Controller
     {
         $request->validate([
             'category_id' => 'required|integer',
+            'menu_id' => 'required|integer',
+            'page_section_master_id' => 'required|integer',
             'title' => 'required|array',
             'title.*' => 'required|string',
             'date' => 'required|array',
             'date.*' => 'required|date',
             'file' => 'required|array',
-            'file.*.*' => 'required|mimes:pdf', // 6 MB max file size
+            'file.*.*' => 'required|mimes:pdf',
         ]);
-
 
         $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        $flag = match ($user->role_id) {
+            2 => 'A', // Admin
+            3 => 'N', // Content Creator
+            default => null
+        };
 
-        // Determine flag based on role_id
-        if ($user->role_id == 2) {
-            $flag = 'A'; // Admin update - auto approved
-        } elseif ($user->role_id == 3) {
-            $flag = 'U'; // Content creator update - mark for review/update
-        } else {
+        if (!$flag) {
             return response()->json(['message' => 'Invalid role'], 403);
         }
 
-        // Process each row
+        // ✅ Fetch publisher user
+        $publisher = User::find($request->publisher_id);
+
         foreach ($request->title as $index => $title) {
-            // Check if files exist for this row
+            $filePath = null;
+
             if ($request->hasFile("file.$index")) {
                 foreach ($request->file("file.$index") as $pdf) {
                     $filename = time() . '_' . $pdf->getClientOriginalName();
                     $filePath = $pdf->storeAs('notifications', $filename, 'public');
 
-                    // Store row-wise data in the database
+                    // Save notification
                     Notifications::create([
                         'category_id' => $request->category_id,
                         'title' => $title,
@@ -62,25 +68,52 @@ class NotificationsController extends Controller
                         'file' => $filePath,
                         'user_id' => $user->id,
                         'flag' => $flag,
-                        'role_id' => $user->role_id
+                        'role_id' => $user->role_id,
+                        'publisher_id' => $request->publisher_id ?? null,
+                    ]);
+
+                    // Save tracking
+                    AppTrack::create([
+                        'menu_id' => $request->menu_id,
+                        'page_section_master_id' => $request->page_section_master_id,
+                        'user_from' => $user->id,
+                        'user_from_name' => $user->name,
+                        'user_to' => $request->publisher_id,
+                        'user_to_name' => $publisher ? $publisher->name : null, // ✅ Set name if found
+                        'remarks' => 'Notification submitted',
+                        'flag' => $flag,
+                        'action' => 'Add'
                     ]);
                 }
             } else {
-                // Insert a row without a file if no file exists for this row
                 Notifications::create([
                     'category_id' => $request->category_id,
                     'title' => $title,
                     'date' => $request->date[$index],
-                    'file' => null, // No file uploaded
+                    'file' => null,
                     'user_id' => $user->id,
                     'flag' => $flag,
-                    'role_id' => $user->role_id
+                    'role_id' => $user->role_id,
+                    'publisher_id' => $request->publisher_id ?? null,
+                ]);
+
+                AppTrack::create([
+                    'menu_id' => $request->menu_id,
+                    'page_section_master_id' => $request->page_section_master_id,
+                    'user_from' => $user->id,
+                    'user_from_name' => $user->name,
+                    'user_to' => $request->publisher_id,
+                    'user_to_name' => $publisher ? $publisher->name : null,
+                    'remarks' => 'Notification submitted',
+                    'flag' => $flag,
+                    'action' => 'Add'
                 ]);
             }
         }
 
-        return response()->json(['message' => 'Notifications save successfully'], 201);
+        return response()->json(['message' => 'Notifications saved successfully'], 201);
     }
+
 
     public function updateNotice(Request $request)
     {
@@ -89,14 +122,21 @@ class NotificationsController extends Controller
             'title' => 'required|string|max:255',
             'category_id' => 'required|integer',
             'date' => 'nullable|date',
+            'menu_id' => 'required|integer',
+            'page_section_master_id' => 'required|integer',
             'file' => 'nullable|file|mimes:pdf,docx,jpeg,png,jpg|max:2048'
         ]);
-
+        $user = Auth::user();
+        $newflag = match ($user->role_id) {
+            2 => 'A', // Admin
+            3 => 'U', // Content Creator
+            default => null
+        };
         $notice = Notifications::findOrFail($request->id);
         $notice->title = $request->title;
         $notice->category_id = $request->category_id;
         $notice->date = $request->date;
-
+        $notice->flag=$newflag;
         if ($request->hasFile('file')) {
             //delete old fil
             if ($notice->file && Storage::disk('public')->exists($notice->file)) {
@@ -108,6 +148,22 @@ class NotificationsController extends Controller
         }
 
         $notice->save();
+        // Log update in AppTrack
+        $user = Auth::user();
+        $userTo = User::find($notice->user_id); // assuming user_id exists in Notifications
+
+        AppTrack::create([
+            'menu_id' => $request->menu_id,
+            'page_section_master_id' => $request->page_section_master_id,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $notice->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Notice updated: ' . $notice->title,
+            'action' => 'Updated',
+            'flag' => $newflag // U for Update (you can define this in your system)
+        ]);
+
 
         return response()->json(['status' => 'success']);
     }
@@ -169,6 +225,28 @@ class NotificationsController extends Controller
             ]);
 
         if ($updated) {
+            // Fetch the notice after approval
+            $notice = Notifications::find($request->id);
+
+            // Get current user (approver)
+            $user = Auth::user();
+
+            // Get notice creator
+            $userTo = User::find($notice->user_id);
+
+            // Add entry to AppTrack
+            AppTrack::create([
+                'menu_id' => $request->menu_id ?? null,
+                'page_section_master_id' => $request->page_section_master_id ?? null,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $notice->user_id,
+                'user_to_name' => $userTo ? $userTo->name : null,
+                'remarks' => 'Notice approved: ' . $notice->title,
+                'action' => 'Approved',
+                'flag' => 'A'
+            ]);
+
             return response()->json(['message' => 'Notice approved successfully.'], 200);
         } else {
             return response()->json(['message' => 'Approval failed or already approved.'], 400);
@@ -183,8 +261,8 @@ class NotificationsController extends Controller
         if ($category_id) {
             // Fetch notifications where category_id matches the retrieved category ID
             $notifications = Notifications::where('category_id', $category_id)
-              ->orderBy('date', 'desc')
-              ->get();
+                ->orderBy('date', 'desc')
+                ->get();
             return response()->json($notifications, 200);
         } else {
             return response()->json(['message' => 'Data for this Category not found'], 404);
@@ -224,7 +302,86 @@ class NotificationsController extends Controller
 
         // Delete the record
         $notice->delete();
+        $user = Auth::user();
+
+        $userTo = User::find($notice->user_id);
+
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $notice->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Notice Deleted: ' . $notice->title,
+            'action' => 'Deleted',
+            'flag' => 'D'
+        ]);
 
         return response()->json(['message' => 'Notice deleted successfully']);
     }
+
+
+    public function rejectedNotification(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'remarks' => 'required|string',
+        ]);
+
+        $notice = Notifications::find($request->id);
+
+        if (!$notice) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notice not found',
+            ], 404);
+        }
+
+        $notice->flag = 'R';
+        $notice->rejected_remarks = $request->remarks;
+        $notice->save();
+
+        $user = Auth::user();
+        $userTo = User::find($notice->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $notice->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notice rejected and tracked successfully',
+        ]);
+    }
+
+    public function getActivityLog()
+    {
+        $logs = DB::table('app_track as apt')
+            ->select(
+                'apt.*',
+                'psm.page_section_name',
+                'm.menu_name'
+            )
+            ->leftJoin('page_section_master as psm', 'psm.id', '=', 'apt.page_section_master_id')
+            ->leftJoin('menu as m', 'm.id', '=', 'apt.menu_id')
+            ->orderBy('apt.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $logs
+        ]);
+    }
+
+
 }

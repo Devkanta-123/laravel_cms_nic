@@ -34,27 +34,24 @@
       <li class="nav-item fullscreen">
         <a id="btnFullscreen" href="#" class="nav-link"><i class="ti-fullscreen"></i></a>
       </li>
-      <li class="nav-item dropdown ">
+        <li class="nav-item dropdown ">
         <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
           aria-expanded="false">
-          <i class="ti-bell"></i>
-          <span class="badge bg-danger notification-status"> </span>
-        </a>
+          <i class="fa fa-bell"></i> </a>
         <div class="dropdown-menu dropdown-menu-right dropdown-big dropdown-notifications">
           <div class="dropdown-header notifications">
             <strong>Notifications</strong>
-            <span class="badge bg-warning">05</span>
+            <span class="badge bg-warning">{{ activityLogData.length }}</span>
           </div>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">New registered user <small class="float-end text-muted time">Just
-              now</small> </a>
-          <a href="#" class="dropdown-item">New invoice received <small class="float-end text-muted time">22
-              mins</small> </a>
-          <a href="#" class="dropdown-item">Server error report<small class="float-end text-muted time">7 hrs</small>
+
+          <a v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index" href="#" class="dropdown-item">
+            {{ activity.remarks }} by {{ activity.user_from_name }}
+            <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </a>
-          <a href="#" class="dropdown-item">Database report<small class="float-end text-muted time">1 days</small> </a>
-          <a href="#" class="dropdown-item">Order confirmation<small class="float-end text-muted time">2 days</small>
-          </a>
+          <router-link class="dropdown-item" :to="{ path: '/admin/activitylog' }">
+            View All
+          </router-link>
         </div>
       </li>
       <li class="nav-item dropdown ">
@@ -324,8 +321,30 @@ const fetchUser = async () => {
     console.error('Failed to fetch user:', error)
   }
 }
+const formatRelativeTime = (dateStr) => {
+  const now = new Date();
+  const then = new Date(dateStr);
+  const seconds = Math.floor((now - then) / 1000);
+
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min${seconds < 120 ? '' : 's'} ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hour${seconds < 7200 ? '' : 's'} ago`;
+  return then.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+const activityLogData = ref([]);
+const getActivityLog = async () => {
+  try {
+    const response = await axios.get('/api/get_archivitylog');
+    if (response.data && response.data.status === 'success') {
+      activityLogData.value = response.data.data;
+    }
+  } catch (error) {
+    toastr.error('Failed to fetch activity log.');
+  }
+}
 onMounted(() => {
   fetchUser();
+  getActivityLog();
 });
 
 </script>

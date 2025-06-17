@@ -218,45 +218,6 @@ const getPageDetails = (menuId) => {
         });
 }
 
-const openModal = (section) => {
-    selectedSection.value = section;
-    modalTitle.value = section.page_section_name;
-
-    switch (section.page_section_name) {
-        case 'Carousel':
-            modalComponent.value = SlidesManager;
-            break;
-        case 'WebsiteDetails':
-            modalComponent.value = WebsiteDetails;
-            break;
-        case 'LatestNews':
-            modalComponent.value = LatestNews;
-            break;
-        case 'Notification':
-            modalComponent.value = Notification;
-            break;
-        case 'Cards':
-            modalComponent.value = Cards;
-            break;
-        case 'Banner':
-            modalComponent.value = Banner;
-            break;
-        case 'Gallery':
-            modalComponent.value = Gallery;
-            break;
-        case 'Paragraph':
-            modalComponent.value = Paragraph;
-            break;
-        case 'TableInfo':
-            modalComponent.value = Content;
-            break;
-        default:
-            modalComponent.value = null;
-    }
-
-    isModalOpen.value = true;
-};
-
 const editMenu = (menu) => {
     router.push({
         name: 'PagesForm',

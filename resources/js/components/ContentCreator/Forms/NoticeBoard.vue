@@ -10,7 +10,8 @@
                         <div class="content clearfix">
                             <div class="row">
                                 <div class="col-6">
-                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Category</label>
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Category <span
+                                            class="text-danger">*</span></label>
                                     <select class="form-select my-1 me-sm-2" v-model="selectedCategory">
                                         <option value="" disabled selected>Select the category</option>
                                         <option v-for="category in categorydata" :key="category.id"
@@ -19,23 +20,39 @@
                                         </option>
                                     </select>
                                 </div>
+                                <div class="col-6">
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
+                                </div>
+
+
                             </div>
                             <br>
                             <div class="row">
                                 <div v-for="(row, index) in rows" :key="index" class="mb-3 row">
                                     <div class="col-md-4">
-                                        <label v-if="index === 0" class="form-label">Title</label>
+                                        <label v-if="index === 0" class="form-label">Title <span
+                                            class="text-danger">*</span></label>
                                         <input type="text" class="form-control" v-model="row.title"
                                             placeholder="Enter Title" />
                                     </div>
 
                                     <div class="col-md-3">
-                                        <label v-if="index === 0" class="form-label">Date</label>
+                                        <label v-if="index === 0" class="form-label">Date <span
+                                            class="text-danger">*</span></label>
                                         <input type="date" class="form-control" v-model="row.date" />
                                     </div>
 
                                     <div class="col-md-3">
-                                        <label v-if="index === 0" class="form-label">Upload File</label>
+                                        <label v-if="index === 0" class="form-label">Upload File <span
+                                            class="text-danger">*</span></label>
                                         <input type="file" multiple accept="application/pdf" class="form-control"
                                             @change="handleFileUpload($event, index)" />
                                     </div>
@@ -61,16 +78,12 @@
                                         Save
                                     </button>
                                 </li>
-
                             </ul>
                         </div>
                     </div>
-
                 </div>
-
             </div>
         </div>
-
         <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">
@@ -99,8 +112,24 @@
                                     <td>{{ notice.date }}</td>
                                     <td>{{ notice.category_name }}</td>
                                     <td>
-                                        <label :class="notice.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ notice.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="notice.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="notice.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+
+                                        <div v-else-if="notice.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ notice.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -185,11 +214,15 @@
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2';
+import { useRoute } from 'vue-router';
+const route = useRoute();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const selectedCategory = ref("");
+const selectedPublisher = ref("");
 const rows = ref([{ title: "", date: "", files: [] }]); // Initial row
 const categorydata = ref([]); // Store fetched categories
+const publisherData = ref([]); // Store publisher categories
 const showLinkInput = ref(false)
 const file = ref(null)
 const link = ref('')
@@ -236,6 +269,13 @@ const validateFields = () => {
         toastr.error("Please select a category.");
         return false;
     }
+    if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return false;
+    }
+
+
+
 
     for (let i = 0; i < rows.value.length; i++) {
         if (!rows.value[i].title.trim()) {
@@ -258,10 +298,11 @@ const validateFields = () => {
 // Submit data
 const submitData = async () => {
     if (!validateFields()) return;
-
     const formData = new FormData();
     formData.append("category_id", selectedCategory.value);
-
+    formData.append("publisher_id", selectedPublisher.value);
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", route.params.page_section_id);
     rows.value.forEach((row, index) => {
         formData.append(`title[${index}]`, row.title);
         formData.append(`date[${index}]`, row.date);
@@ -302,6 +343,22 @@ const getAllCategoryMaster = async () => {
         toastr.error("Failed to load categories.");
     }
 };
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+        toastr.error("Failed to load publishers.");
+    }
+};
+
+
+
 
 
 const getAllNotifications = async () => {
@@ -328,7 +385,9 @@ const updateNotice = async () => {
     formData.append('id', selectedNotice.value.id)
     formData.append('title', selectedNotice.value.title)
     formData.append('category_id', selectedNotice.value.category_id)
-    formData.append('date', selectedNotice.value.date)
+    formData.append('date', selectedNotice.value.date),
+        formData.append("menu_id", route.params.menuId),
+        formData.append("page_section_master_id", route.params.page_section_id)
     if (file.value) {
         formData.append('file', file.value)
     }
@@ -367,7 +426,9 @@ const deleteNotification = async (id) => {
     if (result.isConfirmed) {
         try {
             const response = await axios.post('/api/deleteNotification', {
-                id: id
+                id: id,
+                menu_id: route.params.menuId,
+                page_section_master_id: route.params.page_section_id
             });
 
             await getAllNotifications(); // refresh the list
@@ -383,6 +444,7 @@ const deleteNotification = async (id) => {
 onMounted(() => {
     getAllNotifications()
     getAllCategoryMaster()
+    getAllPublisher()
 });
 
 </script>

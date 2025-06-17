@@ -5,6 +5,7 @@ import Menu from './pages/menu/Menu.vue';
 import Website from './pages/website/Website.vue';
 import Pages from './pages/pages/Pages.vue';
 import Archive from './pages/pages/Archive.vue';
+import ActivityLog from './pages/pages/ActivityLog.vue';
 import PagesForm from './pages/pages/PagesForm.vue';
 import Login from './pages/auth/Login.vue';
 import MainComponent from './pages/main_component/MainComponent.vue';
@@ -116,6 +117,13 @@ export default [
 
     },
 
+    {
+        path: '/app/activitylog',
+        name: 'admin.activitylog',
+        component: ActivityLog,
+
+    },
+
 
 
     //Content Creator  
@@ -146,7 +154,7 @@ export default [
     },
     //FormsHandler for Content Creator
     {
-        path: '/contentcreator/pages-form/:menuId/:menuName',
+        path: '/contentcreator/pages-form/:menuId/:menuName/:page_section_id',
         name: 'CCFormsHandler',
         component: CCFormsHandler,
         props: true
@@ -175,9 +183,9 @@ export default [
         props: true
 
     },
-    //FormsHandler for Content Creator
+    //FormsHandler for Publisher
     {
-        path: '/publisher/pages-form/:menuId/:menuName',
+        path: '/publisher/pages-form/:menuId/:menuName/:page_section_id',
         name: 'PublisherFormsHandler',
         component: PublisherFormsHandler,
         props: true
