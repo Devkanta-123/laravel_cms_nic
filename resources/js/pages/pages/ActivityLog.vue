@@ -30,6 +30,7 @@
                                             <table class="table center-aligned-table mb-0" id="activityLogTable">
                                                 <thead>
                                                     <tr class="text-dark">
+                                                        <th>ApplicationID</th>
                                                         <th>Menu</th>
                                                         <th>PageSection</th>
                                                         <th>FromUser</th>
@@ -37,18 +38,30 @@
                                                         <th>EntryDateTime</th>
                                                         <th>Remarks</th>
                                                         <th>Action</th>
-
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr v-for="(activity, index) in activityLogData" :key="index">
+                                                    <tr v-for="(activity, index) in filteredActivityLog" :key="index">
+                                                        <td>
+                                                            <label class="badge bg-primary"
+                                                                @click="toggleFilterByApplicationId(activity.application_id)"
+                                                                style="cursor:pointer">
+                                                                {{ activity.application_id || 'N/A' }}
+                                                            </label>
+                                                        </td>
                                                         <td>{{ activity.menu_name }}</td>
                                                         <td>{{ activity.page_section_name }}</td>
                                                         <td>{{ activity.user_from_name }}</td>
-                                                        <td>{{ activity.user_to_name || 'N/A'}}</td>
-                                                        <!-- <td>{{ activity.action }}</td> -->
+                                                        <td>{{ activity.user_to_name || 'N/A' }}</td>
                                                         <td>{{ activity.created_at }}</td>
-                                                        <td>{{ activity.remarks }}</td>
+                                                        <td>
+                                                            <div>
+                                                                <span>{{ activity.remarks.split(':')[1]?.trim()
+                                                                    }}</span><br>
+                                                                <small class="text-muted">{{
+                                                                    activity.remarks.split(':')[0] }}</small>
+                                                            </div>
+                                                        </td>
                                                         <td>
                                                             <label :class="{
                                                                 'badge bg-info': activity.action === 'Add',
@@ -61,13 +74,10 @@
                                                                 {{ formatActionLabel(activity.action) }}
                                                             </label>
                                                         </td>
-                                                        <!-- <td>
-                                                            <i class="fas fa-trash-alt text-danger"
-                                                                @click="deleteSlide(news.id)"></i>
-                                                        </td> -->
                                                     </tr>
                                                 </tbody>
                                             </table>
+
                                         </div>
                                     </div>
                                 </div>
@@ -80,22 +90,68 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
-const activityLogData = ref();
 const toastr = useToastr();
+const activityLogData = ref([]);
+const selectedApplicationId = ref(null);
+
+const filteredActivityLog = computed(() => {
+    if (selectedApplicationId.value) {
+        // ✅ All logs for selected ApplicationID, sorted by created_at ASC (oldest first)
+        return activityLogData.value
+            .filter(item => item.application_id === selectedApplicationId.value)
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+
+    // ✅ Default: Latest log for each application_id
+    const grouped = {};
+    activityLogData.value.forEach(item => {
+        const key = item.application_id || 'null';
+        if (!grouped[key] || new Date(item.created_at) > new Date(grouped[key].created_at)) {
+            grouped[key] = item;
+        }
+    });
+
+    return Object.values(grouped);
+});
+
+const toggleFilterByApplicationId = (appId) => {
+    if ($.fn.DataTable.isDataTable('#activityLogTable')) {
+        $('#activityLogTable').DataTable().destroy();
+    }
+
+    if (selectedApplicationId.value === appId) {
+        selectedApplicationId.value = null;
+        $('#activityLogCollapse').collapse('hide');
+    } else {
+        selectedApplicationId.value = appId;
+        $('#activityLogCollapse').collapse('show');
+    }
+
+    nextTick(() => {
+        $('#activityLogTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [[5, 'asc']] // ✅ Make sure DataTables respects the created_at order
+        });
+    });
+};
+
+
+
 const getActivityLog = async () => {
     try {
         const response = await axios.get('/api/get_archivitylog');
         if (response.data && response.data.status === 'success') {
-            activityLogData.value = response.data.data; // <-- correct this
-            // Destroy and re-init DataTable if already initialized
-            if ($.fn.DataTable.isDataTable('#activityLogTable')) {
-                $('#activityLogTable').DataTable().destroy();
-            }
-
+            activityLogData.value = response.data.data;
+            console.log(response.data.data);
+            // Init DataTable only once on full data
             nextTick(() => {
+                if ($.fn.DataTable.isDataTable('#activityLogTable')) {
+                    $('#activityLogTable').DataTable().destroy();
+                }
                 $('#activityLogTable').DataTable({
                     responsive: true,
                     pageLength: 10
@@ -105,7 +161,7 @@ const getActivityLog = async () => {
     } catch (error) {
         toastr.error('Failed to fetch activity log.');
     }
-}
+};
 
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);

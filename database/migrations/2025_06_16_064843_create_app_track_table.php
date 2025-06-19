@@ -22,6 +22,7 @@ return new class extends Migration
         $table->text('remarks')->nullable();
         $table->string('flag', 50)->nullable();
         $table->string('action', 50)->nullable();
+        $table->string('application_id', 30)->nullable();
         $table->timestamps();
         });
     }

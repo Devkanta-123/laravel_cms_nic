@@ -95,6 +95,7 @@
                                 <tr class="text-dark">
                                     <th>Title</th>
                                     <th>Added By</th>
+                                    <th>Approver</th>
                                     <th>Added On</th>
                                     <th>Category</th>
                                     <th>Status</th>
@@ -109,7 +110,8 @@
                                         </a>
                                     </td>
                                     <td>{{ notice.addedby }}</td>
-                                    <td>{{ notice.date }}</td>
+                                    <td>{{ notice.approver || 'N/A'}}</td>
+                                    <td>{{ notice.date}}</td>
                                     <td>{{ notice.category_name }}</td>
                                     <td>
                                         <label v-if="notice.flag === 'A'" class="badge bg-success">

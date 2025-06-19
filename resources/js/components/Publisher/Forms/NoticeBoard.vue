@@ -12,6 +12,7 @@
                                 <tr class="text-dark">
                                     <th>Title</th>
                                     <th>Added By</th>
+                                    <th>Approver</th>
                                     <th>Added On</th>
                                     <th>Category</th>
                                     <th>Status</th>
@@ -26,6 +27,7 @@
                                         </a>
                                     </td>
                                     <td>{{ notice.addedby }}</td>
+                                    <td>{{ notice.approver || 'N/A' }}</td>
                                     <td>{{ formatDate(notice.created_at) }}</td>
                                     <td>{{ notice.category_name }}</td>
                                     <td>

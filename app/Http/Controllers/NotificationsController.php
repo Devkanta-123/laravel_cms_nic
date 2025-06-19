@@ -49,19 +49,22 @@ class NotificationsController extends Controller
             return response()->json(['message' => 'Invalid role'], 403);
         }
 
-        // ✅ Fetch publisher user
         $publisher = User::find($request->publisher_id);
 
         foreach ($request->title as $index => $title) {
             $filePath = null;
+
+            // ✅ Generate unique application_id: NOTI + current datetime + index for uniqueness
+            $applicationId = 'NOTI' . now()->format('YmdHis');
 
             if ($request->hasFile("file.$index")) {
                 foreach ($request->file("file.$index") as $pdf) {
                     $filename = time() . '_' . $pdf->getClientOriginalName();
                     $filePath = $pdf->storeAs('notifications', $filename, 'public');
 
-                    // Save notification
+                    // ✅ Insert into Notifications
                     Notifications::create([
+                        'application_id' => $applicationId,
                         'category_id' => $request->category_id,
                         'title' => $title,
                         'date' => $request->date[$index],
@@ -72,21 +75,24 @@ class NotificationsController extends Controller
                         'publisher_id' => $request->publisher_id ?? null,
                     ]);
 
-                    // Save tracking
+                    // ✅ Insert into AppTrack
                     AppTrack::create([
+                        'application_id' => $applicationId,
                         'menu_id' => $request->menu_id,
                         'page_section_master_id' => $request->page_section_master_id,
                         'user_from' => $user->id,
                         'user_from_name' => $user->name,
                         'user_to' => $request->publisher_id,
-                        'user_to_name' => $publisher ? $publisher->name : null, // ✅ Set name if found
-                        'remarks' => 'Notification submitted',
+                        'user_to_name' => $publisher ? $publisher->name : null,
+                        'remarks' => 'Notification submitted: ' . $title,
                         'flag' => $flag,
-                        'action' => 'Add'
+                        'action' => 'Add',
                     ]);
                 }
             } else {
+                // ✅ Insert without file
                 Notifications::create([
+                    'application_id' => $applicationId,
                     'category_id' => $request->category_id,
                     'title' => $title,
                     'date' => $request->date[$index],
@@ -98,21 +104,24 @@ class NotificationsController extends Controller
                 ]);
 
                 AppTrack::create([
+                    'application_id' => $applicationId,
                     'menu_id' => $request->menu_id,
                     'page_section_master_id' => $request->page_section_master_id,
                     'user_from' => $user->id,
                     'user_from_name' => $user->name,
                     'user_to' => $request->publisher_id,
                     'user_to_name' => $publisher ? $publisher->name : null,
-                    'remarks' => 'Notification submitted',
+                    'remarks' => 'Notification submitted: ' . $title,
                     'flag' => $flag,
-                    'action' => 'Add'
+                    'action' => 'Add',
                 ]);
             }
         }
 
         return response()->json(['message' => 'Notifications saved successfully'], 201);
     }
+
+
 
 
     public function updateNotice(Request $request)
@@ -136,7 +145,7 @@ class NotificationsController extends Controller
         $notice->title = $request->title;
         $notice->category_id = $request->category_id;
         $notice->date = $request->date;
-        $notice->flag=$newflag;
+        $notice->flag = $newflag;
         if ($request->hasFile('file')) {
             //delete old fil
             if ($notice->file && Storage::disk('public')->exists($notice->file)) {
@@ -161,7 +170,8 @@ class NotificationsController extends Controller
             'user_to_name' => $userTo ? $userTo->name : null,
             'remarks' => 'Notice updated: ' . $notice->title,
             'action' => 'Updated',
-            'flag' => $newflag // U for Update (you can define this in your system)
+            'flag' => $newflag,
+            'application_id' => $notice->application_id
         ]);
 
 
@@ -198,10 +208,11 @@ class NotificationsController extends Controller
         } elseif (in_array($user->role_id, [3, 4])) {
             // Content Creator and Publisher
             $notifications = DB::select("
-                SELECT ns.*, cm.category_name, u.name as addedby 
+                SELECT ns.*, cm.category_name, u.name as addedby,u2.name as approver 
                 FROM notifications ns
                 INNER JOIN category_master cm ON cm.id = ns.category_id
                 INNER JOIN users u ON u.id = ns.user_id
+				INNER JOIN users u2 on u2.id=ns.publisher_id
             ");
         } else {
             return response()->json(['message' => 'Invalid role'], 403);
@@ -244,7 +255,9 @@ class NotificationsController extends Controller
                 'user_to_name' => $userTo ? $userTo->name : null,
                 'remarks' => 'Notice approved: ' . $notice->title,
                 'action' => 'Approved',
-                'flag' => 'A'
+                'flag' => 'A',
+                'application_id' => $notice->application_id
+
             ]);
 
             return response()->json(['message' => 'Notice approved successfully.'], 200);
@@ -316,7 +329,9 @@ class NotificationsController extends Controller
             'user_to_name' => $userTo ? $userTo->name : null,
             'remarks' => 'Notice Deleted: ' . $notice->title,
             'action' => 'Deleted',
-            'flag' => 'D'
+            'flag' => 'D',
+            'application_id' => $notice->application_id
+
         ]);
 
         return response()->json(['message' => 'Notice deleted successfully']);
@@ -353,9 +368,10 @@ class NotificationsController extends Controller
             'user_from_name' => $user->name,
             'user_to' => $notice->user_id,
             'user_to_name' => $userTo ? $userTo->name : null,
-            'remarks' => $request->remarks,
+            'remarks' => 'Notification Rejected: ' . $request->remarks,
             'action' => 'Rejected',
-            'flag' => 'R'
+            'flag' => 'R',
+            'application_id' => $notice->application_id
         ]);
 
         return response()->json([
@@ -374,9 +390,8 @@ class NotificationsController extends Controller
             )
             ->leftJoin('page_section_master as psm', 'psm.id', '=', 'apt.page_section_master_id')
             ->leftJoin('menu as m', 'm.id', '=', 'apt.menu_id')
-            ->orderBy('apt.created_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
-
         return response()->json([
             'status' => 'success',
             'data' => $logs

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('date');
             $table->string('file'); // Store one file path per row
             $table->unsignedBigInteger('publisher_id'); // Store one file path per row
+            $table->string('application_id', 30)->nullable();
             $table->timestamps();
             });
     }

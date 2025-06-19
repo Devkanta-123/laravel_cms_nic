@@ -19,6 +19,7 @@ class AppTrack extends Model
         'user_to_name',
         'remarks',
         'flag',
-        'action'
+        'action',
+        'application_id'
     ];
 }
