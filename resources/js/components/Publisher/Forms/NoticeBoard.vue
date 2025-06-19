@@ -184,7 +184,6 @@ const approveNoticeBoard = async (id, index) => {
     }
 };
 const rejected = async () => {
-    debugger;
     if (!rejectedRemarks.value.trim()) {
         rejectedRemarksError.value = true;
         return;

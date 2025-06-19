@@ -24,15 +24,30 @@
                                 <td>{{ index + 1 }}</td>
                                 <td>
                                     <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
-                                        alt="Slide Image"  @click="openModal(`/storage/${slide.image}`)"
-                                            style="cursor: pointer;">
+                                        alt="Slide Image" @click="openModal(`/storage/${slide.image}`)"
+                                        style="cursor: pointer;">
                                 </td>
                                 <td>{{ slide.addedby }}</td>
                                 <td>{{ formatDate(slide.addedon) }}</td>
                                 <td>
-                                    <label :class="slide.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                        {{ slide.flag === 'A' ? 'Approved' : 'Pending' }}
-                                    </label>
+                                    <label v-if="slide.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="slide.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="slide.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ slide.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
+                                        </label>
                                 </td>
                                 <td>
                                     <div class="checkbox checbox-switch switch-success">
@@ -41,29 +56,65 @@
                                                 :disabled="slide.flag === 'A'" @change="approveSlide(slide.id, index)">
                                             <span></span>
                                         </label>
+                                        &nbsp;&nbsp;
+                                        <!-- Show icon only if flag is not 'A' -->
+                                        <i class="fas fa-times text-danger"
+                                            v-if="slide.flag !== 'A' && slide.flag !== 'R'" data-toggle="modal"
+                                            data-target="#rejectedModal" @click="rejectedModal(slide)"></i>
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                     <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
-                            :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
-                            <div class="modal-dialog modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header align-items-start">
-                                        <div class="modal-title">
-                                            <div class="mb-30">
-                                                <div class="blog-box blog-2">
-                                                    <img class="img-fluid w-100" :src="modalImage" alt="Modal Image" />
-                                                    <div class="blog-info pt-10"></div>
-                                                </div>
+                    <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
+                        :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header align-items-start">
+                                    <div class="modal-title">
+                                        <div class="mb-30">
+                                            <div class="blog-box blog-2">
+                                                <img class="img-fluid w-100" :src="modalImage" alt="Modal Image" />
+                                                <div class="blog-info pt-10"></div>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn-close" @click="closeModal"></button>
                                     </div>
+                                    <button type="button" class="btn-close" @click="closeModal"></button>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog"
+                        aria-labelledby="rejectedModalTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">
+                                    </h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>Rejected Remarks <span class="text-danger">*</span></label>
+                                        <textarea v-model="rejectedRemarks" class="form-control"
+                                            placeholder="Remarks...."></textarea>
+                                        <span v-if="rejectedRemarksError" class="text-danger">Remarks are
+                                            required</span>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -75,6 +126,8 @@ import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const modalImage = ref('');
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
@@ -82,8 +135,9 @@ const openModal = (imageSrc) => {
 }
 const closeModal = () => {
     showModal.value = false;
-};
-
+};const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
+const selectedSlide = ref({}) // To store the clicked notice
 const images = ref([]);
 const isDragging = ref(false);
 // fileInput.value = null;
@@ -97,6 +151,41 @@ const formatDate = (dateStr) => {
     });
 };
 
+const rejectedModal = (slide) => {
+    selectedSlide.value = slide;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
+const rejected = async () => {
+    debugger;
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/rejectedSlide', {
+            id: selectedSlide.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+        if (response.data.success) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+           fetchSlides();
+            toastr.success('Carousel rejected successfully');
+        } else {
+            alert('Failed to reject the notice');
+            toastr.error('Failed to reject the  carousel');
+
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong');
+    }
+};
 
 
 const deleteDBImage = (slide, index) => {
@@ -131,8 +220,7 @@ const fetchSlides = async () => {
 }
 const approveSlide = async (id, index) => {
     try {
-        
-        const response = await axios.post('/approve_carousel', { id });
+        const response = await axios.post('/approve_carousel', { id, menu_id: route.params.menuId, page_section_master_id: route.params.page_section_id });
         if (response.data.success) {
             slides.value[index].flag = 'A'; // update UI immediately
             fetchSlides();

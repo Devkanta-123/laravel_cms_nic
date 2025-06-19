@@ -26,7 +26,7 @@ Route::get('get_rightmenus', [HomeController::class, 'get_rightmenus']);
 
 Route::get('get_carousel', [HomeController::class, 'getCarousel']);
 Route::post('/approve_carousel', [HomeController::class, 'approveCarousel']); //for publisher approval
-
+Route::post('/rejectedSlide', [HomeController::class, 'rejectedSlide']); //for publisher rejected
 Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);
 Route::get('getDashboardData', [HomeController::class, 'getDashboardData']); //for Dashboard statistic data 

@@ -15,20 +15,29 @@
                                 <label for="uName">Image</label>
                                 <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
                                     class="form-control" required>
-                            </section>
-                        </div>
-
-                        <!-- Image Preview Section -->
-                        <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
-                            <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
-                                <button type="button" @click="removeImage(index)"
-                                    class="btn-close btn-sm position-absolute top-0 end-0"
-                                    style="z-index: 2; background-color: white; border-radius: 50%;">
-                                </button>
-                                <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+                                      <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
+                                <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
+                                    <button type="button" @click="removeImage(index)"
+                                        class="btn-close btn-sm position-absolute top-0 end-0"
+                                        style="z-index: 2; background-color: white; border-radius: 50%;">
+                                    </button>
+                                    <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+                                </div>
                             </div>
+                            </section>
+                             <!-- Image Preview Section -->
+                          
                         </div>
-
+                        <div class="col-6">
+                            <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                <option value="" disabled>Select the Publisher</option>
+                                <option v-for="publisher in publisherData" :key="publisher.id" :value="publisher.id">
+                                    {{ publisher.name }}
+                                </option>
+                            </select>
+                        </div>
                         <!-- Save Button -->
                         <div class="actions clearfix mt-3">
                             <ul role="menu" aria-label="Pagination">
@@ -54,12 +63,13 @@
                                 <tr class="text-dark">
                                     <th>Image</th>
                                     <th>Added On</th>
-                                    <th>Added By</th>
+                                    <th>AddedBy</th>
+                                    <th>Approver</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody> 
+                            <tbody>
                                 <tr v-for="(slide, index) in slides" :key="index">
                                     <td>
                                         <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
@@ -67,10 +77,26 @@
                                             style="cursor: pointer;">
                                     </td>
                                     <td>{{ formatDate(slide.addedon) }}</td>
-                                    <td>{{slide.addedby }}</td>
+                                    <td>{{ slide.addedby }}</td>
+                                    <td>{{ slide.approver}}</td>
                                     <td>
-                                        <label :class="slide.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ slide.flag === 'A' ? 'Approved' : 'Pending' }}
+                                       <label v-if="slide.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="slide.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="slide.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ slide.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -104,13 +130,13 @@
             </div>
         </div>
     </div>
-
-
 </template>
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useRoute } from 'vue-router';
+const route = useRoute();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
@@ -122,6 +148,8 @@ const openModal = (imageSrc) => {
 const closeModal = () => {
     showModal.value = false;
 };
+const selectedPublisher = ref("");
+const publisherData = ref([]); // Store publisher categories
 const fileInput = ref(null); // define ref at the top
 const images = ref([]);
 const isDragging = ref(false);
@@ -162,17 +190,42 @@ const removeImage = (index) => {
     images.value.splice(index, 1);
 };
 
+
+
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+        toastr.error("Failed to load publishers.");
+    }
+};
+
 // console.log("RoleID" + role_id);
 const uploadImages = () => {
-    
+    debugger;
     // Check if images array is empty or contains invalid entries
     if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
         toastr.error('Please select at least one  image before uploading.');
         return;
     }
+      if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return false;
+    }
+
     const formData = new FormData();
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);
+        formData.append("menu_id", route.params.menuId);
+        formData.append("page_section_master_id", route.params.page_section_id);
+        formData.append("publisher_id", selectedPublisher.value);
+
     });
 
     axios.post('/api/upload_carousel', formData, {
@@ -185,9 +238,9 @@ const uploadImages = () => {
             fetchSlides();
             toastr.success('Images uploaded successfully');
             images.value = [];
-             if (fileInput.value) {
-            fileInput.value.value = '';
-        }
+            if (fileInput.value) {
+                fileInput.value.value = '';
+            }
         })
         .catch(error => {
             console.error('Error uploading images:', error);
@@ -195,7 +248,6 @@ const uploadImages = () => {
 };
 
 const deleteCarousel = async (id) => {
-    debugger;
     const result = await Swal.fire({
         title: 'Confirm Deletion',
         text: 'Are you sure you want to delete this slide? This action cannot be undone.',
@@ -208,7 +260,7 @@ const deleteCarousel = async (id) => {
     if (result.isConfirmed) {
         try {
             const response = await axios.post('/api/delete_slide', {
-                id: id
+                id: id,menu_id:route.params.menuId,page_section_master_id :route.params.page_section_id
             });
 
             await fetchSlides(); // refresh the list
@@ -254,6 +306,7 @@ const fetchSlides = async () => {
 
 onMounted(() => {
     fetchSlides();
+    getAllPublisher();
 });
 
 </script>

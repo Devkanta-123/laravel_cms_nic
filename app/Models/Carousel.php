@@ -16,7 +16,9 @@ class Carousel extends Model
         'type',
         'user_id',
         'role_id',
-        'flag'
-
+        'flag',
+        'rejected_remarks',
+        'publisher_id',
+        'application_id'
     ];
 }

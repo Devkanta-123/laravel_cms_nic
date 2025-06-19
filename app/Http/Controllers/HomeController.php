@@ -15,6 +15,8 @@ use App\Models\Menu;
 use App\Models\Banner;
 use App\Models\Logo;
 use App\Models\Cards;
+use App\Models\User;
+use App\Models\AppTrack;
 use App\Models\WebsiteSettings;
 use App\Models\LanguageMaster;
 use Carbon\Carbon;
@@ -28,6 +30,8 @@ use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
+
+
     public function index()
     {
         $website = Website::all();
@@ -393,7 +397,7 @@ class HomeController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-
+        $publisher = User::find($request->publisher_id);
         $flag = null;
         if ($user->role_id == 2) {
             $flag = 'A';
@@ -408,7 +412,7 @@ class HomeController extends Controller
                 $filename = $image->getClientOriginalName();
                 $path = $image->store('slides', 'public'); // e.g. slides/abcd.jpg
                 $uploadedImages[] = $filename;
-
+                $applicationId = 'CAR' . now()->format('YmdHis');
                 // Save in Carousel table
                 $carousel = Carousel::create([
                     'image' => $path,
@@ -416,9 +420,22 @@ class HomeController extends Controller
                     'type' => 'Slider',
                     'user_id' => $user->id,
                     'role_id' => $user->role_id,
-                    'flag' => $flag
+                    'flag' => $flag,
+                    'publisher_id' => $request->publisher_id ?? null,
+                    'application_id' => $applicationId
                 ]);
-
+                AppTrack::create([
+                    'application_id' => $applicationId,
+                    'menu_id' => $request->menu_id,
+                    'page_section_master_id' => $request->page_section_master_id,
+                    'user_from' => $user->id,
+                    'user_from_name' => $user->name,
+                    'user_to' => $request->publisher_id,
+                    'user_to_name' => $publisher ? $publisher->name : null,
+                    'remarks' => 'Carousel submitted: ' . $filename,
+                    'flag' => $flag,
+                    'action' => 'Add',
+                ]);
                 // Prepare single record for cache
                 $carouselData = [
                     'carousel_id' => $carousel->id,
@@ -452,17 +469,30 @@ class HomeController extends Controller
         $request->validate([
             'id' => 'required'
         ]);
-
+        $user = Auth::user();
         $slide = Carousel::where('id', $request->id)->first();
-
+        $userTo = User::find($slide->user_id);
         if ($slide) {
-
             if (Storage::disk('public')->exists($slide->link)) {
 
                 Storage::disk('public')->delete($slide->link);
             }
 
             $slide->delete();
+            // Add entry to AppTrack
+            AppTrack::create([
+                'menu_id' => $request->menu_id ?? null,
+                'page_section_master_id' => $request->page_section_master_id ?? null,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $slide->user_id,
+                'user_to_name' => $userTo ? $userTo->name : null,
+                'remarks' => 'Carousel Deleted: ' . $slide->image,
+                'action' => 'Deleted',
+                'flag' => 'D',
+                'application_id' => $slide->application_id
+
+            ]);
             // Delete related cache entry
             WebsiteCache::where('carousel_id', $request->id)->delete();
             return response()->json(['message' => 'Slide deleted successfully']);
@@ -1195,7 +1225,6 @@ class HomeController extends Controller
     {
         $flag = $request->query('flag');
         $user = Auth::user();
-
         if ($flag === 'A') {
             // Return all raw base64 data strings for carousel type with flag 'A'
             $caches = WebsiteCache::where('type', 'carousel')
@@ -1208,7 +1237,8 @@ class HomeController extends Controller
             // Return carousel records for specific roles
             return DB::table('carousel as cs')
                 ->join('users as u', 'cs.user_id', '=', 'u.id')
-                ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id')
+                ->join('users as u2','cs.publisher_id','=','u2.id')
+                ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id','cs.rejected_remarks','u2.name as approver')
                 ->get();
         }
 
@@ -1244,11 +1274,26 @@ class HomeController extends Controller
         $request->validate([
             'id' => 'required|exists:carousel,id'
         ]);
-
         // Approve the carousel
         $carousel = Carousel::find($request->id);
         $carousel->flag = 'A';
         $carousel->save();
+        $user = Auth::user();
+        $userTo = User::find($carousel->user_id);
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $carousel->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Carousel approved: ' . $carousel->image,
+            'action' => 'Approved',
+            'flag' => 'A',
+            'application_id' => $carousel->application_id
+
+        ]);
 
         // Update the website_cache row where carousel_id matches
         DB::table('website_cache')
@@ -1259,11 +1304,52 @@ class HomeController extends Controller
                 'user_id' => $user->id,
                 'role_id' => $user->role_id
             ]);
-
         return response()->json(['success' => true, 'message' => 'Approved successfully']);
     }
 
+    public function rejectedSlide(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'remarks' => 'required|string',
+        ]);
 
+        $slide = Carousel::find($request->id);
+        if (!$slide) {
+            return response()->json([
+                'success' => false,
+                'message' => 'slide not found',
+            ], 404);
+        }
+
+        $slide->flag = 'R';
+        $slide->rejected_remarks = $request->remarks;
+        $slide->save();
+        $websitecache=WebsiteCache::find($request->id);
+        $websitecache->flag = 'R';
+        $websitecache->rejected_remarks = $request->remarks;
+        $websitecache->save();
+        $user = Auth::user();
+        $userTo = User::find($slide->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $slide->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Carousel Rejected: ' . $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R',
+            'application_id' => $slide->application_id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Carousal rejected successfully',
+        ]);
+    }
 
     public function getBanner()
     {

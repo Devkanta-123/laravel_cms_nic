@@ -20,19 +20,6 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
-                                        <option value="" disabled>Select the Publisher</option>
-                                        <option v-for="publisher in publisherData" :key="publisher.id"
-                                            :value="publisher.id">
-                                            {{ publisher.name }}
-                                        </option>
-                                    </select>
-                                </div>
-
-
                             </div>
                             <br>
                             <div class="row">
@@ -64,6 +51,17 @@
                                     </div>
                                 </div>
                             </div>
+                             <div class="col-6">
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
+                                </div>
                         </div>
 
                         <!-- Save Button -->
