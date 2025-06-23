@@ -28,8 +28,23 @@
                                     <td>{{ cards.addedby }}</td>
                                     <td>{{ formatDate(cards.created_at) }}</td>
                                     <td>
-                                        <label :class="cards.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ cards.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="cards.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="cards.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="cards.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ cards.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -41,6 +56,11 @@
                                                     @change="approveCards(cards.id, index)">
                                                 <span></span>
                                             </label>
+                                            &nbsp;&nbsp;
+                                            <!-- Show icon only if flag is not 'A' -->
+                                            <i class="fas fa-times text-danger"
+                                                v-if="cards.flag !== 'A' && cards.flag !== 'R'" data-toggle="modal"
+                                                data-target="#rejectedModal" @click="rejectedModal(cards)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -65,6 +85,39 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog"
+                            aria-labelledby="rejectedModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLongTitle">
+                                        </h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label>Rejected Remarks <span class="text-danger">*</span></label>
+                                            <textarea v-model="rejectedRemarks" class="form-control"
+                                                placeholder="Remarks...."></textarea>
+                                            <span v-if="rejectedRemarksError" class="text-danger">Remarks are
+                                                required</span>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,7 +133,11 @@ const toastr = useToastr();
 const cardaData = ref();
 const showModal = ref(false);
 const modalImage = ref('');
-
+const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
+const selectedCard = ref({})
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
@@ -90,6 +147,40 @@ const closeModal = () => {
 };
 
 
+const rejectedModal = (card) => {
+    selectedCard.value = card;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
+const rejected = async () => {
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/rejected_card', {
+            id: selectedCard.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+        if (response) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+            getCards();
+            toastr.success('Card has been rejected ');
+        } else {
+            alert('Failed to reject the notice');
+            toastr.error('Failed to reject the  carousel');
+
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong');
+    }
+};
 
 
 const formatDate = (dateStr) => {
@@ -125,8 +216,10 @@ const getCards = async () => {
 
 const approveCards = async (id, index) => {
     try {
-        const response = await axios.put('/approved_cards', { id });
-        if (response.data.success) {
+        const response = await axios.put('/approved_cards', { id ,
+             menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id});
+        if (response) {
             cardaData.value[index].flag = 'A'; // update UI immediately
             getCards();
             toastr.success('Approved successfully');

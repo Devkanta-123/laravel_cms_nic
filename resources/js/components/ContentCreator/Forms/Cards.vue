@@ -61,6 +61,17 @@
                                             placeholder="Khasi Description"></textarea>
                                     </div>
                                 </div>
+                                <div class="col-4">
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
+                                </div>
                                 <div class="actions clearfix mt-3">
                                     <ul role="menu" aria-label="Pagination">
                                         <li>
@@ -105,12 +116,27 @@
                                     <td>{{ cards.addedby }}</td>
                                     <td>{{ formatDate(cards.created_at) }}</td>
                                     <td>
-                                        <label :class="cards.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ cards.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="cards.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="cards.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="cards.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ cards.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(cards.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger"   v-if="cards.flag !== 'A'" @click="deleteCard(cards.id)"></i>
                                     </td>
                                 </tr>
                             </tbody>
@@ -149,6 +175,11 @@ const props = defineProps({
     menuId: String,
     section: Number,
 });
+import { useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
+const route = useRoute();
+const selectedPublisher = ref("");
+const publisherData = ref([]); // Store publisher categories
 const toastr = useToastr();
 const cardaData = ref();
 const pagemenudata = ref([]); // Store fetched categories
@@ -173,18 +204,31 @@ const handleFileChange = (event) => {
 
 const showModal = ref(false);
 const modalImage = ref('');
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+        toastr.error("Failed to load publishers.");
+    }
+};
 
 const openModal = (imageSrc) => {
-  modalImage.value = imageSrc;
-  showModal.value = true;
+    modalImage.value = imageSrc;
+    showModal.value = true;
 }
 const closeModal = () => {
-  showModal.value = false;
+    showModal.value = false;
 };
 
 const addCard = () => {
     const formData = new FormData();
-      if (!newCard.value.card_title.trim()) {
+    if (!newCard.value.card_title.trim()) {
         toastr.error('Card title is required');
         return;
     }
@@ -196,11 +240,16 @@ const addCard = () => {
         toastr.error('Please select a page link');
         return;
     }
+    if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return false;
+    }
     for (const key in newCard.value) {
         formData.append(key, newCard.value[key]);
     }
-    formData.append("menu", props.menuId);
-    formData.append("page_section", props.menuId);
+    formData.append("menu", route.params.menuId);
+    formData.append("page_section", route.params.page_section_id);
+    formData.append("publisher_id", selectedPublisher.value);
     console.log(formData);
     try {
         axios.post('/api/save_card', formData, {
@@ -277,9 +326,39 @@ const getCards = async () => {
 };
 
 
+
+const deleteCard = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this card? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/api/deleted_card', {
+                id: id,
+                menu_id: route.params.menuId,
+                page_section_master_id: route.params.page_section_id
+            });
+            await nextTick();
+            await getCards();
+             Swal.fire('Deleted!', response.data.message || 'Card has been deleted.', 'success');
+        } catch (error) {
+            console.error('Error deleting card:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
+};
+
+
 onMounted(() => {
     getCards()
     getAllPageMenu()
+    getAllPublisher()
 });
 
 </script>

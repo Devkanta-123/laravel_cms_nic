@@ -12,7 +12,7 @@
 
     <div class="tab-content">
       <div v-show="selectedTab === 'add'">
-        <LatestNewsAdd  :menu="menu" />
+        <LatestNewsAdd  :menu="menu"  :section="section"/>
       </div>
       <div v-show="selectedTab === 'manage'">
         <LatestNewsManage />

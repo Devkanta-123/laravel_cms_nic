@@ -56,16 +56,20 @@
    
 </template>
 <script setup>
-import {  ref, onMounted } from 'vue';
+import {  ref, onMounted,defineProps } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
-
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const images =ref([]);
 const isDragging =ref(false);
 // fileInput.value = null;
 const slides = ref([]);
 const toastr = useToastr(); 
-
+const props = defineProps({
+    section: Object,
+    menu: Number
+})
 const selectFile = () => {
     fileInput.value.click();
 }
@@ -116,12 +120,12 @@ const onDrop = (e) => {
 
 
 const uploadImages = () => {
-  
   const formData = new FormData();
   images.value.forEach((image) => {
     formData.append('images[]', image.file, image.name);
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", props.section.page_section_id);
   });
-
   axios.post('/api/upload_carousel', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'

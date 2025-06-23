@@ -3,18 +3,20 @@
     <!-- Form for Adding New Card -->
     <div class="card p-4 shadow-sm">
       <!-- <h4 class="mb-4 text-primary">Add New Card</h4> -->
-      
+
       <form @submit.prevent="addCard" enctype="multipart/form-data">
         <div class="row">
           <!-- Left Column: Basic Info -->
           <div class="col-md-7">
             <div class="mb-3">
               <label class="form-label">Card Title <span class="text-danger">*</span></label>
-              <input type="text" v-model="newCard.card_title" class="form-control" placeholder="Enter Card Title" required>
+              <input type="text" v-model="newCard.card_title" class="form-control" placeholder="Enter Card Title"
+                required>
             </div>
             <div class="mb-3">
               <label class="form-label">Card Description</label>
-              <textarea v-model="newCard.card_description" class="form-control" rows="2" placeholder="Enter Card Description"></textarea>
+              <textarea v-model="newCard.card_description" class="form-control" rows="2"
+                placeholder="Enter Card Description"></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label">Card Logo</label>
@@ -22,7 +24,12 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Link to another page</label>
-              <input type="text" v-model="newCard.more_link" class="form-control" placeholder="Enter Link (optional)">
+              <select class="form-control" v-model="newCard.more_link">
+                <option value="" disabled selected>Select the page menu</option>
+                <option v-for="pagemenu in pagemenudata" :key="pagemenu.id" :value="pagemenu.id">
+                  {{ pagemenu.menu_name }}
+                </option>
+              </select>
             </div>
             <div class="mb-3">
               <label class="form-label">External Link</label>
@@ -30,30 +37,33 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Card Sort Order<span class="text-danger">*</span></label>
-              <input type="number" v-model="newCard.order" class="form-control" placeholder="Enter Order Number" required>
+              <input type="number" v-model="newCard.order" class="form-control" placeholder="Enter Order Number"
+                required>
             </div>
           </div>
 
           <!-- Right Column: Advanced Info (Toggle) -->
           <div class="col-md-5">
-           <p>More Languages</p>
+            <p>More Languages</p>
 
-            <div  class="advanced-fields ">
-              
-              
+            <div class="advanced-fields ">
+
+
               <div class="mb-3">
                 <label class="form-label">Hindi Title</label>
                 <input type="text" v-model="newCard.hindi_title" class="form-control" placeholder="Hindi Title">
-                <textarea v-model="newCard.hindi_description" class="form-control mt-2" rows="2" placeholder="Hindi Description"></textarea>
+                <textarea v-model="newCard.hindi_description" class="form-control mt-2" rows="2"
+                  placeholder="Hindi Description"></textarea>
               </div>
 
               <div class="mb-3">
                 <label class="form-label">Khasi Title</label>
                 <input type="text" v-model="newCard.khasi_title" class="form-control" placeholder="Khasi Title">
-                <textarea v-model="newCard.khasi_description" class="form-control mt-2" rows="2" placeholder="Khasi Description"></textarea>
+                <textarea v-model="newCard.khasi_description" class="form-control mt-2" rows="2"
+                  placeholder="Khasi Description"></textarea>
               </div>
 
-              
+
             </div>
           </div>
         </div>
@@ -82,10 +92,10 @@
 </template>
 
 <script setup>
-import { ref, defineProps,  } from 'vue';
+import { ref, defineProps,onMounted} from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
-
+const pagemenudata = ref([]); // Store fetched categories
 const props = defineProps({
   menu: String,
   section: Number,
@@ -97,7 +107,7 @@ const newCard = ref({
   card_description: '',
   image: null,
   more_link: '',
-  ex_link:'',
+  ex_link: '',
   order: '',
   hindi_title: '',
   khasi_title: '',
@@ -112,14 +122,12 @@ const handleFileChange = (event) => {
 };
 
 const addCard = () => {
-
   const formData = new FormData();
   for (const key in newCard.value) {
     formData.append(key, newCard.value[key]);
   }
   formData.append("menu", props.menu);
-  formData.append("page_section", props.section);
-  console.log(formData);
+  formData.append("page_section", props.section.page_section_id); 
   try {
     axios.post('/api/save_card', formData, {
       headers: {
@@ -151,6 +159,20 @@ const addCard = () => {
     toastr.error('Error adding card.');
   }
 };
+
+const getAllPageMenu = async () => {
+    try {
+        const response = await axios.get('/get_allpagemenu');
+        pagemenudata.value = response.data;
+    } catch (error) {
+        console.error('Error fetching categories:', error.response || error);
+        toastr.error("Failed to load categories.");
+    }
+};
+
+onMounted(()=>{
+  getAllPageMenu();
+})
 </script>
 
 <style scoped>

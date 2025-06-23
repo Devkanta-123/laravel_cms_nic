@@ -795,7 +795,6 @@ class HomeController extends Controller
 
     public function saveLatestNews(Request $request)
     {
-
         $user = Auth::user(); // This will get the authenticated user
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
@@ -807,13 +806,11 @@ class HomeController extends Controller
         } elseif ($user->role_id == 3) { //if contentcreator upload
             $flag = 'N';
         }
-
+        $publisher = User::find($request->publisher_id);
         DB::beginTransaction();
         $request->validate([
             // 'file' => 'sometimes|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240', // 10240 KB = 10 MB
-            'title' => 'required|string',
-
-
+            'title' => 'required|string'
         ]);
 
         if ($request->hasFile('file')) {
@@ -829,6 +826,7 @@ class HomeController extends Controller
             $path = $filename = "";
             $type = "link";
         }
+        $applicationId = 'LAT' . now()->format('YmdHis');
         try {
             LatestNews::create([
                 'title' => $request->title,
@@ -845,7 +843,21 @@ class HomeController extends Controller
                 'pagemenuid' => $request->pagemenuid,
                 'flag' => $flag,
                 'user_id' => $user->id,
-                'role_id' => $user->role_id
+                'role_id' => $user->role_id,
+                'publisher_id' => $request->publisher_id ?? null,
+                'application_id' => $applicationId
+            ]);
+            AppTrack::create([
+                'application_id' => $applicationId,
+                'menu_id' => $request->menu_id,
+                'page_section_master_id' => $request->page_section_master_id,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $request->publisher_id,
+                'user_to_name' => $publisher ? $publisher->name : null,
+                'remarks' => 'LatestNews submitted: ' . $request->title,
+                'flag' => $flag,
+                'action' => 'Add',
             ]);
             DB::commit();
         } catch (\Exception $e) {
@@ -857,18 +869,52 @@ class HomeController extends Controller
                 'content' => $e . getMessage(),
             ], 500);
         }
-
-
-
-
         return response()->json(['message' => 'News added successfully']);
+    }
+    public function rejectedLatestNews(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'remarks' => 'required|string',
+        ]);
+        $news = LatestNews::find($request->id);
+        if (!$news) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notice not found',
+            ], 404);
+        }
+        $news->flag = 'R';
+        $news->rejected_remarks = $request->remarks;
+        $news->save();
+        $user = Auth::user();
+        $userTo = User::find($news->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $news->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'LatestNews Rejected: ' . $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R',
+            'application_id' => $news->application_id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'LatestNews rejected successfully',
+        ]);
     }
     //save Cards to database
     public function save_card(Request $request)
     {
+        $publisher = User::find($request->publisher_id);
         DB::beginTransaction();
         $user = Auth::user();
-
+        $applicationId = 'CARD' . now()->format('YmdHis');
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
@@ -932,7 +978,21 @@ class HomeController extends Controller
                 'other_description' => $request->other_description,
                 'flag' => $flag,
                 'user_id' => $user->id,
-                'role_id' => $user->role_id
+                'role_id' => $user->role_id,
+                'publisher_id' => $request->publisher_id ?? null,
+                'application_id' => $applicationId
+            ]);
+            AppTrack::create([
+                'application_id' => $applicationId,
+                'menu_id' => $request->menu,
+                'page_section_master_id' => $request->page_section,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $request->publisher_id,
+                'user_to_name' => $publisher ? $publisher->name : null,
+                'remarks' => 'Cards submitted: ' . $request->card_title,
+                'flag' => $flag,
+                'action' => 'Add',
             ]);
 
             DB::commit();
@@ -1062,11 +1122,10 @@ class HomeController extends Controller
         } elseif (in_array($user->role_id, [3, 4])) {
             return DB::table('latest_news as ln')
                 ->join('users as u', 'ln.user_id', '=', 'u.id')
-                ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link')
+                ->leftJoin('users as u2', 'ln.publisher_id', '=', 'u2.id')
+                ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link', 'ln.rejected_remarks', 'u2.name as approver')
                 ->get();
         }
-
-
 
         // Step 3: Return news that is within the archive duration
         // $data = DB::table('latest_news')
@@ -1089,7 +1148,33 @@ class HomeController extends Controller
         $latestnews->flag = 'A'; // Approve
         $latestnews->save();
 
-        return response()->json(['success' => true, 'message' => 'Slide approved successfully']);
+        if ($latestnews) {
+            // Fetch the notice after approval
+            $news = LatestNews::find($request->id);
+            // Get current user (approver)
+            $user = Auth::user();
+            // Get notice creator
+            $userTo = User::find($news->user_id);
+
+            // Add entry to AppTrack
+            AppTrack::create([
+                'menu_id' => $request->menu_id ?? null,
+                'page_section_master_id' => $request->page_section_master_id ?? null,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $news->user_id,
+                'user_to_name' => $userTo ? $userTo->name : null,
+                'remarks' => 'Notice approved: ' . $news->title,
+                'action' => 'Approved',
+                'flag' => 'A',
+                'application_id' => $news->application_id
+
+            ]);
+
+            return response()->json(['message' => 'LatestNews approved successfully.'], 200);
+        } else {
+            return response()->json(['message' => 'Approval failed or already approved.'], 400);
+        }
     }
 
     public function getParagraphs()
@@ -1141,9 +1226,105 @@ class HomeController extends Controller
         $cards = Cards::find($request->id);
         $cards->flag = 'A'; // Approve
         $cards->save();
+        if ($cards) {
+            // Fetch the notice after approval
+            $card = Cards::find($request->id);
+            // Get current user (approver)
+            $user = Auth::user();
+            // Get notice creator
+            $userTo = User::find($card->user_id);
+            // Add entry to AppTrack
+            AppTrack::create([
+                'menu_id' => $request->menu_id ?? null,
+                'page_section_master_id' => $request->page_section_master_id ?? null,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $card->user_id,
+                'user_to_name' => $userTo ? $userTo->name : null,
+                'remarks' => 'Card approved: ' . $card->card_title,
+                'action' => 'Approved',
+                'flag' => 'A',
+                'application_id' => $card->application_id
+
+            ]);
+
+            return response()->json(['message' => 'Notice approved successfully.'], 200);
+        } else {
+            return response()->json(['message' => 'Approval failed or already approved.'], 400);
+        }
+    }
+
+    public function rejectedCard(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        $request->validate([
+            'id' => 'required|exists:cards,id'
+        ]);
+        $cards = Cards::find($request->id);
+        $cards->flag = 'R'; // Approve
+        $cards->rejected_remarks = $request->remarks;
+        $cards->save();
+        $userTo = User::find($cards->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $cards->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Card has been Rejected: ' . $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R',
+            'application_id' => $cards->application_id
+        ]);
 
         return response()->json(['success' => true, 'message' => 'Approved successfully']);
     }
+
+    public function deletedCard(Request $request)
+    {
+        $id = $request->input('id');
+        $card = Cards::find($id);
+
+        if (!$card) {
+            return response()->json(['message' => 'card not found'], 404);
+        }
+
+        // Delete the file if it exists
+        if ($card->file && Storage::disk('public')->exists($card->file)) {
+            Storage::disk('public')->delete($card->file);
+        }
+
+        // Delete the card
+        $card->delete();
+        $user = Auth::user();
+        $userTo = User::find($card->user_id);
+
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $card->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Card Deleted: ' . $card->title,
+            'action' => 'Deleted',
+            'flag' => 'D',
+            'application_id' => $card->application_id
+
+        ]);
+
+        return response()->json(['message' => 'Card deleted successfully']);
+    }
+
+
+
+
 
 
 
@@ -1159,9 +1340,31 @@ class HomeController extends Controller
     public function deleteNews(Request $request)
     {
         DB::beginTransaction();
+        $id = $request->input('id');
+        $news = LatestNews::find($id);
+        // Delete the file if it exists
+        if ($news->file && Storage::disk('public')->exists($news->file)) {
+            Storage::disk('public')->delete($news->file);
+        }
         $data = DB::table('latest_news')
             ->where('id', $request->id)
             ->delete();
+        $user = Auth::user();
+        $userTo = User::find($news->user_id);
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $news->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'LatestNews been Deleted: ' . $news->title,
+            'action' => 'Deleted',
+            'flag' => 'D',
+            'application_id' => $news->application_id
+
+        ]);
         DB::commit();
         return response()->json([
             'message' => 'Deleted Successfully',
@@ -1237,8 +1440,8 @@ class HomeController extends Controller
             // Return carousel records for specific roles
             return DB::table('carousel as cs')
                 ->join('users as u', 'cs.user_id', '=', 'u.id')
-                ->join('users as u2','cs.publisher_id','=','u2.id')
-                ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id','cs.rejected_remarks','u2.name as approver')
+                ->join('users as u2', 'cs.publisher_id', '=', 'u2.id')
+                ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id', 'cs.rejected_remarks', 'u2.name as approver')
                 ->get();
         }
 
@@ -1325,7 +1528,7 @@ class HomeController extends Controller
         $slide->flag = 'R';
         $slide->rejected_remarks = $request->remarks;
         $slide->save();
-        $websitecache=WebsiteCache::find($request->id);
+        $websitecache = WebsiteCache::find($request->id);
         $websitecache->flag = 'R';
         $websitecache->rejected_remarks = $request->remarks;
         $websitecache->save();

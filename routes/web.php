@@ -47,6 +47,8 @@ Route::post('/approved_latestnews', action: [HomeController::class, 'approvedLat
 Route::get('/get_paragraphs', action: [HomeController::class, 'getParagraphs']); //added by dev on 14/11/24
 Route::get('/get_cards', action: [HomeController::class, 'getCards']); //added by dev on 15/11/24
 Route::put('/approved_cards', action: [HomeController::class, 'approveCards']); //added by dev on 09/05/25
+Route::post('/rejected_card', action: [HomeController::class, 'rejectedCard']); //added by dev on 23/06/25
+Route::post('/api/deleted_card', action: [HomeController::class, 'deletedCard']); //added by dev on 23/06/25
 Route::get('/get_footer', action: [HomeController::class, 'getFooter']); //added by dev on 19/11/24
 Route::get('/get_galleries', action: [HomeController::class, 'getGalleries']); //added by dev on 22/11/24
 Route::post('/approved_gallery', action: [HomeController::class, 'approveGallery']); //added by dev on 22/11/24
@@ -195,6 +197,7 @@ Route::middleware(('auth'))->group(function () {
     // Latest News
 
     Route::post('/api/save_latest_news', [HomeController::class, 'saveLatestNews']);
+    Route::post('/rejected_latestNews', [HomeController::class, 'rejectedLatestNews']);
     Route::post('/api/get_latest_news', action: [HomeController::class, 'getLatestNews']);
     Route::post('/api/delete_news', [HomeController::class, 'deleteNews']);
     Route::post('/api/update_news_order', [HomeController::class, 'updateNewsOrder']);

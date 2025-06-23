@@ -23,6 +23,9 @@ return new class extends Migration
             $table->string('hindi_title')->nullable();
             $table->string('khasi_title')->nullable();
             $table->string('other_title')->nullable();
+            $table->string('rejected_remarks')->nullable();
+            $table->unsignedBigInteger('publisher_id')->nullable();
+            $table->string('application_id')->nullable();
             $table->timestamps();
         });
     }

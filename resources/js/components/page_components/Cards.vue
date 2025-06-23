@@ -20,7 +20,7 @@
   
       <div class="tab-content">
         <div v-show="selectedTab === 'add'">
-          <CardsAdd/>  
+          <CardsAdd :section="section" :menu="menu"/>  
         </div>
         <div v-show="selectedTab === 'manage'">
           <CardsManage/>  
@@ -39,7 +39,11 @@
   import { useRouter } from 'vue-router';
   import CardsAdd from './CardsAdd.vue';
   import CardsManage from './CardsManage.vue';
-  
+  const props = defineProps({
+  menu: String,
+  section: Object
+});
+
   const selectedTab = ref('add');
   
   const items = ref([]);

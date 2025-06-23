@@ -49,7 +49,7 @@
             {{ activity.remarks }} by {{ activity.user_from_name }}
             <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </a>
-          <router-link class="dropdown-item" :to="{ path: '/admin/activitylog' }">
+          <router-link class="dropdown-item" :to="{ path: '/app/activitylog' }">
             View All
           </router-link>
         </div>

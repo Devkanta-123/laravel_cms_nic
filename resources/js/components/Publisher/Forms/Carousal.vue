@@ -135,7 +135,8 @@ const openModal = (imageSrc) => {
 }
 const closeModal = () => {
     showModal.value = false;
-};const rejectedRemarks = ref('');
+};
+const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
 const selectedSlide = ref({}) // To store the clicked notice
 const images = ref([]);
@@ -158,7 +159,6 @@ const rejectedModal = (slide) => {
 };
 
 const rejected = async () => {
-    debugger;
     if (!rejectedRemarks.value.trim()) {
         rejectedRemarksError.value = true;
         return;

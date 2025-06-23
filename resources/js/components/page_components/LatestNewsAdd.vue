@@ -66,7 +66,7 @@
 
       <div>
         <!-- Bootstrap Select Dropdown -->
-       
+
       </div>
     </fieldset>
 
@@ -86,6 +86,8 @@ const titleK = ref('');
 const titleH = ref('');
 const titleO = ref('');
 const link = ref('');
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const fileInput = ref(null);
 const errors = ref({ title: '', file: '', link: '', menu_type: null });
 let file = null;
@@ -97,13 +99,9 @@ const editorConfig = {
 };
 
 const props = defineProps({
-  menu: String
-});
-var pagemenuid = (props.menu);
-// alert(pagemenuid);
-
-
-
+  section: Object,
+  menu: Number
+})
 
 const isFileDisabled = ref(false);
 const isLinkDisabled = ref(false);
@@ -152,6 +150,7 @@ const validateInputs = () => {
 };
 
 const saveLatestNews = () => {
+  debugger;
   if (!validateInputs()) {
     toastr.error('Please correct the errors before submitting.');
     return; // Stop execution if validation fails
@@ -168,6 +167,8 @@ const saveLatestNews = () => {
   formData.append('titleK', titleK.value);
   formData.append('titleH', titleH.value);
   formData.append('titleO', titleO.value);
+  formData.append("menu_id", route.params.menuId);
+  formData.append("page_section_master_id", props.section.page_section_id);
   axios.post('/api/save_latest_news', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -187,5 +188,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
