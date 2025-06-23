@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\FAQ;
+use App\Models\User;
+use App\Models\AppTrack;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -35,6 +37,8 @@ class FAQController extends Controller
                 'status' => 'warning'
             ], 409);
         }
+        $applicationId = 'FAQ' . now()->format('YmdHis');
+        $publisher = User::find($request->publisher_id);
 
         // Ensure only English fields are required; convert empty values to null
         $faqData = [
@@ -44,13 +48,29 @@ class FAQController extends Controller
             'english_answer' => $request->english_answer,
             'hindi_answer' => $request->hindi_answer ?: null,
             'khasi_answer' => $request->khasi_answer ?: null,
+            'order' => $request->order,
             'user_id' => $user->id,
             'flag' => $flag,
-            'role_id' => $user->role_id
+            'role_id' => $user->role_id,
+            'publisher_id' => $request->publisher_id ?? null,
+            'application_id' => $applicationId
+
         ];
 
-        // Insert the data
+        // Insert the data into AppTrack table
         FAQ::create($faqData);
+        AppTrack::create([
+            'application_id' => $applicationId,
+            'menu_id' => $request->menu_id,
+            'page_section_master_id' => $request->page_section_master_id,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $request->publisher_id,
+            'user_to_name' => $publisher ? $publisher->name : null,
+            'remarks' => 'FAQ submitted: ' . $request->english_question,
+            'flag' => $flag,
+            'action' => 'Add',
+        ]);
 
         return response()->json([
             'message' => 'Data saved successfully!',

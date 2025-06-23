@@ -55,7 +55,12 @@
 import { onMounted, reactive } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
-
+const props = defineProps({
+  menu: String,
+  section: Number,
+});
+const menu_id = props.menu;
+const page_section_id = props.section.page_section_id;
 const toastr = useToastr();
 const formData = reactive({
     english_question: "",
@@ -64,7 +69,8 @@ const formData = reactive({
     hindi_answer: "",
     khasi_question: "",
     khasi_answer: "",
-    order: ""
+    order: "",
+
 });
 
 onMounted(() => {
@@ -91,11 +97,9 @@ const validateFields = () => {
 };
 
 const submitData = async () => {
-    
+    debugger;
     console.log("Current Form Data:", JSON.stringify(formData));
-
     if (!validateFields()) return;
-
     const dataToSend = {
         english_question: formData.english_question,
         english_answer: formData.english_answer,
@@ -103,7 +107,9 @@ const submitData = async () => {
         hindi_answer: formData.hindi_answer,
         khasi_question: formData.khasi_question,
         khasi_answer: formData.khasi_answer,
-        order: formData.order
+        order: formData.order,
+        menu_id:menu_id,
+        page_section_master_id:page_section_id
     };
 
     console.log("Prepared API Data:", dataToSend);

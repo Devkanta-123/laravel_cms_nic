@@ -35,6 +35,8 @@
                                 </div>
                             </div>
 
+                            
+
                             <!-- Cover Image Preview -->
                             <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
                                 <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
@@ -54,6 +56,7 @@
                                     </video>
                                 </div>
                             </div>
+                            
 
                             <!-- Dynamic Gallery Items Section -->
                             <div class="mt-4">
@@ -85,6 +88,18 @@
                                 </div>
                                 <button type="button" class="btn btn-primary" @click="addGalleryItem">+ Add Row</button>
                             </div>
+                             <div class="col-4">
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            
                         </div>
 
                         <!-- Save Button -->
@@ -116,6 +131,7 @@
                                     <th>Added On</th>
                                     <th>Status</th>
                                     <th>Added By</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -136,11 +152,26 @@
                                     <td>{{ gallery.gallery_name }}</td>
                                     <td>{{ formatDate(gallery.created_at) }}</td>
                                     <td>
-                                        <label :class="gallery.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ gallery.flag === 'A' ? 'Approved' : 'Pending' }}
+                                         <label v-if="gallery.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="gallery.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="gallery.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ gallery.rejected_remarks }}
+                                            </div>
+                                        </div>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>{{ gallery.addedby }}</td>
+                                    <td><i class="fas fa-trash-alt text-danger"  v-if="gallery.flag !== 'A'" @click="deleteGallery(gallery.id)"></i></td>
                                 </tr>
                             </tbody>
 
@@ -190,6 +221,11 @@ const galleryName = ref('');
 const galleryItems = ref([
     { name: '', file: null, url: '' }
 ]);
+import { useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
+const route = useRoute();
+const selectedPublisher = ref("");
+const publisherData = ref([]); // Store publisher categories
 const galleryDescription = ref('');
 const gallariesData = ref();
 const showModal = ref(false);
@@ -233,7 +269,19 @@ const onFileSelect = (event) => {
     }
 };
 
-
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+        toastr.error("Failed to load publishers.");
+    }
+};
 const addGalleryItem = () => {
     galleryItems.value.push({ name: '', file: null, url: '' });
 };
@@ -270,10 +318,17 @@ const uploadImages = () => {
         toastr.error('Please enter gallery name and description');
         return;
     }
+       if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return false;
+    }
 
     const formData = new FormData();
     formData.append('gallery_name', galleryName.value);
     formData.append('gallery_description', galleryDescription.value);
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", route.params.page_section_id);
+    formData.append("publisher_id", selectedPublisher.value)
 
     // Append main gallery images
     images.value.forEach((image) => {
@@ -378,10 +433,37 @@ const getGalleries = async () => {
     }
 };
 
+const deleteGallery = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this gallery? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/api/delete_gallery', {
+                id: id,
+                menu_id: route.params.menuId,
+                page_section_master_id: route.params.page_section_id
+            });
+            await nextTick();
+            await getGalleries(); // Refresh table
+             Swal.fire('Deleted!', response.data.message || 'Gallery and it items  has been removed.', 'success');
+        } catch (error) {
+            console.error('Error deleting card:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
+};
 
 
 onMounted(() => {
-    getGalleries()
+    getGalleries();
+    getAllPublisher()
 });
 
 </script>

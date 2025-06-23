@@ -230,7 +230,8 @@
                         </li>
                         <li class="nav-item">
                             <router-link to="/app/activitylog" active-class="active" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                               <i class="nav-icon fas fa-history"></i>
+
                                 <p>
                                     Activity Log
                                 </p>

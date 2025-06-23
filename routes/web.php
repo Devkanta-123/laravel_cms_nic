@@ -51,7 +51,9 @@ Route::post('/rejected_card', action: [HomeController::class, 'rejectedCard']); 
 Route::post('/api/deleted_card', action: [HomeController::class, 'deletedCard']); //added by dev on 23/06/25
 Route::get('/get_footer', action: [HomeController::class, 'getFooter']); //added by dev on 19/11/24
 Route::get('/get_galleries', action: [HomeController::class, 'getGalleries']); //added by dev on 22/11/24
-Route::post('/approved_gallery', action: [HomeController::class, 'approveGallery']); //added by dev on 22/11/24
+Route::post('/approved_gallery', action: [HomeController::class, 'approveGallery']); //added by dev on 06/05/24
+Route::post('/rejected_gallery', action: [HomeController::class, 'rejectedGallery']); //added by dev on 23/06/25
+Route::post('/api/delete_gallery', action: [HomeController::class, 'deleteGalleryImage']); //added by dev on 23/06/25
 Route::get('/get_newsletter', action: [HomeController::class, 'getNewsLetter']); //added by dev on 04/12/24
 Route::get('/get_allpagemenu', action: [HomeController::class, 'getAllPageMenu']); //added by dev on 09/05/25
 // In routes/web.php or routes/api.php, depending on your setup

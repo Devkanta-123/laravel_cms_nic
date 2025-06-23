@@ -36,8 +36,22 @@
                                     <td>{{ gallery.gallery_name }}</td>
                                     <td>{{ formatDate(gallery.created_at) }}</td>
                                     <td>
-                                        <label :class="gallery.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ gallery.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="gallery.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="gallery.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="gallery.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ gallery.rejected_remarks }}
+                                            </div>
+                                        </div>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -50,13 +64,17 @@
                                                     :disabled="gallery.flag === 'A'"
                                                     @change="approveGallery(gallery.id, index)">
                                                 <span></span>
+                                                   &nbsp;&nbsp;                                           
                                             </label>
+                                             <i class="fas fa-times text-danger"
+                                                v-if="gallery.flag !== 'A' && gallery.flag !== 'R'" data-toggle="modal"
+                                                data-target="#rejectedModal" @click="rejectedModal(gallery)"></i>
                                         </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-                       <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
+                        <div class="modal fade" id="viewImage" tabindex="-1" role="dialog" aria-hidden="true"
                             :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -79,6 +97,39 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog"
+                            aria-labelledby="rejectedModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLongTitle">
+                                        </h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label>Rejected Remarks <span class="text-danger">*</span></label>
+                                            <textarea v-model="rejectedRemarks" class="form-control"
+                                                placeholder="Remarks...."></textarea>
+                                            <span v-if="rejectedRemarksError" class="text-danger">Remarks are
+                                                required</span>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -95,6 +146,11 @@ const toastr = useToastr();
 const gallariesData = ref();
 const showModal = ref(false);
 const modalImage = ref('');
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
+const selectedGallery=ref({});
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
@@ -106,6 +162,39 @@ function isVideo(url) {
 }
 const closeModal = () => {
     showModal.value = false;
+};
+const rejectedModal = (gallery) => {
+    selectedGallery.value = gallery;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
+const rejected = async () => {
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/rejected_gallery', {
+            id: selectedGallery.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+        if (response) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+            getGalleries();
+            toastr.success('Gallery has been rejected ');
+        } else {
+            toastr.error('Failed to reject the  gallery');
+
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong');
+    }
 };
 
 const formatDate = (dateStr) => {
@@ -141,8 +230,8 @@ const getGalleries = async () => {
 };
 const approveGallery = async (id, index) => {
     try {
-        
-        const response = await axios.post('/approved_gallery', { id });
+        const response = await axios.post('/approved_gallery', { id,menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id});
         if (response) {
             gallariesData.value[index].flag = 'A'; // update UI immediately
             getGalleries();

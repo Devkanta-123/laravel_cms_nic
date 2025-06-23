@@ -615,6 +615,8 @@ class HomeController extends Controller
             'items' => 'array',
             'items.*.name' => 'required|string|max:255',
             'items.*.file' => 'required|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi,webm|max:20480', // Images or videos
+            'menu_id' => 'required|integer',
+            'page_section_master_id' => 'required|integer',
         ]);
 
         $user = Auth::user();
@@ -650,17 +652,18 @@ class HomeController extends Controller
 
         $uploadedFiles = [];
         $gallery = null;
-
+        // ✅ Generate unique application_id
+        $applicationId = 'GALL' . now()->format('YmdHis');
+        $publisher = User::find($request->publisher_id);
         // Handle main gallery images/videos and create gallery
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $filename = $file->getClientOriginalName();
                 $path = $file->store($galleryFolder, 'public');
-
                 $uploadedFiles[] = $filename;
-
                 if (!$gallery) {
                     $gallery = Gallery::create([
+                        'application_id' => $applicationId,
                         'gallery_image' => $path,
                         'link' => $path,
                         'parent_id' => 2,
@@ -673,13 +676,29 @@ class HomeController extends Controller
                         'gallery_name' => $galleryName,
                         'user_id' => $user->id,
                         'role_id' => $user->role_id,
-                        'flag' => $flag
+                        'flag' => $flag,
+                        'publisher_id' => $request->publisher_id ?? null,
+
+                    ]);
+                    // ✅ Insert into AppTrack
+                    AppTrack::create([
+                        'application_id' => $applicationId,
+                        'menu_id' => $request->menu_id,
+                        'page_section_master_id' => $request->page_section_master_id,
+                        'user_from' => $user->id,
+                        'user_from_name' => $user->name,
+                        'user_to' => $request->publisher_id,
+                        'user_to_name' => $publisher ? $publisher->name : null,
+                        'remarks' => 'Gallery uploaded: ' . $galleryName,
+                        'flag' => $flag,
+                        'action' => 'Add',
                     ]);
                 }
             }
         } else {
             // If no files uploaded, still create a gallery record
             $gallery = Gallery::create([
+                'application_id' => $applicationId,
                 'gallery_image' => null,
                 'link' => null,
                 'parent_id' => 2,
@@ -693,6 +712,18 @@ class HomeController extends Controller
                 'user_id' => $user->id,
                 'role_id' => $user->role_id,
                 'flag' => $flag
+            ]);
+            AppTrack::create([
+                'application_id' => $applicationId,
+                'menu_id' => $request->menu_id,
+                'page_section_master_id' => $request->page_section_master_id,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $request->publisher_id,
+                'user_to_name' => $publisher ? $publisher->name : null,
+                'remarks' => 'Gallery uploaded: ' . $galleryName,
+                'flag' => $flag,
+                'action' => 'Add',
             ]);
         }
 
@@ -759,8 +790,63 @@ class HomeController extends Controller
         $gallery = Gallery::find($request->id);
         $gallery->flag = 'A'; // Approve
         $gallery->save();
+        $gall = Gallery::find($request->id);
+        // Get current user (approver)
+        $user = Auth::user();
+        // Get notice creator
+        $userTo = User::find($gall->user_id);
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $gall->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Gallery approved: ' . $gall->gallery_name,
+            'action' => 'Approved',
+            'flag' => 'A',
+            'application_id' => $gall->application_id
+
+        ]);
         return response()->json(['success' => true, 'message' => 'Gallery approved successfully']);
     }
+
+    public function rejectedGallery(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:gallery,id'
+        ]);
+        $gallery = Gallery::find($request->id);
+        $gallery->flag = 'R';
+        $gallery->rejected_remarks = $request->remarks;
+        $gallery->save();
+        $gall = Gallery::find($request->id);
+        if (!$gall) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gallery data not found',
+            ], 404);
+        }
+        $user = Auth::user();
+        $userTo = User::find($gall->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $gall->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Gallery Rejected: ' . $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R',
+            'application_id' => $gall->application_id
+        ]);
+        return response()->json(['success' => true, 'message' => 'Gallery  has been rejected']);
+    }
+
+
 
     //delete gallery image
     public function deleteGalleryImage(Request $request)
@@ -772,15 +858,49 @@ class HomeController extends Controller
         $gallery = Gallery::find($request->id);
 
         if ($gallery) {
-
+            // Delete main gallery image if it exists
             if (Storage::disk('public')->exists($gallery->gallery_image)) {
-
                 Storage::disk('public')->delete($gallery->gallery_image);
             }
 
+            // Get all related GalleryItems
+            $galleryItems = GalleryItem::where('gallery_id', $gallery->id)->get();
+
+            foreach ($galleryItems as $item) {
+                // Delete each gallery item file
+                if ($item->file_path && Storage::disk('public')->exists($item->file_path)) {
+                    Storage::disk('public')->delete($item->file_path);
+                }
+
+                // Delete the gallery item record
+                $item->delete();
+            }
+
+            // Finally, delete the gallery record
             $gallery->delete();
-            return response()->json(['message' => 'Gallery Image deleted successfully']);
+            $user = Auth::user();
+
+            $userTo = User::find($gallery->user_id);
+
+            // Add entry to AppTrack
+            AppTrack::create([
+                'menu_id' => $request->menu_id ?? null,
+                'page_section_master_id' => $request->page_section_master_id ?? null,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $gallery->user_id,
+                'user_to_name' => $userTo ? $userTo->name : null,
+                'remarks' => 'Gallery and its item  has been deleted: ' . $gallery->gallery_name,
+                'action' => 'Deleted',
+                'flag' => 'D',
+                'application_id' => $gallery->application_id
+
+            ]);
+
+            return response()->json(['message' => 'Gallery and related images deleted successfully']);
         }
+
+        return response()->json(['message' => 'Gallery not found'], 404);
     }
 
     //GET ARTICLE

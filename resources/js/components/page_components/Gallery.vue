@@ -7,7 +7,6 @@
             <div class="tab-item" :class="{ active: selectedTab === 'manage' }" @click="selectedTab = 'manage'">
                 Manage Gallery
             </div>
-
         </div>
         <div class="tab-content">
             <div v-show="selectedTab === 'add'">
@@ -168,6 +167,10 @@ const gallariesData = ref();
 const addGalleryItem = () => {
     galleryItems.value.push({ name: '', file: null, url: '' });
 };
+const props = defineProps({
+  menu: String,
+  section: Number,
+});
 const removeGalleryItem = (index) => {
     if (galleryItems.value.length === 1) {
         toastr.warning('At least one gallery item is required.');
@@ -266,15 +269,15 @@ const onDrop = (e) => {
 
 
 const uploadImages = () => {
-    
     if (!galleryName.value || !galleryDescription.value) {
         toastr.error('Please enter gallery name and description');
         return;
     }
-
     const formData = new FormData();
     formData.append('gallery_name', galleryName.value);
     formData.append('gallery_description', galleryDescription.value);
+    formData.append("menu_id", props.menu);
+    formData.append("page_section_master_id", props.section.page_section_id); 
 
     // Append main gallery images
     images.value.forEach((image) => {

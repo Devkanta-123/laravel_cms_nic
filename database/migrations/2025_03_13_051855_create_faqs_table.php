@@ -19,6 +19,9 @@ return new class extends Migration {
             $table->text('hindi_answer'); // Hindi answer
             $table->text('khasi_answer'); // Khasi answer
             $table->integer('order')->default(0); // Order of display
+            $table->string('rejected_remarks')->nullable();
+            $table->unsignedBigInteger('publisher_id')->nullable();
+            $table->string('application_id')->nullable();
             $table->timestamps(); // Created at & Updated at timestamps
         });
     }

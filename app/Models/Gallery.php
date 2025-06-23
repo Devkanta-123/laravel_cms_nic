@@ -46,6 +46,9 @@ class Gallery extends Model
         'other_description',
         'user_id',
         'role_id',
-        'flag'
+        'flag',
+        'rejected_remarks',
+        'publisher_id',
+        'application_id'
     ];
 }
