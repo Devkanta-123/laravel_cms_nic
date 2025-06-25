@@ -27,6 +27,7 @@ use App\Models\PageSectionMaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -247,7 +248,7 @@ class HomeController extends Controller
         // Validate request
         $validatedData = $request->validate([
             'content' => 'nullable|string',
-            'menu' => 'required'
+            'menu_id' => 'required'
         ]);
 
         $user = Auth::user();
@@ -265,14 +266,41 @@ class HomeController extends Controller
         }
 
         $content = $request->content ?? '';
-
-        // Save or update paragraph details
-        $paragraph = Paragraph::updateOrCreate(
-            [
-                'menu_id' => $request->menu,
-                'page_section_id' => $request->menu,
-            ],
-            [
+        $publisher = User::find($request->publisher_id);
+        $isUpdate = false;
+        $paragraph = null;
+        if ($request->has('id')) {
+            // Update logic
+            $paragraph = Paragraph::find($request->id);
+            if (!$paragraph) {
+                return response()->json(['message' => 'Paragraph not found'], 404);
+            }
+            $paragraph->description = $content;
+            $paragraph->flag = $flag;
+            $paragraph->user_id = $user->id;
+            $paragraph->role_id = $user->role_id;
+            $paragraph->publisher_id = $request->publisher_id ?? null;
+            $paragraph->save();
+            $isUpdate = true;
+            // App tracking log (Update)
+            AppTrack::create([
+                'application_id' => $paragraph->application_id,
+                'menu_id' => $request->menu_id,
+                'page_section_master_id' => $request->page_section_id,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $request->publisher_id,
+                'user_to_name' => $publisher ? $publisher->name : null,
+                'remarks' => 'Paragraph updated: ' . Str::limit($content, 15, '...'),
+                'flag' => 'U',
+                'action' => 'Updated'
+            ]);
+        } else {
+            // Create logic
+            $applicationId = 'PARA' . now()->format('YmdHis');
+            $paragraph = Paragraph::create([
+                'menu_id' => $request->menu_id,
+                'page_section_id' => $request->page_section_id,
                 'title' => '',
                 'description' => $content,
                 'hindi_description' => '',
@@ -280,13 +308,29 @@ class HomeController extends Controller
                 'status' => "1",
                 'flag' => $flag,
                 'user_id' => $user->id,
-                'role_id' => $user->role_id
-            ]
-        );
+                'role_id' => $user->role_id,
+                'application_id' => $applicationId,
+                'publisher_id' => $request->publisher_id ?? null
+            ]);
+
+            // App tracking log (Create)
+            AppTrack::create([
+                'application_id' => $applicationId,
+                'menu_id' => $request->menu_id,
+                'page_section_master_id' => $request->page_section_id,
+                'user_from' => $user->id,
+                'user_from_name' => $user->name,
+                'user_to' => $request->publisher_id,
+                'user_to_name' => $publisher ? $publisher->name : null,
+                'remarks' => 'Paragraph submitted: ' . Str::limit($content, 15, '...'),
+                'flag' => $flag,
+                'action' => 'Add',
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Content saved successfully!',
+            'message' => $isUpdate ? 'Content updated successfully!' : 'Content saved successfully!',
             'data' => $paragraph
         ]);
     }
@@ -1728,7 +1772,9 @@ class HomeController extends Controller
                 'khasi_title' => $page->khasi_title,
                 'khasi_content' => $page->khasi_description,
                 'flag' => $page->flag,
-                'userid' => $page->user_id
+                'userid' => $page->user_id,
+                'id' => $page->id,
+                'publisher_id' => $page->publisher_id
             ]);
         }
 
@@ -1778,14 +1824,72 @@ class HomeController extends Controller
         // Update flag regardless
         $paragraph->flag = 'A';
         $paragraph->save();
+        $userTo = User::find($paragraph->user_id);
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $paragraph->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Paragraph approved',
+            'action' => 'Approved',
+            'flag' => 'A',
+            'application_id' => $paragraph->application_id
 
+        ]);
         return response()->json([
             'message' => 'Paragraph approved successfully',
             'old_description' => $oldDescription,
             'updated_description' => $paragraph->description,
         ]);
     }
+    public function rejectedParagraph(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'remarks' => 'required|string',
+        ]);
 
+        $para = Paragraph::find($request->id);
+
+        if (!$para) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paragraph data not found',
+            ], 404);
+        }
+
+        $para->flag = 'R';
+        $para->rejected_remarks = $request->remarks;
+        $para->save();
+        $user = Auth::user();
+        $userTo = User::find($para->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $para->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Paragraph Rejected: ' . $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R',
+            'application_id' => $para->application_id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Paragraph rejected',
+        ]);
+    }
+
+    public function deleteParagraph(Request $request)
+    {
+        //to do
+    }
 
 
     public function getNewsLetter()

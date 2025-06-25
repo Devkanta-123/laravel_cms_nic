@@ -90,114 +90,127 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue';
+import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import axios from 'axios';
+import { useRoute } from 'vue-router';
 import { useToastr } from '../../toaster.js';
+
+const route = useRoute();
 const toastr = useToastr();
+
 const activityLogData = ref([]);
 const selectedApplicationId = ref(null);
+const selectedId = ref(route.query.id ?? null);
 
+// ✅ Computed filter based on selectedId → selectedApplicationId → default
 const filteredActivityLog = computed(() => {
-    if (selectedApplicationId.value) {
-        // ✅ All logs for selected ApplicationID, sorted by created_at ASC (oldest first)
-        return activityLogData.value
-            .filter(item => item.application_id === selectedApplicationId.value)
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  if (selectedId.value) {
+    return activityLogData.value.filter(item => item.id == Number(selectedId.value));
+  }
+
+  if (selectedApplicationId.value) {
+    return activityLogData.value
+      .filter(item => item.application_id === selectedApplicationId.value)
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  }
+
+  const grouped = {};
+  activityLogData.value.forEach(item => {
+    const key = item.application_id || 'null';
+    if (!grouped[key] || new Date(item.created_at) > new Date(grouped[key].created_at)) {
+      grouped[key] = item;
     }
+  });
 
-    // ✅ Default: Latest log for each application_id
-    const grouped = {};
-    activityLogData.value.forEach(item => {
-        const key = item.application_id || 'null';
-        if (!grouped[key] || new Date(item.created_at) > new Date(grouped[key].created_at)) {
-            grouped[key] = item;
-        }
-    });
-
-    return Object.values(grouped);
+  return Object.values(grouped);
 });
 
-const toggleFilterByApplicationId = (appId) => {
-    if ($.fn.DataTable.isDataTable('#activityLogTable')) {
-        $('#activityLogTable').DataTable().destroy();
-    }
-
-    if (selectedApplicationId.value === appId) {
-        selectedApplicationId.value = null;
-        $('#activityLogCollapse').collapse('hide');
-    } else {
-        selectedApplicationId.value = appId;
-        $('#activityLogCollapse').collapse('show');
-    }
-
-    nextTick(() => {
-        $('#activityLogTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            order: [[5, 'asc']] // ✅ Make sure DataTables respects the created_at order
-        });
-    });
-};
-
-
-
+// ✅ Fetch data
 const getActivityLog = async () => {
-    try {
-        const response = await axios.get('/api/get_archivitylog');
-        if (response.data && response.data.status === 'success') {
-            activityLogData.value = response.data.data;
-            console.log(response.data.data);
-            // Init DataTable only once on full data
-            nextTick(() => {
-                if ($.fn.DataTable.isDataTable('#activityLogTable')) {
-                    $('#activityLogTable').DataTable().destroy();
-                }
-                $('#activityLogTable').DataTable({
-                    responsive: true,
-                    pageLength: 10
-                });
-            });
+  try {
+    const response = await axios.get('/api/get_archivitylog');
+    if (response.data && response.data.status === 'success') {
+      activityLogData.value = response.data.data;
+
+      console.log("Selected ID:", selectedId.value);
+      console.log("WholeData:", response.data.data);
+
+      nextTick(() => {
+        if ($.fn.DataTable.isDataTable('#activityLogTable')) {
+          $('#activityLogTable').DataTable().destroy();
         }
-    } catch (error) {
-        toastr.error('Failed to fetch activity log.');
+
+        $('#activityLogTable').DataTable({
+          responsive: true,
+          pageLength: 10,
+          order: [[5, 'asc']]
+        });
+      });
     }
+  } catch (error) {
+    toastr.error('Failed to fetch activity log.');
+  }
 };
 
-const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+// ✅ Filter toggle
+const toggleFilterByApplicationId = (appId) => {
+  if ($.fn.DataTable.isDataTable('#activityLogTable')) {
+    $('#activityLogTable').DataTable().destroy();
+  }
+
+  if (selectedApplicationId.value === appId) {
+    selectedApplicationId.value = null;
+    $('#activityLogCollapse').collapse('hide');
+  } else {
+    selectedApplicationId.value = appId;
+    $('#activityLogCollapse').collapse('show');
+  }
+
+  nextTick(() => {
+    $('#activityLogTable').DataTable({
+      responsive: true,
+      pageLength: 10,
+      order: [[5, 'asc']]
     });
+  });
 };
 
+// ✅ Watch query param changes
+watch(() => route.query.id, (newId) => {
+  selectedId.value = newId;
+  getActivityLog(); // optional — only if needed when route param changes
+});
+
+// ✅ Date formatter
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
+// ✅ Action label formatter
 const formatActionLabel = (action) => {
-    switch (action) {
-        case 'Add':
-            return 'NewEntry';
-        case 'Updated':
-            return 'Updated';
-        case 'Rejected':
-            return 'Rejected';
-        case 'Approved':
-            return 'Approved';
-        case 'Deleted':
-            return 'Deleted';
-        case 'New':
-            return 'New';
-        default:
-            return 'Pending';
-    }
+  switch (action) {
+    case 'Add': return 'NewEntry';
+    case 'Updated': return 'Updated';
+    case 'Rejected': return 'Rejected';
+    case 'Approved': return 'Approved';
+    case 'Deleted': return 'Deleted';
+    case 'New': return 'New';
+    default: return 'Pending';
+  }
 };
 
-
+// ✅ Initial load
 onMounted(() => {
-    getActivityLog()
-})
-
+  getActivityLog();
+});
 </script>
+
 <style scoped></style>

@@ -26,12 +26,22 @@
                                     <td>{{ formatDate(para.created_at) }}</td>
                                     <td>{{ para.addedby }}</td>
                                     <td>
-                                        <label v-if="para.flag === 'A'" class="badge bg-success">
+                                       <label v-if="para.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
                                         <label v-else-if="para.flag === 'U'" class="badge bg-primary">
                                             Updated
                                         </label>
+
+                                        <div v-else-if="para.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ para.rejected_remarks }}
+                                            </div>
+                                        </div>
+
                                         <label v-else class="badge bg-warning">
                                             Pending
                                         </label>
@@ -45,6 +55,9 @@
                                                     @change="approveContent(para.id, index)">
                                                 <span></span>
                                             </label>
+                                              <i class="fas fa-times text-danger"
+                                                v-if="para.flag !== 'A' && para.flag !== 'R'" data-toggle="modal"
+                                                data-target="#rejectedModal" @click="rejectedModal(para)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -56,7 +69,32 @@
         </div>
     </div>
 
+        <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog" aria-labelledby="rejectedModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
 
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Rejected Remarks <span class="text-danger">*</span></label>
+                        <textarea v-model="rejectedRemarks" class="form-control" placeholder="Remarks...."></textarea>
+                        <span v-if="rejectedRemarksError" class="text-danger">Remarks are required</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </template>
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
@@ -64,6 +102,11 @@ import axios from 'axios'
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const paragraphData = ref();
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
+const selectedPara = ref({}) // To store the clicked notice
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -72,7 +115,6 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-
 const stripHtml = (html) => {
     const div = document.createElement("div");
     div.innerHTML = html;
@@ -120,13 +162,18 @@ const fetchPageContent = async () => {
     }
 };
 
-
+// Called when clicking reject icon
+const rejectedModal = (para) => {
+    selectedPara.value = para;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
 
 
 const approveContent = async (id, index) => {
     try {
-        
-        const response = await axios.post('/approved_paragraph', { id });
+        const response = await axios.post('/approved_paragraph', { id, menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id,});
         if (response) {
             paragraphData.value[index].flag = 'A'; // update UI immediately
             fetchPageContent();
@@ -136,7 +183,34 @@ const approveContent = async (id, index) => {
         console.error('Approval failed:', error);
     }
 };
+const rejected = async () => {
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
 
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/api/rejected_paragraph', {
+            id: selectedPara.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+
+        if (response.data.success) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+            fetchPageContent();
+            toastr.success('Paragraph rejected successfully');
+        } else {
+            alert('Failed to reject the Paragraph');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong');
+    }
+};
 
 onMounted(() => {
     // fetchLatestNews()

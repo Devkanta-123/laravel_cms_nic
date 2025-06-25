@@ -252,8 +252,6 @@ const formData = reactive({
     order: ""
 });
 
-
-
 const resetForm = () => {
     Object.keys(formData).forEach(key => formData[key] = "");
     selectedPublisher.value = "";

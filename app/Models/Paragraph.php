@@ -10,7 +10,7 @@ class Paragraph extends Model
 {
     use HasFactory;
 
-    protected $table="paragraph";
+    protected $table = "paragraph";
 
     protected $fillable = [
 
@@ -26,7 +26,12 @@ class Paragraph extends Model
         'status',
         'flag',
         'user_id',
-        'role_id'
+        'role_id',
+        'rejected_remarks',
+        'publisher_id',
+        'application_id'
+
+
     ];
 
 }

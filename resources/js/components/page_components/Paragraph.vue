@@ -20,8 +20,7 @@ import { ref, defineProps, reactive, onMounted } from 'vue';
 import axios from 'axios';
 import { component as ckeditor } from '@mayasabha/ckeditor4-vue3';
 import { useToastr } from '../../toaster.js';
-
-
+const paraID = ref(null);
 const toastr = useToastr();
 const editorContent = ref(""); // Stores the CKEditor content
 const editorConfig = ref({}); // CKEditor configuration
@@ -53,12 +52,15 @@ const props = defineProps({
 
 const saveContent = async () => {
   try {
-    
+    debugger;
     const formData = new FormData();
+    // Only append paraID if it exists
+    if (paraID.value) {
+      formData.append("id", paraID.value);
+    } 
     formData.append("content", editorContent.value);
-    formData.append("menu", props.menu);
-    formData.append("page_section", props.menu);
-
+    formData.append("menu_id", props.menu);
+    formData.append("page_section_id", props.section.page_section_id);
     const files = fileInput.value?.files;
     if (files && files.length > 0) {
       for (let i = 0; i < files.length; i++) {
@@ -81,9 +83,9 @@ const saveContent = async () => {
 };
 const fetchPageContent = async () => {
   try {
-    console.log("Fetching content for menu:", props.menu);
     const response = await axios.get(`/get_page_content/${props.menu}`);
-
+    console.log("Para Data:", response.data);
+    paraID.value = response.data.id
     if (response.data.content) {
       editorContent.value = response.data.content; // Set content if available
     }

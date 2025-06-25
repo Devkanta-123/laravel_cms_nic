@@ -37,6 +37,7 @@ Route::get('get_website_description', [HomeController::class, 'getWebsiteDescrip
 Route::get('/get_page_content/{menuId}', [HomeController::class, 'getPageContent']);
 Route::get('/get_page_content_bypublisher', [HomeController::class, 'getPageContentByPublisher']);
 Route::post('/approved_paragraph', [HomeController::class, 'approvedParagraph']);
+Route::post('/api/rejected_paragraph', [HomeController::class, 'rejectedParagraph']);
 Route::get('/getActivateLanguages', [HomeController::class, 'getActivateLanguages']);
 
 Route::get('/page/{id}', [HomeController::class, 'index']);

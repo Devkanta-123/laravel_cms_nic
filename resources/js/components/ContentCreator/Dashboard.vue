@@ -1,9 +1,6 @@
 <template>
-  <link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  crossorigin="anonymous"
-/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" />
 
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Poppins:200,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900">
@@ -34,7 +31,7 @@
       <li class="nav-item fullscreen">
         <a id="btnFullscreen" href="#" class="nav-link"><i class="ti-fullscreen"></i></a>
       </li>
-        <li class="nav-item dropdown ">
+      <li class="nav-item dropdown ">
         <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
           aria-expanded="false">
           <i class="fa fa-bell"></i> </a>
@@ -45,13 +42,16 @@
           </div>
           <div class="dropdown-divider"></div>
 
-          <a v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index" href="#" class="dropdown-item">
+          <router-link v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
+            :to="{ path: '/app/activitylog', query: { id: activity.id } }" class="dropdown-item">
             {{ activity.remarks }} by {{ activity.user_from_name }}
             <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
-          </a>
+          </router-link>
+
           <router-link class="dropdown-item" :to="{ path: '/app/activitylog' }">
             View All
           </router-link>
+
         </div>
       </li>
       <li class="nav-item dropdown ">
@@ -87,8 +87,8 @@
         </a>
         <div class="dropdown-menu dropdown-menu-right">
           <div class="dropdown-header">
-            <h5 class="mt-0 mb-0">{{name}}</h5>
-            <span>{{email}}</span>
+            <h5 class="mt-0 mb-0">{{ name }}</h5>
+            <span>{{ email }}</span>
           </div>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="#"><i class="text-secondary ti-reload"></i>Activity</a>
@@ -283,7 +283,7 @@ const name = ref('')
 const CACHE_DURATION = 15 * 60 * 1000
 
 const fetchUser = async () => {
-  
+
   const cachedUser = JSON.parse(sessionStorage.getItem('login_user_cache_data'))
   const now = new Date().getTime()
 
@@ -334,6 +334,7 @@ const formatRelativeTime = (dateStr) => {
 const activityLogData = ref([]);
 const getActivityLog = async () => {
   try {
+    debugger;
     const response = await axios.get('/api/get_archivitylog');
     if (response.data && response.data.status === 'success') {
       activityLogData.value = response.data.data;

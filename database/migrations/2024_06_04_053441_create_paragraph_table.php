@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -29,6 +28,9 @@ return new class extends Migration
             $table->string('khasi_description')->nullable();
             $table->string('other_description')->nullable();
             $table->timestamps();
+            $table->string('rejected_remarks')->nullable();
+            $table->unsignedBigInteger('publisher_id')->nullable();
+            $table->string('application_id')->nullable();
         });
     }
 
