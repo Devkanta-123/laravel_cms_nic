@@ -139,6 +139,9 @@ Route::middleware(('auth'))->group(function () {
     Route::get('/api/get_archivitylog', [NotificationsController::class, 'getActivityLog']); //added by Dev on 16/06/2025
     Route::post('/api/deleteNotification', [NotificationsController::class, 'deleteNotification']); //added by Dev on 12/06/2025
     Route::post('/api/submitFAQData', [FAQController::class, 'submitFAQData']); //added by Dev on 03/03/2025
+    Route::post('/api/update_faq/{id}', [FAQController::class, 'updateFAQ']); //added by Dev on 03/03/2025
+    Route::post('/api/deleted_faq', [FAQController::class, 'deleteFAQ']); //added by Dev on 24/06/2025
+    Route::post('/rejectedFAQ', [FAQController::class, 'rejectedFAQ']); //added by Dev on 05/06/2025
 
     //ADD LEVEL MASTER 
     Route::post('/api/addLevelMaster', [LevelMasterController::class, 'addLevelMaster']); //added by Dev on 25/03/2025

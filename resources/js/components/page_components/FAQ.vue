@@ -111,8 +111,6 @@ const submitData = async () => {
         menu_id:menu_id,
         page_section_master_id:page_section_id
     };
-
-    console.log("Prepared API Data:", dataToSend);
     let response;
     try {
         response = await axios.post("/api/submitFAQData", dataToSend);

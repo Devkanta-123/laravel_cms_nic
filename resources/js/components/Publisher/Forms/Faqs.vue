@@ -33,8 +33,23 @@
                                     <td>{{ faq.addedby || 'N/A' }}</td>
                                     <td>{{ formatDate(faq.created_at) }}</td>
                                     <td>
-                                        <label :class="faq.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ faq.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="faq.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="faq.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="faq.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ faq.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -45,6 +60,9 @@
                                                     :disabled="faq.flag === 'A'" @change="approveFAQ(faq.id, index)">
                                                 <span></span>
                                             </label>
+                                            <i class="fas fa-times text-danger"
+                                                v-if="faq.flag !== 'A' && faq.flag !== 'R'" data-toggle="modal"
+                                                data-target="#rejectedModal" @click="rejectedModal(faq)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -58,6 +76,36 @@
         </div>
 
     </div>
+    <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog" aria-labelledby="rejectedModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Rejected Remarks <span class="text-danger">*</span></label>
+                        <textarea v-model="rejectedRemarks" class="form-control" placeholder="Remarks...."></textarea>
+                        <span v-if="rejectedRemarksError" class="text-danger">Remarks are
+                            required</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
 </template>
 <script setup>
@@ -66,7 +114,12 @@ import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const faqdata = ref();
 const toastr = useToastr();
-
+import { useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
+const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
+const selectedFAQ = ref({}) // To store the clicked notice
+const route = useRoute();
 onMounted(() => {
     console.log("Component Mounted");
     getFaq();
@@ -99,7 +152,10 @@ const formatDate = (dateStr) => {
 
 const approveFAQ = async (id, index) => {
     try {
-        const response = await axios.put('/approved_faq', { id, index });
+        const response = await axios.put('/approved_faq', {
+            id, index, menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
         if (response) {
             faqdata.value[index].flag = 'A'; // update UI immediately
             getFaq();
@@ -109,6 +165,43 @@ const approveFAQ = async (id, index) => {
         console.error('Approval failed:', error);
     }
 };
+
+const rejectedModal = (slide) => {
+    selectedFAQ.value = slide;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
+const rejected = async () => {
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/rejectedFAQ', {
+            id: selectedFAQ.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+        if (response.data.success) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+            getFaq();
+            toastr.success('FAQ  been rejected');
+        } else {
+            alert('Failed to reject the notice');
+            toastr.error('Failed to reject the  Faq');
+
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong');
+    }
+};
+
+
 </script>
 
 <style scoped>
