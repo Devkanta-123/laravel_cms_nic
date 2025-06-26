@@ -17,12 +17,15 @@ class WhosWho extends Model
         'email',
         'contact',
         'profile_image',
-        'district_name', 
+        'district_name',
         'block_name',
         'user_id',
         'role_id',
-        'flag'
-		
+        'flag',
+        'rejected_remarks',
+        'publisher_id',
+        'application_id'
+
     ];
 
 

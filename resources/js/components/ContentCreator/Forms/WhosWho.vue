@@ -38,7 +38,7 @@
                             <div class="row">
                                 <!-- Checkbox Switch -->
                                 <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
-                                    <label class="form-label">Designation</label>
+                                    <label class="form-label">Designation <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" v-model="formData.designation"
                                         placeholder="Enter Designation" />
                                 </div>
@@ -55,12 +55,21 @@
 
                             </div>
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Profile</label>
                                     <input type="file" class="form-control" @change="handleImageUpload"
                                         accept="image/*" />
                                 </div>
-
+                                <div class="col-md-4">
+                                    <label class="form-label">Publisher <span class="text-danger">*</span></label>
+                                    <select class="form-control" v-model="selectedPublisher" required>
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
+                                </div>
                                 <!-- Image Preview -->
                                 <div class="col-md-6" v-if="imagePreview">
                                     <img :src="imagePreview" class="img-thumbnail"
@@ -110,26 +119,45 @@
                             <tbody>
                                 <tr v-for="(whoswho, index) in WhosWhoData" :key="index">
                                     <td>
-                                        <img class="img-fluid avatar-small"
-                                            :src="`/storage/${whoswho.profile_image.replace('public/', '')}`"
-                                            alt="Profile Image"
-                                            @click="openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
-                                            style="cursor: pointer;" />
+                                        <img class="direct-chat-img" :src="whoswho.profile_image
+                                            ? `/storage/${whoswho.profile_image.replace('public/', '')}`
+                                            : userlogo" alt="Profile Image"
+                                            @click="whoswho.profile_image && openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
+                                            :style="{ cursor: whoswho.profile_image ? 'pointer' : 'default' }" />
                                     </td>
                                     <td>{{ whoswho.name }}</td>
-                                    <td>{{ whoswho.level_name   ? whoswho.level_name  + ' Level ' : 'N/A' }}</td>
+                                    <td>{{ whoswho.level_name ? whoswho.level_name + ' Level ' : 'N/A' }}</td>
                                     <td>{{ whoswho.district_name ? whoswho.district_name : 'N/A' }}</td>
                                     <td>{{ whoswho.block_name ? whoswho.block_name : 'N/A' }}</td>
                                     <td>{{ whoswho.designation }}</td>
                                     <td>{{ whoswho.addedby }}</td>
                                     <td>{{ formatDate(whoswho.created_at) }}</td>
                                     <td>
-                                        <label :class="whoswho.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ whoswho.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="whoswho.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="whoswho.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="whoswho.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ whoswho.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(whoswho.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger"
+                                            @click="deleteWhosWho(whoswho.id)"></i>&nbsp;
+                                        <i class="fas fa-pencil-alt text-success" data-toggle="modal"
+                                            data-target="#editModal" @click="editModal(whoswho)">
+                                        </i>
                                     </td>
                                 </tr>
                             </tbody>
@@ -157,6 +185,93 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit WhosWho</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- ✅ Centered Profile Image with Camera Icon -->
+                    <div class="d-flex justify-content-center mb-4 position-relative" v-if="editImagePreview">
+                        <img :src="editImagePreview" class="profile-user-img img-fluid rounded-circle"
+                            style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Image" />
+
+                        <!-- 📷 Camera Icon -->
+                        <span class="position-absolute"
+                            style="bottom: 0; right: calc(50% - 15px); background-color: white; border-radius: 50%; padding: 6px; cursor: pointer;"
+                            @click="triggerEditImageUpload">
+                            <i class="fas fa-camera"></i>
+                        </span>
+
+                        <!-- Hidden File Input -->
+                        <input type="file" ref="editFileInput" class="d-none" @change="handleEditImageUpload"
+                            accept="image/*" />
+                    </div>
+
+                    <div class="row">
+                        <!-- Level (Readonly) -->
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Level <span class="text-danger">*</span></label>
+                            <select class="form-control" v-model="selectedWhosWho.level_id" disabled>
+                                <option value="" disabled>Select the Level</option>
+                                <option v-for="level in masterleveldata" :key="level.id" :value="level.id">
+                                    {{ level.level_name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Name -->
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="selectedWhosWho.name"
+                                placeholder="Enter Name" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Designation -->
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Designation <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="selectedWhosWho.designation"
+                                placeholder="Enter Designation" />
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" v-model="selectedWhosWho.email"
+                                placeholder="Enter Email" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Contact -->
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label">Contact</label>
+                            <input type="number" class="form-control" v-model="selectedWhosWho.contact"
+                                placeholder="Enter Contact" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="updateWhosWho">Save Changes</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
 
 </template>
@@ -168,14 +283,16 @@ import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
 const modalImage = ref('');
-const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-};
+const selectedPublisher = ref("");
+const publisherData = ref([]); // Store publisher categories
+const selectedWhosWho = ref({});
+const editImagePreview = ref(null);
+const selectedEditFile = ref(null);
+const editFileInput = ref(null);
+import userlogo from '@/assets/images/user.jpg'
+import { useRoute } from 'vue-router';
+const route = useRoute();
+import Swal from 'sweetalert2';
 // Initialize required references
 const imagePreview = ref(null); // Stores preview URL
 const masterleveldata = ref([]); // Store levels data
@@ -191,6 +308,32 @@ const formData = ref({
     level_id: null, // Store the selected level id
     dynamicFields: {}, // Store dynamic fields data
 });
+const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+};
+const triggerEditImageUpload = () => {
+  editFileInput.value.click();
+};
+
+const handleEditImageUpload = (event) => {
+    debugger;
+  const file = event.target.files[0];
+  if (file) {
+    selectedEditFile.value = file;
+    editImagePreview.value = URL.createObjectURL(file);
+  }
+};
+
+const editModal = (whoswho) => {
+    selectedWhosWho.value = { ...whoswho };
+    editImagePreview.value = whoswho.profile_image ? `/storage/${whoswho.profile_image.replace('public/', '')}` : userlogo;
+    selectedEditFile = null;
+}
 
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
@@ -270,28 +413,49 @@ const handleImageUpload = (event) => {
 onMounted(() => {
     getAllLevelMaster();
     getWhosWho();
+    getAllPublisher();
 });
 
 // Submit the form data to the backend
 const submitData = async () => {
-    // Prepare form data to send to the backend
-     if (!formData.value.name.trim()) {
-        toastr.error('Name is required');
-        return;
-    }
     if (!selectedLevel.value) {
-        toastr.error('Please select a level');
+        toastr.error('Level is required.');
         return;
     }
+    if (!formData.value.name || formData.value.name.trim() === '') {
+        toastr.error('Name is required.');
+        return;
+    }
+    if (!formData.value.designation || formData.value.designation.trim() === '') {
+        toastr.error('Designation is required.');
+        return;
+    }
+    if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return false;
+    }
+
+    // Basic validation
+    const contact = formData.value.contact;
+    const email = formData.value.email;
+    // Validate contact: must be exactly 10 digits
+    const contactRegex = /^\d{10}$/;
+    if (!contactRegex.test(contact)) {
+        toastr.error('Contact number must be exactly 10 digits.');
+        return;
+    }
+    let transformedEmail = email.replace(/\./g, '[dot]').replace(/@/g, '[at]');
     const dataToSend = new FormData();
     // Append standard form data values
     dataToSend.append('name', formData.value.name);
     dataToSend.append('designation', formData.value.designation);
-    dataToSend.append('email', formData.value.email);
-    dataToSend.append('contact', formData.value.contact);
-    dataToSend.append('level_id', selectedLevel.value); // Append selected level id
-    dataToSend.append('profile_image', formData.value.profile); // Add profile image if uploaded
-
+    dataToSend.append('email', transformedEmail); // Append transformed email
+    dataToSend.append('contact', contact);
+    dataToSend.append('level_id', selectedLevel.value);
+    dataToSend.append('profile_image', formData.value.profile);
+    dataToSend.append("menu_id", route.params.menuId);
+    dataToSend.append("page_section_master_id", route.params.page_section_id);
+    dataToSend.append("publisher_id", selectedPublisher.value);
     // Append dynamic fields based on selected level
     if (dynamicFields.value.length > 0) {
         dynamicFields.value.forEach(field => {
@@ -312,6 +476,94 @@ const submitData = async () => {
         toastr.error(error.response.data.message || 'Something went wrong');
     }
 };
+
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
+
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+        // ✅ Auto-select based on previously fetched paragraph data
+        if (WhosWhoData.value?.publisher_id) {
+            selectedPublisher.value = WhosWhoData.value.publisher_id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+    }
+};
+
+
+const updateWhosWho = async () => {
+    debugger;
+    if (!selectedWhosWho.value.level_id || !selectedWhosWho.value.name || !selectedWhosWho.value.designation) {
+        toastr.error("Level, Name, and Designation are required");
+        return;
+    }
+
+    const contact = selectedWhosWho.value.contact;
+    const contactRegex = /^\d{10}$/;
+    if (contact && !contactRegex.test(contact)) {
+        toastr.error("Contact must be exactly 10 digits");
+        return;
+    }
+
+    const email = selectedWhosWho.value.email || '';
+    const transformedEmail = email.replace(/\./g, '[dot]').replace(/@/g, '[at]');
+    const formData = new FormData();
+    formData.append("id", selectedWhosWho.value.id);
+    formData.append("name", selectedWhosWho.value.name);
+    formData.append("designation", selectedWhosWho.value.designation);
+    formData.append("email", transformedEmail);
+    formData.append("contact", selectedWhosWho.value.contact);
+    formData.append("level_id", selectedWhosWho.value.level_id);
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", route.params.page_section_id);
+   if (selectedEditFile.value) {
+    formData.append("profile_image", selectedEditFile.value);
+}
+    try {
+        const res = await axios.post('/api/updateWhosWho', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        await getWhosWho();
+        toastr.success(res.data.message);
+        $('#editModal').modal('hide');
+    } catch (err) {
+        toastr.error(err.response?.data?.message || "Something went wrong");
+    }
+};
+
+const deleteWhosWho = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this data? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/api/deleteWhosWho', {
+                id: id,
+                menu_id: route.params.menuId,
+                page_section_master_id: route.params.page_section_id
+            });
+            await getWhosWho(); // refresh the list
+            Swal.fire('Deleted!', response.data.message || 'WHosWhos has been deleted.', 'success');
+        } catch (error) {
+            console.error('Error deleting WHosWhos:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
+};
+
 
 </script>
 <style scoped>

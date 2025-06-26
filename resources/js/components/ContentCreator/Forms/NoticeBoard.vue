@@ -235,7 +235,6 @@ const addRow = () => {
 const selectedNotice = ref({}) // To store the clicked notice
 
 const editModal = (notice) => {
-    debugger;
     selectedNotice.value = { ...notice }
 }
 const clearFileInput = () => {

@@ -14,7 +14,7 @@
         <div class="tab-content">
             <div v-show="selectedTab === 'add'">
                 <div class="mb-3">
-                    <label class="form-label">Level</label>
+                    <label class="form-label">Level <span class="text-danger">*</span></label>
                     <select class="form-control" v-model="selectedLevel">
                         <option value="" disabled selected>Select the Level</option>
                         <option v-for="level in masterleveldata" :key="level.id" :value="level.id">
@@ -35,12 +35,12 @@
                 <!-- Name & Designation -->
                 <div class="mb-3 row">
                     <div class="col-md-6">
-                        <label class="form-label">Name</label>
+                        <label class="form-label">Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" v-model="formData.name" placeholder="Enter Name" />
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Designation</label>
+                        <label class="form-label">Designation <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" v-model="formData.designation"
                             placeholder="Enter Designation" />
                     </div>
@@ -100,11 +100,11 @@
                                 <tbody>
                                     <tr v-for="(whoswho, index) in WhosWhoData" :key="index">
                                         <td>
-                                            <img class="direct-chat-img"
-                                                :src="`/storage/${whoswho.profile_image.replace('public/', '')}`"
-                                                alt="Profile Image"
-                                                @click="openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
-                                                style="cursor: pointer;" />
+                                            <img class="direct-chat-img" :src="whoswho.profile_image
+                                                ? `/storage/${whoswho.profile_image.replace('public/', '')}`
+                                                : userlogo" alt="Profile Image" @click="whoswho.profile_image && openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
+                                                :style="{ cursor: whoswho.profile_image ? 'pointer' : 'default' }" />
+
                                         </td>
                                         <td>{{ whoswho.name }}</td>
                                         <td>{{ whoswho.level_name ? whoswho.level_name + ' Level ' : 'N/A' }}</td>
@@ -158,6 +158,13 @@
 import { onMounted, ref, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
+const props = defineProps({
+    section: Object,
+    menu: Number
+})
+import userlogo from '@/assets/images/user.jpg'
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const selectedTab = ref('add') // Default to 'add' tab
 const showModal = ref(false);
 const modalImage = ref('');
@@ -229,7 +236,7 @@ const getAllLevelMaster = async () => {
 
 // Watch for changes in selectedLevel and update dynamic fields accordingly
 watch(selectedLevel, (newVal) => {
-    
+
     console.log("Selected level changed to:", newVal); // Check if the watch is triggered
     if (newVal === 2) {
         dynamicFields.value = [
@@ -267,19 +274,46 @@ const toastr = useToastr();
 
 // Submit the form data to the backend
 const submitData = async () => {
+    // Required fields validation
+    if (!selectedLevel.value) {
+        toastr.error('Level is required.');
+        return;
+    }
+    if (!formData.value.name || formData.value.name.trim() === '') {
+        toastr.error('Name is required.');
+        return;
+    }
+    if (!formData.value.designation || formData.value.designation.trim() === '') {
+        toastr.error('Designation is required.');
+        return;
+    }
+    // Basic validation
+    const contact = formData.value.contact;
+    const email = formData.value.email;
+    // Validate contact: must be exactly 10 digits
+    const contactRegex = /^\d{10}$/;
+    if (!contactRegex.test(contact)) {
+        toastr.error('Contact number must be exactly 10 digits.');
+        return;
+    }
+    // Email transformation: Replace '.' with '[dot]' and '@' with '[at]'
+    let transformedEmail = email.replace(/\./g, '[dot]').replace(/@/g, '[at]');
+    console.log("Transformed Email:", transformedEmail);
     const dataToSend = new FormData();
     // Append standard form data values
     dataToSend.append('name', formData.value.name);
     dataToSend.append('designation', formData.value.designation);
-    dataToSend.append('email', formData.value.email);
-    dataToSend.append('contact', formData.value.contact);
-    dataToSend.append('level_id', selectedLevel.value); // Append selected level id
-    dataToSend.append('profile_image', formData.value.profile); // Add profile image if uploaded
+    dataToSend.append('email', transformedEmail); // Append transformed email
+    dataToSend.append('contact', contact);
+    dataToSend.append('level_id', selectedLevel.value);
+    dataToSend.append('profile_image', formData.value.profile);
+    dataToSend.append("menu_id", route.params.menuId);
+    dataToSend.append("page_section_master_id", props.section.page_section_id);
 
-    // Append dynamic fields based on selected level
+    // Append dynamic fields
     if (dynamicFields.value.length > 0) {
         dynamicFields.value.forEach(field => {
-            dataToSend.append(field.key, formData.value[field.key] || ''); // Handle dynamic field values
+            dataToSend.append(field.key, formData.value[field.key] || '');
         });
     }
 
@@ -290,14 +324,13 @@ const submitData = async () => {
             },
         });
 
-        // Handle the success response
         toastr.success(response.data.message);
     } catch (error) {
-        // Handle error
-        console.error('Error:', error.response.data);
-        toastr.error(error.response.data.message || 'Something went wrong');
+        console.error('Error:', error.response?.data);
+        toastr.error(error.response?.data?.message || 'Something went wrong');
     }
 };
+
 // Fetch all level data when component is mounted
 onMounted(() => {
     getAllLevelMaster();

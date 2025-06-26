@@ -21,6 +21,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('level_id'); // Foreign key to a master levels table (e.g., state, district, block)
             $table->string('district_name', 255)->nullable();
             $table->string('block_name', 255)->nullable();
+            $table->string('rejected_remarks'); // Store one file path per row
+            $table->unsignedBigInteger('publisher_id'); // Store one file path per row
+            $table->string('application_id', 30)->nullable();
             $table->timestamps(); // Laravel's default created_at and updated_at fields
         });
     }

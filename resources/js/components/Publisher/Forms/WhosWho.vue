@@ -25,11 +25,11 @@
                             <tbody>
                                 <tr v-for="(whoswho, index) in WhosWhoData" :key="index">
                                     <td>
-                                        <img class="img-fluid avatar-small"
-                                            :src="`/storage/${whoswho.profile_image.replace('public/', '')}`"
-                                            alt="Profile Image"
-                                            @click="openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
-                                            style="cursor: pointer;" />
+                                        <img class="direct-chat-img" :src="whoswho.profile_image
+                                            ? `/storage/${whoswho.profile_image.replace('public/', '')}`
+                                            : userlogo" alt="Profile Image"
+                                            @click="whoswho.profile_image && openModal(`/storage/${whoswho.profile_image.replace('public/', '')}`)"
+                                            :style="{ cursor: whoswho.profile_image ? 'pointer' : 'default' }" />
                                     </td>
                                     <td>{{ whoswho.name }}</td>
                                     <td>{{ whoswho.level_name ? whoswho.level_name + ' Level ' : 'N/A' }}</td>
@@ -39,8 +39,23 @@
                                     <td>{{ whoswho.addedby }}</td>
                                     <td>{{ formatDate(whoswho.created_at) }}</td>
                                     <td>
-                                        <label :class="whoswho.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ whoswho.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="whoswho.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="whoswho.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="whoswho.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ whoswho.rejected_remarks }}
+                                            </div>
+                                        </div>
+
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -50,7 +65,10 @@
                                                     :disabled="whoswho.flag === 'A'"
                                                     @change="approveWhosWho(whoswho.id, index)">
                                                 <span></span>
-                                            </label>
+                                            </label>&nbsp;
+                                            <i class="fas fa-times text-danger"
+                                                v-if="whoswho.flag !== 'A' && whoswho.flag !== 'R'" data-toggle="modal"
+                                                data-target="#rejectedModal" @click="rejectedModal(whoswho)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -79,7 +97,32 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog" aria-labelledby="rejectedModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
 
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Rejected Remarks <span class="text-danger">*</span></label>
+                        <textarea v-model="rejectedRemarks" class="form-control" placeholder="Remarks...."></textarea>
+                        <span v-if="rejectedRemarksError" class="text-danger">Remarks are required</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
 </template>
 
@@ -90,6 +133,11 @@ import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
 const modalImage = ref('');
+const WhosWhoData = ref();
+import userlogo from '@/assets/images/user.jpg'
+const selectedWhosWho = ref({})
+const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -98,9 +146,8 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-
-const WhosWhoData = ref();
-
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
@@ -112,7 +159,6 @@ const closeModal = () => {
 
 const getWhosWho = async () => {
     try {
-        
         const response = await axios.get('/get_whoswho');
         WhosWhoData.value = response.data;
         await nextTick(); // Wait for DOM to update
@@ -134,8 +180,7 @@ const getWhosWho = async () => {
 
 const approveWhosWho = async (id, index) => {
     try {
-        
-        const response = await axios.put('/approved_whoswho', { id });
+        const response = await axios.put('/approved_whoswho', { id, menu_id: route.params.menuId, page_section_master_id: route.params.page_section_id });
         if (response.data.success) {
             WhosWhoData.value[index].flag = 'A'; // update UI immediately
             getWhosWho();
@@ -145,6 +190,43 @@ const approveWhosWho = async (id, index) => {
         console.error('Approval failed:', error);
     }
 };
+
+
+const rejectedModal = (whoswho) => {
+    selectedWhosWho.value = whoswho;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
+const rejected = async () => {
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
+
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/api/rejected_whoswho', {
+            id: selectedWhosWho.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+
+        if (response.data.success) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+            getWhosWho();
+            toastr.success('WHosWho has been  rejected');
+        } else {
+            toastr.error('Failed to reject the WHosWho');
+        }
+    } catch (error) {
+        console.error(error);
+        toastr.error('Something went wrong');
+    }
+};
+
 
 
 onMounted(() => {

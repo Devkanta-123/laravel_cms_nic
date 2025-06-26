@@ -150,6 +150,9 @@ Route::middleware(('auth'))->group(function () {
     Route::get('/api/getAllLevelMaster', [LevelMasterController::class, 'getAllLevelMaster']); //added by Dev on 25/03/2025
     //add whos who data 
     Route::post('/api/addWhosWho', [WhosWhoController::class, 'addWhosWho']); //added by Dev on 25/03/2025
+    Route::post('/api/updateWhosWho', [WhosWhoController::class, 'updateWHosWho']); //added by Dev on 26/06/2025
+    Route::post('/api/rejected_whoswho', [WhosWhoController::class, 'rejectedWhosWho']); //added by Dev on 26/06/2025
+    Route::post('/api/deleteWhosWho', [WhosWhoController::class, 'deleteWhosWho']); //added by Dev on 26/06/2025
 
     Route::post('/api/menus', [MenuController::class, 'store']);
 

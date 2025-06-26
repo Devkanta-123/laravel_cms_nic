@@ -66,11 +66,11 @@ const props = defineProps({
 const paraID = ref(null);
 //old method
 const saveContent = async () => {
-
     try {
         const response = await axios.post('/api/save-content', {
             content: editorContent.value,
-            menu: props.menuId
+            menu: props.menuId,
+            publisher_id: selectedPublisher.value,
         });
         toastr.success('Page created successfully');
     } catch (error) {
