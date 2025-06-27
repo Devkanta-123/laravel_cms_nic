@@ -117,6 +117,8 @@ const slides = ref([]);
 const toastr = useToastr();
 const showModal = ref(false);
 const modalImage = ref('');
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
@@ -126,7 +128,9 @@ const closeModal = () => {
     showModal.value = false;
 };
 const props = defineProps({
-    menu: String
+    menu: String,
+    section: Object
+
 });
 const selectFile = () => {
     fileInput.value.click();
@@ -187,14 +191,13 @@ const formatDate = (dateStr) => {
 };
 
 const uploadImages = () => {
-    
     const formData = new FormData();
     formData.append("menu", props.menu);
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);
     });
-    formData.append('menu_id', props.menu);
-
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", props.section.page_section_id);
     axios.post('/api/upload_logo', formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
@@ -204,7 +207,6 @@ const uploadImages = () => {
             fetchLogo();
             toastr.success('Logo uploaded successfully');
             images.value = [];
-            fileInput = ref(null);
         })
         .catch(error => {
             console.error('Error uploading Banner:', error);

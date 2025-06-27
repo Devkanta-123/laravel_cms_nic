@@ -31,7 +31,9 @@ Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);
 Route::get('getDashboardData', [HomeController::class, 'getDashboardData']); //for Dashboard statistic data 
 Route::put('approved_logo', [HomeController::class, 'approveLogo']);
-
+Route::post('update_logo', [HomeController::class, 'updateLogo']);
+Route::post('rejected_logo', [HomeController::class, 'rejectLogo']);
+Route::post('delete_logo', [HomeController::class, 'deleteLogo']);
 Route::get('get_website_description', [HomeController::class, 'getWebsiteDescription']);
 
 Route::get('/get_page_content/{menuId}', [HomeController::class, 'getPageContent']);

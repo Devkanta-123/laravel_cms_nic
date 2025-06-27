@@ -13,6 +13,16 @@
                                     <input type="file" name="file" class="form-control" @change="onFileSelect"
                                         ref="fileInput" multiple>
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Publisher <span class="text-danger">*</span></label>
+                                    <select class="form-control" v-model="selectedPublisher" required>
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
+                                </div>
                                 <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
                                     <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
                                         <button type="button" @click="removeImage(index)"
@@ -55,6 +65,7 @@
                                     <th>Added On</th>
                                     <th>Status</th>
                                     <th>Added By</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -66,13 +77,33 @@
                                     </td>
                                     <td>{{ formatDate(logo.created_at) }}</td>
                                     <td>
-                                        <label :class="logo.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ logo.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="logo.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="logo.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="logo.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ logo.rejected_remarks }}
+                                            </div>
+                                        </div>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
                                         {{ logo.addedby }}
                                     </td>
+                                    <td>
+                                        <i class="fas fa-trash-alt text-danger"
+                                            @click="deleteLogo(logo.id)"></i>&nbsp;&nbsp;
+                                        <i class="fas fa-pencil-alt text-success" @click="editLogo(logo)"></i>
+                                    </td>
+
                                 </tr>
                             </tbody>
                         </table>
@@ -99,28 +130,84 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ isEditMode ? 'Edit Logo' : 'Add Logo' }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="content clearfix">
+                        <div class="row">
+                            <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                <label class="form-label">Image</label>
+                                <input type="file" name="file" class="form-control" @change="onFileSelect"
+                                    ref="fileInput" multiple />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Publisher <span class="text-danger">*</span></label>
+                                <select class="form-control" v-model="selectedPublisher" required>
+                                    <option value="" disabled>Select the Publisher</option>
+                                    <option v-for="publisher in publisherData" :key="publisher.id"
+                                        :value="publisher.id">
+                                        {{ publisher.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
+                            <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
+                                <button type="button" @click="removeImage(index)"
+                                    class="btn-close btn-sm position-absolute top-0 end-0"
+                                    style="z-index: 2; background-color: white; border-radius: 50%;"></button>
+                                <img :src="`/storage/${image.url}`" alt="Preview" width="100" height="100" class="img-thumbnail" />
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        @click="closeModal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="updateLogo()"> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 <script setup>
-import { ref, onMounted,nextTick } from 'vue';
+import { useRoute } from 'vue-router';
+const route = useRoute();
+import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const logoData = ref()
 const images = ref([]);
+import Swal from 'sweetalert2';
 const fileInput = ref(null);
-const slides = ref([]);
 const toastr = useToastr();
 const props = defineProps({
     menuId: String,
     section: Number,
 });
+const selectedPublisher = ref("");
+const publisherData = ref([]); // Store publisher data
 const showModal = ref(false);
 const modalImage = ref('');
+const editingData = ref(null);
+const isEditMode = ref(false);
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
 }
 const closeModal = () => {
     showModal.value = false;
+    resetForm();
 };
 
 const onFileSelect = (event) => {
@@ -150,47 +237,151 @@ const formatDate = (dateStr) => {
     });
 };
 
+const editLogo = async (logo) => {
+    debugger;
+    isEditMode.value = true;
+    editingData.value = logo;
+    selectedPublisher.value = logo.publisher_id;
+
+    // Since logo.image is a single string, wrap it in an array
+    images.value = [{
+        file: null,
+        url: logo.image
+    }];
+
+    await nextTick();
+    $('#editModal').modal('show'); // or #editModal if that's your modal ID
+};
+
+
+// Reset form
+const resetForm = () => {
+    selectedPublisher.value = '';
+    images.value = [];
+    editingData.value = null;
+    isEditMode.value = false;
+    if (fileInput.value) fileInput.value.value = '';
+};
+// Update existing logo
+const updateLogo = () => {
+    debugger;
+    if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return;
+    }
+
+    const formData = new FormData();
+    images.value.forEach((image) => {
+        if (image.file) {
+            formData.append('images[]', image.file, image.file.name);
+        } else if (image.url) {
+            formData.append('existing_images[]', image.url);
+        }
+    });
+    formData.append("id", editingData.value.id);
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", route.params.page_section_id);
+    formData.append("publisher_id", selectedPublisher.value);
+
+    axios.post('/update_logo', formData)
+        .then(response => {
+            const res = response.data;
+            if (res.message === "Logo updated successfully") {
+                toastr.success(res.message);
+                resetForm();
+                $('#editModal').modal('hide');
+                setTimeout(fetchLogo, 300);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating logo:', error);
+            toastr.error("Failed to update logo");
+        });
+};
+
 const uploadImages = () => {
+    if (!selectedPublisher.value) {
+        toastr.error("Please select a publisher.");
+        return false;
+    }
+
     const formData = new FormData();
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);
     });
-    formData.append("menu", props.menuId);
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", route.params.page_section_id);
+    formData.append("publisher_id", selectedPublisher.value);
+
     axios.post('/api/upload_logo', formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }
     })
         .then(response => {
-            fetchLogo();
-            toastr.success('Logo uploaded successfully');
-            images.value = [];
-            fileInput = ref(null);
+            const res = response.data;
+            if (res.message === "Logos uploaded successfully") {
+                toastr.success(res.message);
+                images.value = [];
+                // Slight delay ensures DB commit is complete before fetching
+                setTimeout(() => {
+                    fetchLogo();
+                }, 300);
+            }
         })
         .catch(error => {
-            console.error('Error uploading Banner:', error);
+            console.error('Error uploading logo:', error);
+            toastr.error("Failed to upload logo");
         });
 };
 
-const deleteDBImage = (slide, index) => {
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
 
-    axios.post('/api/delete_banner', { id: slide.id })
-        .then(response => {
-            console.log('Banner deleted successfully:', response.data);
-            toastr.success('Banner deleted successfully');
-            slides.value.splice(index, 1);
-        })
-        .catch(error => {
-            console.error('Error deleting Banner:', error);
-        });
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+    }
 };
 
+
+
+const deleteLogo = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this logo? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/delete_logo', {
+                id: id,
+                menu_id: route.params.menuId,
+                page_section_master_id: route.params.page_section_id
+            });
+
+            setTimeout(fetchLogo, 300); // refresh the list
+            Swal.fire('Deleted!', response.data.message || 'Logo has been removed.', 'success');
+        } catch (error) {
+            console.error('Error deleting notice:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
+};
 const fetchLogo = async () => {
     try {
-        
         const response = await axios.get('/get_logo');
         logoData.value = response.data;
-          await nextTick(); // Wait for DOM to update
+        await nextTick(); // Wait for DOM to update
 
         if ($.fn.dataTable.isDataTable('#logoTable')) {
             $('#logoTable').DataTable().destroy();
@@ -206,6 +397,7 @@ const fetchLogo = async () => {
 
 onMounted(() => {
     fetchLogo();
+    getAllPublisher();
 });
 
 </script>

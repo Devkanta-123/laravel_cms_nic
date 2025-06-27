@@ -14,6 +14,9 @@ class Logo extends Model
         'menu_id',
         'user_id',
         'role_id',
-        'flag'
+        'flag',
+        'rejected_remarks',
+        'publisher_id',
+        'application_id'
     ];
 }

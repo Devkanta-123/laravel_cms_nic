@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('image');
             $table->integer('menu_id');
+            $table->string('rejected_remarks'); // Store one file path per row
+            $table->unsignedBigInteger('publisher_id'); // Store one file path per row
+            $table->string('application_id', 30)->nullable();
             $table->timestamps();
         });
     }

@@ -1747,8 +1747,164 @@ class HomeController extends Controller
         $logo = Logo::find($request->id);
         $logo->flag = 'A'; // Approve
         $logo->save();
+        $user = Auth::user();
+        $userTo = User::find($logo->user_id);
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $logo->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Logo approved: ' . $logo->image,
+            'action' => 'Approved',
+            'flag' => 'A',
+            'application_id' => $logo->application_id
+        ]);
         return response()->json(['success' => true, 'message' => 'Logo approved successfully']);
     }
+    public function updateLogo(Request $request)
+    {
+        $request->validate([
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120'
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $logo = Logo::findOrFail($request->id);
+        // Determine flag
+        $flag = ($user->role_id == 2) ? 'A' : 'U';
+        $publisher = User::find($request->publisher_id);
+        // Delete old image from storage
+        if (!empty($logo->image)) {
+            $oldImagePath = storage_path('app/public/' . $logo->image);
+            if (file_exists($oldImagePath)) {
+                @unlink($oldImagePath);
+            }
+        }
+        $uploadedFilename = null;
+        $storedPath = null;
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $uploadedFilename = $image->getClientOriginalName();
+                $storedPath = $image->storeAs('bannerlogo', $uploadedFilename, 'public');
+
+                // Update the existing record
+                $logo->update([
+                    'image' => $storedPath,
+                    'publisher_id' => $request->publisher_id ?? null,
+                    'menu_id' => $request->menu_id,
+                    'flag' => $flag,
+                    'user_id' => $user->id,
+                    'role_id' => $user->role_id,
+                ]);
+
+                // Log update in AppTrack
+                AppTrack::create([
+                    'application_id' => $logo->application_id,
+                    'menu_id' => $request->menu_id,
+                    'page_section_master_id' => $request->page_section_master_id,
+                    'user_from' => $user->id,
+                    'user_from_name' => $user->name,
+                    'user_to' => $request->publisher_id,
+                    'user_to_name' => $publisher ? $publisher->name : null,
+                    'remarks' => 'Logo updated: ' . $storedPath,
+                    'flag' => 'U',
+                    'action' => 'Updated',
+                ]);
+            }
+        } else {
+            // Update metadata even if no file uploaded
+            $logo->update([
+                'publisher_id' => $request->publisher_id ?? null,
+                'menu_id' => $request->menu_id,
+                'flag' => $flag,
+                'user_id' => $user->id,
+                'role_id' => $user->role_id,
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logo updated successfully'
+        ]);
+    }
+
+    public function rejectLogo(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'remarks' => 'required|string',
+        ]);
+        $logo = Logo::find($request->id);
+        if (!$logo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Logo data not found',
+            ], 404);
+        }
+        $logo->flag = 'R';
+        $logo->rejected_remarks = $request->remarks;
+        $logo->save();
+        $user = Auth::user();
+        $userTo = User::find($logo->user_id); // Get user_to from users table
+        // Log into AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $logo->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Logo Rejected: ' . $request->remarks,
+            'action' => 'Rejected',
+            'flag' => 'R',
+            'application_id' => $logo->application_id
+        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Logo  has been rejected',
+        ]);
+    }
+
+
+    public function deleteLogo(Request $request)
+    {
+        $id = $request->input('id');
+        $logo = Logo::find($id);
+        if (!$logo) {
+            return response()->json(['message' => 'Logo not found'], 404);
+        }
+        if ($logo->image && Storage::disk('public')->exists($logo->image)) {
+            Storage::disk('public')->delete($logo->image);
+        }
+        // Delete the record
+        $logo->delete();
+        $user = Auth::user();
+        $userTo = User::find($logo->user_id);
+        // Add entry to AppTrack
+        AppTrack::create([
+            'menu_id' => $request->menu_id ?? null,
+            'page_section_master_id' => $request->page_section_master_id ?? null,
+            'user_from' => $user->id,
+            'user_from_name' => $user->name,
+            'user_to' => $logo->user_id,
+            'user_to_name' => $userTo ? $userTo->name : null,
+            'remarks' => 'Logo Deleted: ' . $logo->name,
+            'action' => 'Deleted',
+            'flag' => 'D',
+            'application_id' => $logo->application_id
+
+        ]);
+
+        return response()->json(['message' => 'Logo deleted successfully']);
+
+    }
+
 
 
 
@@ -1951,25 +2107,37 @@ class HomeController extends Controller
         } else {
             $flag = 'N'; // default if needed
         }
-
-        $menu_id = $request->menu;
-
+        $publisher = User::find($request->publisher_id);
+        $applicationId = 'LOGO' . now()->format('YmdHis');
+        $menu_id = $request->menu_id;
         $uploadedImages = [];
-
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $filename = $image->getClientOriginalName();
                 $path = $image->store('bannerlogo', 'public');
-
                 $uploadedImages[] = $filename;
-
                 // Save to database
                 Logo::create([
+                    'application_id' => $applicationId,
                     'image' => $path,
                     'menu_id' => $menu_id,
                     'flag' => $flag,
                     'user_id' => $user->id,
                     'role_id' => $user->role_id,
+                    'publisher_id' => $request->publisher_id ?? null
+                ]);
+                //add entry to  AppTracker table
+                AppTrack::create([
+                    'application_id' => $applicationId,
+                    'menu_id' => $request->menu_id,
+                    'page_section_master_id' => $request->page_section_master_id,
+                    'user_from' => $user->id,
+                    'user_from_name' => $user->name,
+                    'user_to' => $request->publisher_id,
+                    'user_to_name' => $publisher ? $publisher->name : null,
+                    'remarks' => 'Logo submitted: ' . $filename,
+                    'flag' => $flag,
+                    'action' => 'Add',
                 ]);
             }
         }
@@ -1996,7 +2164,6 @@ class HomeController extends Controller
             $setting = WebsiteSettings::create([
                 'language_id' => $request->language_id
             ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Language setting added successfully.',
@@ -2055,7 +2222,6 @@ class HomeController extends Controller
             'message' => 'Language setting removed successfully.'
         ]);
     }
-
 
     public function getArchieveData()
     {
