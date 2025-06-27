@@ -38,8 +38,22 @@
                                     <td>{{ formatDate(map.created_at) }}</td>
                                     <td>{{ map.addedby }}</td>
                                     <td>
-                                        <label :class="map.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ map.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="map.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="map.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="map.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ map.rejected_remarks }}
+                                            </div>
+                                        </div>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
@@ -50,6 +64,11 @@
                                                     :disabled="map.flag === 'A'" @change="approveMap(map.id, index)">
                                                 <span></span>
                                             </label>
+
+                                            &nbsp;
+                                            <!-- Show icon only if flag is not 'A' -->
+                                            <i class="fas fa-times text-danger" data-toggle="modal" v-if="map.flag !== 'A' && map.flag !== 'R'" 
+                                                data-target="#rejectedModal" @click="rejectedModal(map)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -78,7 +97,34 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog" aria-labelledby="rejectedModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Rejected Remarks <span class="text-danger">*</span></label>
+                        <textarea v-model="rejectedRemarks" class="form-control" placeholder="Remarks...."></textarea>
+                        <span v-if="rejectedRemarksError" class="text-danger">Remarks are
+                            required</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                    </button>
+                </div>
 
+            </div>
+        </div>
+    </div>
 
 </template>
 <script setup>
@@ -87,12 +133,12 @@ import axios from 'axios';
 const MapData = ref();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
+import { useRoute } from 'vue-router';
+const route = useRoute();
 // Reactive state
 let formData = ref({
     iframe: ""
 });
-
-
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -101,7 +147,9 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-
+const rejectedRemarks = ref('');
+const rejectedRemarksError = ref(false);
+const selectedMap = ref({}) // To store the clicked notice
 const getMaps = async () => {
     try {
         const response = await axios.get('/get_contactus');
@@ -131,7 +179,7 @@ const getMaps = async () => {
 
 const approveMap = async (id, index) => {
     try {
-        const response = await axios.put('/approved_map', { id });
+        const response = await axios.put('/approved_map', { id, menu_id: route.params.menuId, page_section_master_id: route.params.page_section_id });
         if (response.data.success) {
             MapData.value[index].flag = 'A'; // update UI immediately
             getMaps();
@@ -143,6 +191,40 @@ const approveMap = async (id, index) => {
 };
 
 
+const rejectedModal = (map) => {
+    selectedMap.value = map;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
+
+const rejected = async () => {
+    if (!rejectedRemarks.value.trim()) {
+        rejectedRemarksError.value = true;
+        return;
+    }
+    rejectedRemarksError.value = false;
+    try {
+        const response = await axios.post('/rejected_map', {
+            id: selectedMap.value.id,
+            remarks: rejectedRemarks.value,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
+        if (response.data.success) {
+            $('#rejectedModal').modal('hide');
+            // Optionally reload or update the UI
+            getMaps();
+            toastr.success('Map  has been Rejected');
+        } else {
+            toastr.error('Failed to reject the  Map data');
+
+        }
+    } catch (error) {
+        console.error(error);
+        toastr.error('Something went wrong');
+    }
+};
 onMounted(() => {
     getMaps();
 });

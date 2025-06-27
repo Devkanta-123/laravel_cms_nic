@@ -238,7 +238,6 @@ const formatDate = (dateStr) => {
 };
 
 const editLogo = async (logo) => {
-    debugger;
     isEditMode.value = true;
     editingData.value = logo;
     selectedPublisher.value = logo.publisher_id;
@@ -264,7 +263,6 @@ const resetForm = () => {
 };
 // Update existing logo
 const updateLogo = () => {
-    debugger;
     if (!selectedPublisher.value) {
         toastr.error("Please select a publisher.");
         return;

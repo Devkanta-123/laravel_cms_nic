@@ -92,9 +92,17 @@ import { useToastr } from '../../toaster.js';
 const selectedTab = ref('add') // Default to 'add' tab
 const toastr = useToastr();
 const MapData = ref();
+const props = defineProps({
+  menu: String,
+  section: Number,
+});
+const menu_id = props.menu;
+const page_section_master_id = props.section.page_section_id;
 // Reactive state
 const formData = ref({
-    iframe: ""
+    iframe: "",
+    menu_id:menu_id,
+    page_section_master_id:page_section_master_id
 });
 
 // Submit form data to the backend

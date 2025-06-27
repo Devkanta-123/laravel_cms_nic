@@ -19,6 +19,15 @@
                                     placeholder="Enter iFrame"></textarea>
                             </section>
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Publisher <span class="text-danger">*</span></label>
+                            <select class="form-control" v-model="selectedPublisher" required>
+                                <option value="" disabled>Select the Publisher</option>
+                                <option v-for="publisher in publisherData" :key="publisher.id" :value="publisher.id">
+                                    {{ publisher.name }}
+                                </option>
+                            </select>
+                        </div>
                         <!-- Save Button -->
                         <div class="actions clearfix mt-3">
                             <ul role="menu" aria-label="Pagination">
@@ -63,12 +72,26 @@
                                     <td>{{ formatDate(map.created_at) }}</td>
                                     <td>{{ map.addedby }}</td>
                                     <td>
-                                        <label :class="map.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                            {{ map.flag === 'A' ? 'Approved' : 'Pending' }}
+                                        <label v-if="map.flag === 'A'" class="badge bg-success">
+                                            Approved
+                                        </label>
+                                        <label v-else-if="map.flag === 'U'" class="badge bg-primary">
+                                            Updated
+                                        </label>
+                                        <div v-else-if="map.flag === 'R'">
+                                            <label class="badge bg-danger">
+                                                Rejected
+                                            </label>
+                                            <div class="mt-1 text-muted">
+                                                Remarks: {{ map.rejected_remarks }}
+                                            </div>
+                                        </div>
+                                        <label v-else class="badge bg-warning">
+                                            Pending
                                         </label>
                                     </td>
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger" @click="deleteSlide(map.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger" @click="deleteMap(map.id)"></i>
                                     </td>
                                 </tr>
                             </tbody>
@@ -105,10 +128,16 @@ import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const MapData = ref();
 const toastr = useToastr();
-
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const selectedPublisher = ref("");
+const publisherData = ref([]); // Store publisher data
+import Swal from 'sweetalert2';
 // Reactive state
 let formData = ref({
-    iframe: ""
+    iframe: "",
+    menu_id: route.params.menuId,
+    page_section_master_id: route.params.page_section_id
 });
 const getMaps = async () => {
     try {
@@ -143,12 +172,29 @@ const getMaps = async () => {
     }
 };
 
+const getAllPublisher = async () => {
+    try {
+        const response = await axios.get('/api/get_allpublisher');
+        publisherData.value = response.data.data;
+        // Auto-select if only one publisher exists
+        if (publisherData.value.length === 1) {
+            selectedPublisher.value = publisherData.value[0].id;
+        }
+    } catch (error) {
+        console.error('Error fetching publishers:', error.response || error);
+    }
+};
+
 
 
 const loading = ref(false);
 const submitData = async () => {
     try {
-        
+        if (!selectedPublisher.value) {
+            toastr.error("Please select a publisher.");
+            return;
+        }
+        formData.value.publisher_id = selectedPublisher.value;
         loading.value = true;
         const response = await axios.post('/api/addMapData', formData.value, {
             headers: {
@@ -176,11 +222,38 @@ const formatDate = (dateStr) => {
     });
 };
 
+const deleteMap = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirm Deletion',
+        text: 'Are you sure you want to delete this logo? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.post('/deleted_map', {
+                id: id,
+                menu_id: route.params.menuId,
+                page_section_master_id: route.params.page_section_id
+            });
+
+            setTimeout(getMaps, 200); // refresh the list
+            Swal.fire('Deleted!', response.data.message || 'Map has been removed.', 'success');
+        } catch (error) {
+            console.error('Error deleting map:', error);
+            Swal.fire('Error!', 'An error occurred during deletion.', 'error');
+        }
+    }
+};
 
 
 
 onMounted(() => {
     getMaps();
+    getAllPublisher();
 });
 </script>
 

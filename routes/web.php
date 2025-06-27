@@ -75,6 +75,8 @@ Route::get('/get_whoswho', action: [WhosWhoController::class, 'getWhosWho']); //
 Route::put('/approved_whoswho', action: [WhosWhoController::class, 'approveWhosWho']); //added by dev on 13/05/25
 Route::get('/get_contactus', action: [MapController::class, 'getMapData']); //added by dev on 25/03/25
 Route::put('/approved_map', action: [MapController::class, 'approveMap']); //added by dev on 25/03/25
+Route::post('/rejected_map', action: [MapController::class, 'rejectedMap']); //added by dev on 27/06/25
+Route::post('/deleted_map', action: [MapController::class, 'deleteMap']); //added by dev on 27/06/25
 Route::get('/get_archivedata', action: [HomeController::class, 'getArchiveData']); //added by dev on 29/05/25
 Route::get('/generateCaptcha', [UserController::class, 'generateCaptcha']);
 

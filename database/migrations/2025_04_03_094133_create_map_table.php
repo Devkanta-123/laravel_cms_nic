@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('map', function (Blueprint $table) {
             $table->id();
             $table->text('iframe'); // To store iFrame content
+            $table->string('rejected_remarks')->nullable();
+            $table->unsignedBigInteger('publisher_id')->nullable();
+            $table->string('application_id')->nullable();
             $table->timestamps();
         });
     }

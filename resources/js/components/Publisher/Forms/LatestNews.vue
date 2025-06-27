@@ -132,7 +132,6 @@ const handleFileChange = (e) => {
     file.value = e.target.files[0]
 }
 const rejectedModal = (news) => {
-    debugger;
     selectedLatestNew.value = news;
     rejectedRemarks.value = '';
     rejectedRemarksError.value = false;
