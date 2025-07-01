@@ -203,7 +203,7 @@ class NotificationsController extends Controller
                 SELECT ns.*, cm.category_name, u.name as addedby 
                 FROM notifications ns
                 INNER JOIN category_master cm ON cm.id = ns.category_id
-                INNER JOIN users u ON u.id = ns.user_id
+                LEFT JOIN users u ON u.id = ns.user_id order by ns.date desc
             ");
         } elseif (in_array($user->role_id, [3, 4])) {
             // Content Creator and Publisher
@@ -212,7 +212,7 @@ class NotificationsController extends Controller
                 FROM notifications ns
                 INNER JOIN category_master cm ON cm.id = ns.category_id
                 INNER JOIN users u ON u.id = ns.user_id
-				INNER JOIN users u2 on u2.id=ns.publisher_id
+				LEFT JOIN users u2 on u2.id=ns.publisher_id order by ns.date desc    
             ");
         } else {
             return response()->json(['message' => 'Invalid role'], 403);

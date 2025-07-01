@@ -7,6 +7,37 @@
                     <h5 class="card-title pb-0 border-0">Notice Board </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">
+                                        Pending
+                                    </button>
+
+
+                                </div>
+                            </div>
+
+
+                        </div>
                         <table class="table center-aligned-table mb-0" id="noticaboardTable">
                             <thead>
                                 <tr class="text-dark">
@@ -20,7 +51,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(notice, index) in noticeboarddata" :key="index">
+                                <tr v-for="(notice, index) in filteredNoticeboardData" :key="index">
                                     <td>
                                         <a :href="`/storage/${notice.file}`" target="_blank" class="text-primary">
                                             {{ notice.title }}
@@ -34,8 +65,8 @@
                                         <label v-if="notice.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
-                                        <label v-else-if="notice.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                        <label v-else-if="notice.flag === 'U'" class="badge bg-warning">
+                                            Pending
                                         </label>
 
                                         <div v-else-if="notice.flag === 'R'">
@@ -121,6 +152,8 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
+const filteredNoticeboardData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -148,24 +181,58 @@ const getAllCategoryMaster = async () => {
 };
 
 
+
+
 const getAllNotifications = async () => {
     try {
         const response = await axios.get('/get_notifications');
         noticeboarddata.value = response.data;
+        filteredNoticeboardData.value = response.data; // Default to all
+        console.log("data", response.data)
         await nextTick(); // Wait for DOM to update
-        // Destroy and reinitialize DataTable
-        if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
-            $('#noticaboardTable').DataTable().destroy();
-        }
+        initDataTable();
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+};
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
+        $('#noticaboardTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
         $('#noticaboardTable').DataTable({
             responsive: true,
             pageLength: 10,
         });
+    });
+};
 
-        console.log('Notice Board   data', response.data);
-    } catch (error) {
-        console.error('Error fetching data:', error);
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
+        $('#noticaboardTable').DataTable().destroy();
     }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredNoticeboardData.value = [...noticeboarddata.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredNoticeboardData.value = noticeboarddata.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredNoticeboardData.value = noticeboarddata.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
 };
 
 const approveNoticeBoard = async (id, index) => {

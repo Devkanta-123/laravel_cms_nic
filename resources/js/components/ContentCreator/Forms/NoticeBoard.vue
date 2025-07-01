@@ -26,20 +26,20 @@
                                 <div v-for="(row, index) in rows" :key="index" class="mb-3 row">
                                     <div class="col-md-4">
                                         <label v-if="index === 0" class="form-label">Title <span
-                                            class="text-danger">*</span></label>
+                                                class="text-danger">*</span></label>
                                         <input type="text" class="form-control" v-model="row.title"
                                             placeholder="Enter Title" />
                                     </div>
 
                                     <div class="col-md-3">
                                         <label v-if="index === 0" class="form-label">Date <span
-                                            class="text-danger">*</span></label>
+                                                class="text-danger">*</span></label>
                                         <input type="date" class="form-control" v-model="row.date" />
                                     </div>
 
                                     <div class="col-md-3">
                                         <label v-if="index === 0" class="form-label">Upload File <span
-                                            class="text-danger">*</span></label>
+                                                class="text-danger">*</span></label>
                                         <input type="file" multiple accept="application/pdf" class="form-control"
                                             @change="handleFileUpload($event, index)" />
                                     </div>
@@ -51,17 +51,17 @@
                                     </div>
                                 </div>
                             </div>
-                             <div class="col-6">
-                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
-                                        <option value="" disabled>Select the Publisher</option>
-                                        <option v-for="publisher in publisherData" :key="publisher.id"
-                                            :value="publisher.id">
-                                            {{ publisher.name }}
-                                        </option>
-                                    </select>
-                                </div>
+                            <div class="col-6">
+                                <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                    <option value="" disabled>Select the Publisher</option>
+                                    <option v-for="publisher in publisherData" :key="publisher.id"
+                                        :value="publisher.id">
+                                        {{ publisher.name }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Save Button -->
@@ -88,6 +88,34 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+
+
+                        </div>
                         <table class="table center-aligned-table mb-0" id="noticaboardTable">
                             <thead>
                                 <tr class="text-dark">
@@ -101,47 +129,36 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(notice, index) in noticeboarddata" :key="index">
+                                <tr v-for="(notice, index) in filteredNoticeboardData" :key="index">
                                     <td>
                                         <a :href="`/storage/${notice.file}`" target="_blank" class="text-primary">
                                             {{ notice.title }}
                                         </a>
                                     </td>
                                     <td>{{ notice.addedby }}</td>
-                                    <td>{{ notice.approver || 'N/A'}}</td>
-                                    <td>{{ notice.date}}</td>
+                                    <td>{{ notice.approver || 'N/A' }}</td>
+                                    <td>{{ formatDate(notice.date) }}</td>
                                     <td>{{ notice.category_name }}</td>
                                     <td>
-                                        <label v-if="notice.flag === 'A'" class="badge bg-success">
-                                            Approved
-                                        </label>
-                                        <label v-else-if="notice.flag === 'U'" class="badge bg-primary">
-                                            Updated
-                                        </label>
-
+                                        <label v-if="notice.flag === 'A'" class="badge bg-success">Approved</label>
+                                        <label v-else-if="notice.flag === 'U'" class="badge bg-warning">Pending</label>
                                         <div v-else-if="notice.flag === 'R'">
-                                            <label class="badge bg-danger">
-                                                Rejected
-                                            </label>
-                                            <div class="mt-1 text-muted">
-                                                Remarks: {{ notice.rejected_remarks }}
-                                            </div>
+                                            <label class="badge bg-danger">Rejected</label>
+                                            <div class="mt-1 text-muted">Remarks: {{ notice.rejected_remarks }}</div>
                                         </div>
-
-                                        <label v-else class="badge bg-warning">
-                                            Pending
-                                        </label>
-                                    </td>
+                                        <label v-else class="badge bg-warning">Pending</label>
+                                    </td>   
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger"
-                                            @click="deleteNotification(notice.id)"></i>&nbsp;&nbsp;
-                                        <i class="fas fa-pencil-alt text-success" data-toggle="modal"
-                                            data-target="#editModal" @click="editModal(notice)">
-                                        </i>
-
+                                        <!-- <i class="fas fa-trash-alt text-danger"
+                                            @click="deleteNotification(notice.id)"></i> -->
+                                            &nbsp;&nbsp;
+                                        <i class="fas fa-pencil-alt text-success" v-if="notice.flag=='R'" data-toggle="modal"
+                                            data-target="#editModal" @click="editModal(notice)"></i>
                                     </td>
                                 </tr>
                             </tbody>
+
+
                         </table>
                     </div>
                     <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
@@ -229,9 +246,11 @@ const link = ref('')
 const title = ref('')
 const fileInput = ref(null) // this will reference the file input
 const noticeboarddata = ref([]);
+const filteredNoticeboardData = ref([]);
 const addRow = () => {
     rows.value.push({ title: "", date: "", files: [] });
 };
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const selectedNotice = ref({}) // To store the clicked notice
 
 const editModal = (notice) => {
@@ -364,21 +383,55 @@ const getAllNotifications = async () => {
     try {
         const response = await axios.get('/get_notifications');
         noticeboarddata.value = response.data;
+        filteredNoticeboardData.value = response.data; // Default to all
+        console.log("data", response.data)
         await nextTick(); // Wait for DOM to update
-        // Destroy and reinitialize DataTable
-        if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
-            $('#noticaboardTable').DataTable().destroy();
-        }
-        $('#noticaboardTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-        });
-
-        console.log('Latest News data', response.data);
+        initDataTable();
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 };
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
+        $('#noticaboardTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#noticaboardTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
+        $('#noticaboardTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredNoticeboardData.value = [...noticeboarddata.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredNoticeboardData.value = noticeboarddata.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredNoticeboardData.value = noticeboarddata.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+};
+
+
 const updateNotice = async () => {
     const formData = new FormData()
     formData.append('id', selectedNotice.value.id)
