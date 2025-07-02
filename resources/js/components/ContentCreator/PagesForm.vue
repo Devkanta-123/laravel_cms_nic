@@ -29,10 +29,8 @@
                                     <div class="card-header row">
                                         <div class="col-10">
                                             <h4 class=" mt-1">{{ props.menuName }} </h4> Components
-
                                         </div>
                                         <div class="row align-items-center">
-
                                             <div class="col-auto">
                                                 <a href="#" @click="onBack()"
                                                     class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2">

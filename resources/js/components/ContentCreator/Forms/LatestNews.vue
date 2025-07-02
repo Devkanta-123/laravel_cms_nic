@@ -95,17 +95,49 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="latestNewsTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Title</th>
                                     <th>Added On</th>
                                     <th>Status</th>
-                                    <th>Action</th>
+                                    <!-- <th>Action</th> -->
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(news, index) in latestnews" :key="index">
+                                <tr v-for="(news, index) in filteredLatestNewsData" :key="index">
+                                    <td>{{ index + 1}}</td>
                                     <td>
                                         <a v-if="news.type === 'file'" :href="`/storage/${news.file}`" target="_blank"
                                             class="text-primary">
@@ -122,8 +154,8 @@
                                         <label v-if="news.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
-                                        <label v-else-if="news.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                        <label v-else-if="news.flag === 'U'" class="badge bg-warning">
+                                            Pending
                                         </label>
                                         <div v-else-if="news.flag === 'R'">
                                             <label class="badge bg-danger">
@@ -137,10 +169,10 @@
                                             Pending
                                         </label>
                                     </td>
-                                    <td>
+                                    <!-- <td>
                                         <i class="fas fa-trash-alt text-danger" v-if="news.flag !== 'A'"
                                             @click="deleteLatestNews(news.id)"></i>
-                                    </td>
+                                    </td> -->
                                 </tr>
                             </tbody>
                         </table>
@@ -159,9 +191,10 @@ import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const selectedPublisher = ref("");
 const publisherData = ref([]); // Store publisher categories
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 const route = useRoute();
+const router = useRouter();
 const showLinkInput = ref(false)
 const file = ref(null)
 const link = ref('')
@@ -169,6 +202,9 @@ const title = ref('')
 const titleK = ref('')
 const titleH = ref('')
 const latestnews = ref([]);
+const filteredLatestNewsData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
+
 // Handle file change
 const handleFileChange = (e) => {
     file.value = e.target.files[0]
@@ -186,6 +222,50 @@ const getAllPublisher = async () => {
         toastr.error("Failed to load publishers.");
     }
 };
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
+}
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredLatestNewsData.value = [...latestnews.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredLatestNewsData.value = latestnews.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredLatestNewsData.value = latestnews.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#latestNewsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
 
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -294,21 +374,9 @@ const fetchLatestNews = async () => {
     try {
         const response = await axios.post('/api/get_latest_news');
         latestnews.value = response.data;
-
+        filteredLatestNewsData.value =response.data;
         await nextTick(); // Wait for DOM update
-
-        // Destroy DataTable if already initialized
-        const table = $('#latestNewsTable').DataTable();
-        if (table) {
-            table.destroy();
-        }
-
-        // Reinitialize
-        $('#latestNewsTable').DataTable({
-            responsive: true,
-            pageLength: 10
-        });
-
+         initDataTable();
         console.log('Latest News data:', response.data);
     } catch (error) {
         console.error('Error fetching data:', error);

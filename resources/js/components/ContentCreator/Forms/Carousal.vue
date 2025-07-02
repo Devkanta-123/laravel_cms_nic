@@ -3,40 +3,46 @@
         integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
 
     <br>
-    <div style="display: flex;">
-        <div class="col-xl-4 mb-30">
+    <div>
+        <div class="col-xl-12 mb-30">
             <!-- First Card (Carousel) -->
             <div class="card card-statistics h-100">
                 <div class="card-body">
                     <h5 class="card-title">Carousel</h5>
                     <div id="example-basic" role="application" class="wizard clearfix">
                         <div class="content clearfix">
-                            <section class="body current" aria-hidden="false">
-                                <label for="uName">Image</label>
-                                <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
-                                    class="form-control" required>
-                                      <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
-                                <div v-for="(image, index) in images" :key="index" class="position-relative me-2">
-                                    <button type="button" @click="removeImage(index)"
-                                        class="btn-close btn-sm position-absolute top-0 end-0"
-                                        style="z-index: 2; background-color: white; border-radius: 50%;">
-                                    </button>
-                                    <img :src="image.url" alt="Preview" width="100" height="100" class="img-thumbnail">
+                            <div class="row">
+                                <div class="col-6">
+                                    <section class="body current" aria-hidden="false">
+                                        <label for="uName">Image</label>
+                                        <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
+                                            class="form-control" required>
+                                        <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
+                                            <div v-for="(image, index) in images" :key="index"
+                                                class="position-relative me-2">
+                                                <button type="button" @click="removeImage(index)"
+                                                    class="btn-close btn-sm position-absolute top-0 end-0"
+                                                    style="z-index: 2; background-color: white; border-radius: 50%;">
+                                                </button>
+                                                <img :src="image.url" alt="Preview" width="100" height="100"
+                                                    class="img-thumbnail">
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
-                            </section>
-                             <!-- Image Preview Section -->
-                          
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
-                                    class="text-danger">*</span></label>
-                            <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
-                                <option value="" disabled>Select the Publisher</option>
-                                <option v-for="publisher in publisherData" :key="publisher.id" :value="publisher.id">
-                                    {{ publisher.name }}
-                                </option>
-                            </select>
+
                         </div>
                         <!-- Save Button -->
                         <div class="actions clearfix mt-3">
@@ -52,15 +58,43 @@
             </div>
         </div>
 
-        <div class="col-xl-8 mb-30">
+        <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                     <button type="button" class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active" @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="slidesTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Image</th>
                                     <th>Added On</th>
                                     <th>AddedBy</th>
@@ -70,7 +104,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(slide, index) in slides" :key="index">
+                                <tr v-for="(slide, index) in filteredslidesData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td>
                                         <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
                                             alt="Slide Image" @click="openModal(`/storage/${slide.image}`)"
@@ -78,9 +113,9 @@
                                     </td>
                                     <td>{{ formatDate(slide.addedon) }}</td>
                                     <td>{{ slide.addedby }}</td>
-                                    <td>{{ slide.approver}}</td>
+                                    <td>{{ slide.approver }}</td>
                                     <td>
-                                       <label v-if="slide.flag === 'A'" class="badge bg-success">
+                                        <label v-if="slide.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
                                         <label v-else-if="slide.flag === 'U'" class="badge bg-primary">
@@ -135,8 +170,9 @@
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
@@ -148,13 +184,14 @@ const openModal = (imageSrc) => {
 const closeModal = () => {
     showModal.value = false;
 };
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const selectedPublisher = ref("");
 const publisherData = ref([]); // Store publisher categories
 const fileInput = ref(null); // define ref at the top
 const images = ref([]);
-const isDragging = ref(false);
 // fileInput.value = null;
 const slides = ref([]);
+const filteredslidesData = ref([]);
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -190,6 +227,9 @@ const removeImage = (index) => {
     images.value.splice(index, 1);
 };
 
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
+}
 
 
 const getAllPublisher = async () => {
@@ -208,13 +248,12 @@ const getAllPublisher = async () => {
 
 // console.log("RoleID" + role_id);
 const uploadImages = () => {
-    debugger;
     // Check if images array is empty or contains invalid entries
     if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
         toastr.error('Please select at least one  image before uploading.');
         return;
     }
-      if (!selectedPublisher.value) {
+    if (!selectedPublisher.value) {
         toastr.error("Please select a publisher.");
         return false;
     }
@@ -260,7 +299,7 @@ const deleteCarousel = async (id) => {
     if (result.isConfirmed) {
         try {
             const response = await axios.post('/api/delete_slide', {
-                id: id,menu_id:route.params.menuId,page_section_master_id :route.params.page_section_id
+                id: id, menu_id: route.params.menuId, page_section_master_id: route.params.page_section_id
             });
 
             await fetchSlides(); // refresh the list
@@ -278,30 +317,60 @@ const fetchSlides = async () => {
         if ($.fn.dataTable.isDataTable('#slidesTable')) {
             $('#slidesTable').DataTable().destroy();
         }
-
         // Step 2: Clear existing data to force Vue to rebuild DOM
         slides.value = [];
-
         // Step 3: Wait for DOM to clear old rows
         await nextTick();
-
         // Step 4: Set new slide data
         const response = await axios.get('/get_carousel');
         slides.value = response.data;
-
+        filteredslidesData.value = response.data;
         // Step 5: Wait for DOM to fully update
         await nextTick();
-
-        // Step 6: Initialize DataTable after DOM is updated
-        $('#slidesTable').DataTable({
-            destroy: true,
-            responsive: true
-        });
+        // Step 6 Initialize DataTable after DOM is updated
+        initDataTable();
 
     } catch (error) {
         console.error('Failed to fetch slides:', error);
     }
 };
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#slidesTable')) {
+        $('#slidesTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#slidesTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#slidesTable')) {
+        $('#slidesTable').DataTable().destroy();
+    }
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredslidesData.value = [...slides.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredslidesData.value = slides.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredslidesData.value = slides.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+
+};
+
 
 
 onMounted(() => {

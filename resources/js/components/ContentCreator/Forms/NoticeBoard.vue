@@ -91,6 +91,9 @@
                         <div class="fc-toolbar fc-header-toolbar">
                             <div class="fc-right mb-3">
                                 <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
                                     <button type="button" :class="[
                                         'fc-month-button fc-button fc-state-default fc-corner-left',
                                         activeFlag === 'ALL' ? 'fc-state-active' : ''
@@ -231,8 +234,9 @@
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2';
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter} from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const selectedCategory = ref("");
@@ -255,6 +259,9 @@ const selectedNotice = ref({}) // To store the clicked notice
 
 const editModal = (notice) => {
     selectedNotice.value = { ...notice }
+}
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
 }
 const clearFileInput = () => {
     file.value = null;

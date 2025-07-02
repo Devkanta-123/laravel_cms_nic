@@ -95,9 +95,39 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="noticaboardTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Image</th>
                                     <th>Title</th>
                                     <th>Added By</th>
@@ -107,7 +137,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(cards, index) in cardaData" :key="index">
+                                <tr v-for="(cards, index) in filteredCardData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td> <img class="img-fluid avatar-small" :src="`/storage/${cards.image}`"
                                             alt="Slide Image" @click="openModal(`/storage/${cards.image}`)"
                                             style="cursor: pointer;" />
@@ -136,7 +167,8 @@
                                         </label>
                                     </td>
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger"   v-if="cards.flag !== 'A'" @click="deleteCard(cards.id)"></i>
+                                        <i class="fas fa-trash-alt text-danger" v-if="cards.flag !== 'A'"
+                                            @click="deleteCard(cards.id)"></i>
                                     </td>
                                 </tr>
                             </tbody>
@@ -170,12 +202,13 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
-import { useToastr } from '../../../toaster.js';
+import { useToastr} from '../../../toaster.js';
 const props = defineProps({
     menuId: String,
     section: Number,
 });
-import { useRoute } from 'vue-router';
+const router = useRouter();
+import { useRoute,useRouter} from 'vue-router';
 import Swal from 'sweetalert2';
 const route = useRoute();
 const selectedPublisher = ref("");
@@ -184,6 +217,8 @@ const toastr = useToastr();
 const cardaData = ref();
 const pagemenudata = ref([]); // Store fetched categories
 const selectedImage = ref('');
+const filteredCardData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const newCard = ref({
     card_title: '',
     card_description: '',
@@ -201,7 +236,9 @@ const newCard = ref({
 const handleFileChange = (event) => {
     newCard.value.image = event.target.files[0];
 };
-
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
+}
 const showModal = ref(false);
 const modalImage = ref('');
 const getAllPublisher = async () => {
@@ -309,6 +346,7 @@ const getCards = async () => {
     try {
         const response = await axios.get("/get_cards");
         cardaData.value = response.data.data;
+        filteredCardData.value = response.data.data;
         await nextTick(); // Wait for DOM to update
         // Destroy and reinitialize DataTable
         if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
@@ -325,6 +363,47 @@ const getCards = async () => {
     }
 };
 
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredCardData.value = [...cardaData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredCardData.value = cardaData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredCardData.value = cardaData.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#latestNewsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
 
 
 const deleteCard = async (id) => {
@@ -346,7 +425,7 @@ const deleteCard = async (id) => {
             });
             await nextTick();
             await getCards();
-             Swal.fire('Deleted!', response.data.message || 'Card has been deleted.', 'success');
+            Swal.fire('Deleted!', response.data.message || 'Card has been deleted.', 'success');
         } catch (error) {
             console.error('Error deleting card:', error);
             Swal.fire('Error!', 'An error occurred during deletion.', 'error');

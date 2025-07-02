@@ -8,6 +8,7 @@
                     <div class="content clearfix">
 
                         <ckeditor v-model="editorContent" :config="editorConfig"></ckeditor>
+                        
                         <div class="col-md-4">
                             <label class="form-label">Publisher<span class="text-danger">*</span></label>
                             <select class="form-control" v-model="selectedPublisher" required>
@@ -30,6 +31,11 @@
                                     <button type="button" class="btn btn-primary" role="menuitem"
                                         @click="updateContent">
                                         Save Changes
+                                    </button>
+
+                                      <button type="button" class="btn btn-primary" role="menuitem"
+                                        @click="onBack()">
+                                        Back
                                     </button>
                                 </li>
                             </ul>
@@ -55,9 +61,10 @@ const editorConfig = ref({}); // CKEditor configuration
 const errors = ref({ file: null });
 const paragraphData = ref();
 const fileInput = ref(null); // Reference for the file input
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 const route = useRoute();
+const router = useRouter();
 const props = defineProps({
     menuId: String,
     menuName: String,
@@ -77,6 +84,10 @@ const saveContent = async () => {
         console.error('Error saving content:', error);
     }
 };
+
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
+}
 const getAllPublisher = async () => {
     try {
         const response = await axios.get('/api/get_allpublisher');

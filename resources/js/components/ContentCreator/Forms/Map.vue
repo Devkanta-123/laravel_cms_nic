@@ -4,8 +4,8 @@
 
     <br>
 
-    <div style="display: flex;">
-        <div class="col-xl-4 mb-30">
+    <div>
+        <div class="col-xl-12 mb-30">
             <!-- First Card (Carousel) -->
             <div class="card card-statistics h-100">
                 <div class="card-body">
@@ -19,7 +19,7 @@
                                     placeholder="Enter iFrame"></textarea>
                             </section>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label class="form-label">Publisher <span class="text-danger">*</span></label>
                             <select class="form-control" v-model="selectedPublisher" required>
                                 <option value="" disabled>Select the Publisher</option>
@@ -42,15 +42,46 @@
             </div>
         </div>
 
-        <div class="col-xl-8 mb-30">
+        <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">
                     <h5 class="card-title pb-0 border-0">Map </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="MapTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Iframe</th>
                                     <th>Added On</th>
                                     <th>Added By</th>
@@ -59,11 +90,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(map, index) in MapData" :key="index">
+                                <tr v-for="(map, index) in filteredMapData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td>
-                                        <!-- <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
-                                            alt="Slide Image" @click="openModal(`/storage/${slide.image}`)"
-                                            style="cursor: pointer;"> -->
                                         <div class="embed-responsive embed-responsive-16by9">
                                             <div class="embed-responsive-item" v-html="map.iframe" aria-readonly="">
                                             </div>
@@ -76,7 +105,7 @@
                                             Approved
                                         </label>
                                         <label v-else-if="map.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                            Pending
                                         </label>
                                         <div v-else-if="map.flag === 'R'">
                                             <label class="badge bg-danger">
@@ -128,10 +157,13 @@ import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const MapData = ref();
 const toastr = useToastr();
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 const selectedPublisher = ref("");
 const publisherData = ref([]); // Store publisher data
+const filteredMapData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 import Swal from 'sweetalert2';
 // Reactive state
 let formData = ref({
@@ -141,9 +173,10 @@ let formData = ref({
 });
 const getMaps = async () => {
     try {
+        debugger;
         const response = await axios.get('/get_contactus');
         const data = response.data;
-
+         filteredMapData.value = response.data;
         if (Array.isArray(data) && data.length > 0) {
             MapData.value = data;
             formData.value.iframe = data[0].iframe || '';
@@ -154,23 +187,57 @@ const getMaps = async () => {
 
         // Wait for Vue to update the DOM
         await nextTick();
-
-        // Only reset DataTable if data is available and rows are rendered
-        if (Array.isArray(MapData.value) && MapData.value.length > 0) {
-            if ($.fn.dataTable.isDataTable('#MapTable')) {
-                $('#MapTable').DataTable().destroy();
-            }
-
-            $('#MapTable').DataTable({
-                responsive: true,
-                pageLength: 10,
-            });
-        }
-
+        initDataTable();
     } catch (error) {
         console.error('Error loading map data:', error?.response?.data);
     }
 };
+
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#MapTable')) {
+        $('#MapTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredMapData.value = [...MapData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredMapData.value = MapData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredMapData.value = MapData.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#latestNewsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
+}
 
 const getAllPublisher = async () => {
     try {
@@ -256,5 +323,6 @@ onMounted(() => {
     getAllPublisher();
 });
 </script>
-
-<style scoped></style>
+<style scoped>
+@import '../assets/css/style.css';
+</style>

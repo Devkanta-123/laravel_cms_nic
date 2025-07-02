@@ -1930,7 +1930,8 @@ class HomeController extends Controller
                 'flag' => $page->flag,
                 'userid' => $page->user_id,
                 'id' => $page->id,
-                'publisher_id' => $page->publisher_id
+                'publisher_id' => $page->publisher_id,
+                'created_at' => $page->created_at
             ]);
         }
 

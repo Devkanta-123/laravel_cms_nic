@@ -7,9 +7,39 @@
                     <h5 class="card-title pb-0 border-0">Cards </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                          <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+                                <div class="fc-button-group">
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="noticaboardTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Image</th>
                                     <th>Title</th>
                                     <th>Added By</th>
@@ -19,7 +49,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(cards, index) in cardaData" :key="index">
+                                <tr v-for="(cards, index) in filteredCardData" :key="index">
+                                     <td>{{ index + 1 }}</td>
                                     <td> <img class="img-fluid avatar-small" :src="`/storage/${cards.image}`"
                                             alt="Slide Image" @click="openModal(`/storage/${cards.image}`)"
                                             style="cursor: pointer;" />
@@ -136,8 +167,9 @@ const modalImage = ref('');
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
 const selectedCard = ref({})
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
@@ -145,14 +177,17 @@ const openModal = (imageSrc) => {
 const closeModal = () => {
     showModal.value = false;
 };
-
+const filteredCardData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 
 const rejectedModal = (card) => {
     selectedCard.value = card;
     rejectedRemarks.value = '';
     rejectedRemarksError.value = false;
 };
-
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
+}
 const rejected = async () => {
     if (!rejectedRemarks.value.trim()) {
         rejectedRemarksError.value = true;
@@ -182,6 +217,46 @@ const rejected = async () => {
     }
 };
 
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredCardData.value = [...cardaData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredCardData.value = cardaData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredCardData.value = cardaData.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#latestNewsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
 
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -198,6 +273,7 @@ const getCards = async () => {
     try {
         const response = await axios.get("/get_cards");
         cardaData.value = response.data.data;
+        filteredCardData.value =response.data.data;
         await nextTick(); // Wait for DOM to update
         // Destroy and reinitialize DataTable
         if ($.fn.dataTable.isDataTable('#noticaboardTable')) {

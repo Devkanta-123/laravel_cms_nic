@@ -8,10 +8,35 @@
                 <h5 class="card-title pb-0 border-0">Carousel</h5>
                 <!-- action group -->
                 <div class="table-responsive">
+                    <div class="fc-toolbar fc-header-toolbar">
+                        <div class="fc-right mb-3">
+                            <div class="fc-button-group">
+                                <button type="button"
+                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                    @click="onBack()"> Back</button>
+                                <button type="button" :class="[
+                                    'fc-month-button fc-button fc-state-default fc-corner-left',
+                                    activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('ALL')">All</button>
+                                <button type="button" :class="[
+                                    'fc-month-button fc-button fc-state-default fc-corner-left',
+                                    activeFlag === 'A' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('A')">Approved</button>
+                                <button type="button" :class="[
+                                    'fc-agendaWeek-button fc-button fc-state-default',
+                                    activeFlag === 'R' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('R')">Rejected</button>
+                                <button type="button" :class="[
+                                    'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                    activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('PENDING')">Pending</button>
+                            </div>
+                        </div>
+                    </div>
                     <table id="slidesTable" class="table center-aligned-table mb-0 display">
                         <thead>
                             <tr class="text-dark">
-                                <th>#</th>
+                                <th>SL.NO</th>
                                 <th>Image</th>
                                 <th>Added by</th>
                                 <th>Added On</th>
@@ -20,7 +45,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(slide, index) in slides" :key="slide.id">
+                            <tr v-for="(slide, index) in filteredslidesData" :key="slide.id">
                                 <td>{{ index + 1 }}</td>
                                 <td>
                                     <img class="img-fluid avatar-small" :src="`/storage/${slide.image}`"
@@ -31,23 +56,23 @@
                                 <td>{{ formatDate(slide.addedon) }}</td>
                                 <td>
                                     <label v-if="slide.flag === 'A'" class="badge bg-success">
-                                            Approved
+                                        Approved
+                                    </label>
+                                    <label v-else-if="slide.flag === 'U'" class="badge bg-primary">
+                                        Updated
+                                    </label>
+                                    <div v-else-if="slide.flag === 'R'">
+                                        <label class="badge bg-danger">
+                                            Rejected
                                         </label>
-                                        <label v-else-if="slide.flag === 'U'" class="badge bg-primary">
-                                            Updated
-                                        </label>
-                                        <div v-else-if="slide.flag === 'R'">
-                                            <label class="badge bg-danger">
-                                                Rejected
-                                            </label>
-                                            <div class="mt-1 text-muted">
-                                                Remarks: {{ slide.rejected_remarks }}
-                                            </div>
+                                        <div class="mt-1 text-muted">
+                                            Remarks: {{ slide.rejected_remarks }}
                                         </div>
+                                    </div>
 
-                                        <label v-else class="badge bg-warning">
-                                            Pending
-                                        </label>
+                                    <label v-else class="badge bg-warning">
+                                        Pending
+                                    </label>
                                 </td>
                                 <td>
                                     <div class="checkbox checbox-switch switch-success">
@@ -126,12 +151,16 @@ import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
 const showModal = ref(false);
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter} from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 const modalImage = ref('');
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
+}
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
 }
 const closeModal = () => {
     showModal.value = false;
@@ -143,6 +172,8 @@ const images = ref([]);
 const isDragging = ref(false);
 // fileInput.value = null;
 const slides = ref([]);
+const filteredslidesData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'=
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -174,7 +205,7 @@ const rejected = async () => {
         if (response.data.success) {
             $('#rejectedModal').modal('hide');
             // Optionally reload or update the UI
-           fetchSlides();
+            fetchSlides();
             toastr.success('Carousel rejected successfully');
         } else {
             alert('Failed to reject the notice');
@@ -208,7 +239,7 @@ const fetchSlides = async () => {
             params: { flag: 4 }
         })
         slides.value = response.data
-
+        filteredslidesData.value = response.data;
         await nextTick() // wait until DOM is updated
         if ($.fn.dataTable.isDataTable('#slidesTable')) {
             $('#slidesTable').DataTable().destroy()
@@ -229,6 +260,42 @@ const approveSlide = async (id, index) => {
     } catch (error) {
         console.error('Approval failed:', error);
     }
+};
+
+
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#slidesTable')) {
+        $('#slidesTable').DataTable().destroy();
+    }
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredslidesData.value = [...slides.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredslidesData.value = slides.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredslidesData.value = slides.value.filter(item => item.flag === flag);
+    }
+    await nextTick();
+    initDataTable();
+
+};
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#slidesTable')) {
+        $('#slidesTable').DataTable().destroy();
+    }
+    nextTick(() => {
+        $('#slidesTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
 };
 
 

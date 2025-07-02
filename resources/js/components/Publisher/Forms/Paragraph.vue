@@ -1,16 +1,24 @@
 <template>
-    <br>
+    <br />
     <div>
         <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">
-                    <h5 class="card-title pb-0 border-0">Paragraph </h5>
-                    <!-- action group -->
+                    <h5 class="card-title pb-0 border-0">Paragraph</h5>
                     <div class="table-responsive">
-                        <table class="table center-aligned-table mb-0" id="paragraphTable">
+                           <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                      <button type="button"
+                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                    @click="onBack()"> Back</button>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="table center-aligned-table mb-0" id="paragraphTable"
+                            v-if="paragraphData.length > 0">
                             <thead>
                                 <tr class="text-dark">
-                                    <th>Old Content</th>
                                     <th>New Content</th>
                                     <th>Added On</th>
                                     <th>Added By</th>
@@ -19,43 +27,55 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(para, index) in paragraphData" :key="index">
-                                    <td> {{ stripHtml(para.description) }} </td>
-                                    <!-- <td> {{ stripHtml(para.new_description) }} </td> -->
-                                    <td v-html="highlightDiff(para.description, para.new_description)"></td>
-                                    <td>{{ formatDate(para.created_at) }}</td>
-                                    <td>{{ para.addedby }}</td>
+                                <tr v-for="(para, index) in paragraphData" :key="para.id">
+                                    <!--  Content Column -->
                                     <td>
-                                       <label v-if="para.flag === 'A'" class="badge bg-success">
-                                            Approved
-                                        </label>
-                                        <label v-else-if="para.flag === 'U'" class="badge bg-primary">
-                                            Updated
-                                        </label>
+                                        <!--  Preview shown only when not expanded -->
+                                        <div v-if="expandedIndex !== index">
+                                            <div v-html="para.content.slice(0, 100) + ' .......' "></div>
+                                        </div>
 
+                                        <!--  Full content shown only when expanded -->
+                                        <div class="mt-2">
+                                            <button class="badge bg-primary" @click="toggleContent(index)">
+                                                {{ expandedIndex === index ? 'Show Less' : 'Read More' }}
+                                            </button>
+                                        </div>
+
+                                        <div v-if="expandedIndex === index" class="mt-2 border p-2 bg-light">
+                                            <div v-html="para.content"></div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Date -->
+                                    <td>{{ formatDate(para.created_at) }}</td>
+
+                                    <!-- Added By -->
+                                    <td>{{ para.addedby || 'N/A' }}</td>
+
+                                    <!-- Status -->
+                                    <td>
+                                        <label v-if="para.flag === 'A'" class="badge bg-success">Approved</label>
+                                        <label v-else-if="para.flag === 'U'" class="badge bg-warning">Pending</label>
                                         <div v-else-if="para.flag === 'R'">
-                                            <label class="badge bg-danger">
-                                                Rejected
-                                            </label>
+                                            <label class="badge bg-danger">Rejected</label>
                                             <div class="mt-1 text-muted">
                                                 Remarks: {{ para.rejected_remarks }}
                                             </div>
                                         </div>
-
-                                        <label v-else class="badge bg-warning">
-                                            Pending
-                                        </label>
+                                        <label v-else class="badge bg-warning">Pending</label>
                                     </td>
+
+                                    <!-- Action -->
                                     <td>
-                                        <!-- <i class="fas fa-trash-alt text-danger" @click="deleteSlide(news.id)"></i> -->
                                         <div class="checkbox checbox-switch switch-success">
                                             <label>
                                                 <input type="checkbox" :checked="para.flag === 'A'"
                                                     :disabled="para.flag === 'A'"
-                                                    @change="approveContent(para.id, index)">
+                                                    @change="approveContent(para.id, index)" />
                                                 <span></span>
                                             </label>
-                                              <i class="fas fa-times text-danger"
+                                            <i class="fas fa-times text-danger"
                                                 v-if="para.flag !== 'A' && para.flag !== 'R'" data-toggle="modal"
                                                 data-target="#rejectedModal" @click="rejectedModal(para)"></i>
                                         </div>
@@ -63,13 +83,16 @@
                                 </tr>
                             </tbody>
                         </table>
+
+                        <p v-else class="text-muted p-3">No content found.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-        <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog" aria-labelledby="rejectedModalTitle"
+    <!-- Modal -->
+    <div class="modal fade" id="rejectedModal" tabindex="-1" role="dialog" aria-labelledby="rejectedModalTitle"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -87,26 +110,39 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger" @click="rejected">Rejected
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" class="btn btn-danger" @click="rejected">
+                        Reject
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
 </template>
+
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, nextTick } from 'vue';
+import axios from 'axios';
+import { useRoute,useRouter } from 'vue-router';
 import { useToastr } from '../../../toaster.js';
-const toastr = useToastr();
-const paragraphData = ref();
-import { useRoute } from 'vue-router';
+
 const route = useRoute();
+const router = useRouter();
+const toastr = useToastr();
+
+const paragraphData = ref([]);
+const expandedIndex = ref(null);
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
-const selectedPara = ref({}) // To store the clicked notice
+const selectedPara = ref({});
+
+const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+};
+
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -115,38 +151,15 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-const stripHtml = (html) => {
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    return div.textContent || div.innerText || "";
-};
-
-const highlightDiff = (oldStr, newStr) => {
-    if (!newStr) return ''; // If newStr is null or empty, return empty string
-
-    const oldText = stripHtml(oldStr || '');
-    const newText = stripHtml(newStr);
-
-    const oldWords = oldText.split(/\s+/);
-    const newWords = newText.split(/\s+/);
-
-    return newWords.map((word, index) => {
-        if (oldWords[index] !== word) {
-            return `<span class="bg-warning text-dark px-1 rounded">${word}</span>`;
-        }
-        return word;
-    }).join(' ');
-};
-
-
-
+const onBack = () => {
+    router.push('/publisher/pages')
+}
 const fetchPageContent = async () => {
     try {
-        const response = await axios.get(`/get_page_content_bypublisher`);
+        const response = await axios.get(`/get_page_content/${route.params.menuId}`);
         if (response.data) {
-            paragraphData.value = response.data;
-            console.log("para data", response.data);
-            await nextTick(); // Wait for DOM to update
+            paragraphData.value = [response.data]; // wrap in array
+            await nextTick();
             if ($.fn.dataTable.isDataTable('#paragraphTable')) {
                 $('#paragraphTable').DataTable().destroy();
             }
@@ -155,27 +168,28 @@ const fetchPageContent = async () => {
                 pageLength: 10,
             });
         } else {
-            paragraphData.value = false;
+            paragraphData.value = [];
         }
     } catch (error) {
-        console.error("Error fetching page content:", error);
+        console.error('Error fetching page content:', error);
     }
 };
 
-// Called when clicking reject icon
-const rejectedModal = (para) => {
-    selectedPara.value = para;
-    rejectedRemarks.value = '';
-    rejectedRemarksError.value = false;
-};
 
+
+const toggleContent = (index) => {
+    expandedIndex.value = expandedIndex.value === index ? null : index;
+};
 
 const approveContent = async (id, index) => {
     try {
-        const response = await axios.post('/approved_paragraph', { id, menu_id: route.params.menuId,
-            page_section_master_id: route.params.page_section_id,});
+        const response = await axios.post('/approved_paragraph', {
+            id,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id,
+        });
         if (response) {
-            paragraphData.value[index].flag = 'A'; // update UI immediately
+            paragraphData.value[index].flag = 'A';
             fetchPageContent();
             toastr.success('Approved successfully');
         }
@@ -183,6 +197,13 @@ const approveContent = async (id, index) => {
         console.error('Approval failed:', error);
     }
 };
+
+const rejectedModal = (para) => {
+    selectedPara.value = para;
+    rejectedRemarks.value = '';
+    rejectedRemarksError.value = false;
+};
+
 const rejected = async () => {
     if (!rejectedRemarks.value.trim()) {
         rejectedRemarksError.value = true;
@@ -195,12 +216,11 @@ const rejected = async () => {
             id: selectedPara.value.id,
             remarks: rejectedRemarks.value,
             menu_id: route.params.menuId,
-            page_section_master_id: route.params.page_section_id
+            page_section_master_id: route.params.page_section_id,
         });
 
         if (response.data.success) {
             $('#rejectedModal').modal('hide');
-            // Optionally reload or update the UI
             fetchPageContent();
             toastr.success('Paragraph rejected successfully');
         } else {
@@ -213,11 +233,10 @@ const rejected = async () => {
 };
 
 onMounted(() => {
-    // fetchLatestNews()
-    fetchPageContent()
+    fetchPageContent();
 });
-
 </script>
+
 <style scoped>
 @import '../assets/css/style.css';
 </style>

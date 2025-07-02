@@ -7,9 +7,41 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                      <button type="button"
+                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                    @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+
+
+                        </div>
                         <table class="table center-aligned-table mb-0" id="latestNewsTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Title</th>
                                     <th>Added On</th>
                                     <th>AddedBy</th>
@@ -18,7 +50,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(news, index) in latestnews" :key="index">
+                                <tr v-for="(news, index) in filteredLatestNewsData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td>
                                         <a v-if="news.type === 'file'" :href="`/storage/${news.file}`" target="_blank"
                                             class="text-primary">
@@ -125,12 +158,11 @@ const latestnews = ref([]);
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
 const selectedLatestNew = ref({}) // To store the clicked notice
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter} from 'vue-router';
 const route = useRoute();
-// Handle file change
-const handleFileChange = (e) => {
-    file.value = e.target.files[0]
-}
+const router = useRouter();
+const filteredLatestNewsData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const rejectedModal = (news) => {
     selectedLatestNew.value = news;
     rejectedRemarks.value = '';
@@ -151,6 +183,7 @@ const validateInputs = () => {
     if (!showLinkInput.value && !file.value) return false
     return true
 }
+
 
 // Save function
 const saveLatestNews = () => {
@@ -186,21 +219,52 @@ const fetchLatestNews = async () => {
     try {
         const response = await axios.post('/api/get_latest_news', { flag: 4 });
         latestnews.value = response.data;
+        filteredLatestNewsData.value = response.data;
         console.log(response.data);
-
         await nextTick(); // Wait for DOM to update
+        initDataTable()
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+};
 
-        // Destroy and reinitialize DataTable
-        if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
-            $('#latestNewsTable').DataTable().destroy();
-        }
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
         $('#latestNewsTable').DataTable({
             responsive: true,
             pageLength: 10,
         });
-    } catch (error) {
-        console.error('Error fetching data:', error);
+    });
+};
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
+}
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#latestNewsTable')) {
+        $('#latestNewsTable').DataTable().destroy();
     }
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredLatestNewsData.value = [...latestnews.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredLatestNewsData.value = latestnews.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredLatestNewsData.value = latestnews.value.filter(item => item.flag === flag);
+    }
+    await nextTick();
+    initDataTable();
 };
 
 const rejected = async () => {
@@ -219,7 +283,7 @@ const rejected = async () => {
         if (response.data.success) {
             $('#rejectedModal').modal('hide');
             // Optionally reload or update the UI
-           fetchLatestNews();
+            fetchLatestNews();
             toastr.success('Latest News Rejected');
         } else {
             toastr.error('Failed to reject the  Latest News');
@@ -233,7 +297,7 @@ const rejected = async () => {
 
 const approveLatestNews = async (id, index) => {
     try {
-        const response = await axios.post('/approved_latestnews', { id ,menu_id: route.params.menuId, page_section_master_id: route.params.page_section_id});
+        const response = await axios.post('/approved_latestnews', { id, menu_id: route.params.menuId, page_section_master_id: route.params.page_section_id });
         if (response) {
             latestnews.value[index].flag = 'A'; // update UI immediately
             fetchLatestNews();

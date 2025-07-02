@@ -10,6 +10,9 @@
                         <div class="fc-toolbar fc-header-toolbar">
                             <div class="fc-right mb-3">
                                 <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
                                     <button type="button" :class="[
                                         'fc-month-button fc-button fc-state-default fc-corner-left',
                                         activeFlag === 'ALL' ? 'fc-state-active' : ''
@@ -41,6 +44,7 @@
                         <table class="table center-aligned-table mb-0" id="noticaboardTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Title</th>
                                     <th>Added By</th>
                                     <th>Approver</th>
@@ -52,8 +56,8 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(notice, index) in filteredNoticeboardData" :key="index">
-                                    <td>
-                                        <a :href="`/storage/${notice.file}`" target="_blank" class="text-primary">
+                                    <td>{{ index + 1 }}</td>
+                                    <td><a :href="`/storage/${notice.file}`" target="_blank" class="text-primary">
                                             {{ notice.title }}
                                         </a>
                                     </td>
@@ -148,8 +152,9 @@ const toastr = useToastr();
 const categorydata = ref([]); // Store fetched categories
 const noticeboarddata = ref([]);
 const selectedNotice = ref({}) // To store the clicked notice
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
 const filteredNoticeboardData = ref([]);
@@ -162,7 +167,9 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
+}
 
 // Called when clicking reject icon
 const rejectedModal = (notice) => {

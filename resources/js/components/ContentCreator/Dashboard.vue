@@ -44,7 +44,7 @@
 
           <router-link v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
             :to="{ path: '/app/activitylog', query: { id: activity.id } }" class="dropdown-item">
-            {{ activity.remarks }} by {{ activity.user_from_name }}
+            {{ activity.remarks.slice(0,50) }}... by {{ activity.user_from_name }}
             <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </router-link>
 

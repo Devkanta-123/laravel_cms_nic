@@ -18,11 +18,10 @@
     </ul>
     <!-- top bar right -->
     <ul class="nav navbar-nav ms-auto">
-      
       <li class="nav-item dropdown ">
-        <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
-          aria-expanded="false">
-          <i class="fa fa-bell"></i> </a>
+        <a class="nav-link top-nav">
+          <i class="fa fa-bell"></i>
+        </a>
         <div class="dropdown-menu dropdown-menu-right dropdown-big dropdown-notifications">
           <div class="dropdown-header notifications">
             <strong>Notifications</strong>
@@ -31,7 +30,7 @@
           <div class="dropdown-divider"></div>
 
           <a v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index" href="#" class="dropdown-item">
-            {{ activity.remarks }} by {{ activity.user_from_name }}
+            {{ activity.remarks.slice(0, 50) }}... by {{ activity.user_from_name }}
             <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </a>
           <router-link class="dropdown-item" :to="{ path: '/app/activitylog' }">
@@ -39,32 +38,7 @@
           </router-link>
         </div>
       </li>
-      <li class="nav-item dropdown ">
-        <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
-          aria-expanded="true"> <i class=" ti-view-grid"></i> </a>
-        <div class="dropdown-menu dropdown-menu-right dropdown-big">
-          <div class="dropdown-header">
-            <strong>Quick Links</strong>
-          </div>
-          <div class="dropdown-divider"></div>
-          <div class="nav-grid">
-            <a href="#" class="nav-grid-item"><i class="ti-files text-primary"></i>
-              <h5>New Task</h5>
-            </a>
-            <a href="#" class="nav-grid-item"><i class="ti-check-box text-success"></i>
-              <h5>Assign Task</h5>
-            </a>
-          </div>
-          <!-- <div class="nav-grid">
-            <a href="#" class="nav-grid-item"><i class="ti-pencil-alt text-warning"></i>
-              <h5>Add Orders</h5>
-            </a>
-            <a href="#" class="nav-grid-item"><i class="ti-truck text-danger "></i>
-              <h5>New Orders</h5>
-            </a>
-          </div> -->
-        </div>
-      </li>
+
       <li class="nav-item dropdown mr-30">
         <a class="nav-link nav-pill user-avatar" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
           aria-expanded="false">
@@ -302,7 +276,6 @@ const dashboardData = ref({
   latest_news: { approved: 0, pending: 0 },
   notice_board: { approved: 0, pending: 0 }
 })
-
 const activityLogData = ref([]);
 const getActivityLog = async () => {
   try {

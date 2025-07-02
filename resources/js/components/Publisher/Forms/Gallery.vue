@@ -7,9 +7,39 @@
                     <h5 class="card-title pb-0 border-0">Galleries</h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                     <button type="button"
+                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                    @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="galleriesTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Image</th>
                                     <th>Image Title</th>
                                     <th>Added On</th>
@@ -19,7 +49,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(gallery, index) in gallariesData" :key="index">
+                                <tr v-for="(gallery, index) in filteredGalleryData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td @click="openModal(`/storage/${gallery.gallery_image}`)"
                                         style="cursor: pointer;">
                                         <template v-if="!isVideo(gallery.gallery_image)">
@@ -39,8 +70,8 @@
                                         <label v-if="gallery.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
-                                        <label v-else-if="gallery.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                        <label v-else-if="gallery.flag === 'U'" class="badge bg-warning">
+                                            Pending
                                         </label>
                                         <div v-else-if="gallery.flag === 'R'">
                                             <label class="badge bg-danger">
@@ -64,9 +95,9 @@
                                                     :disabled="gallery.flag === 'A'"
                                                     @change="approveGallery(gallery.id, index)">
                                                 <span></span>
-                                                   &nbsp;&nbsp;                                           
+                                                &nbsp;&nbsp;
                                             </label>
-                                             <i class="fas fa-times text-danger"
+                                            <i class="fas fa-times text-danger"
                                                 v-if="gallery.flag !== 'A' && gallery.flag !== 'R'" data-toggle="modal"
                                                 data-target="#rejectedModal" @click="rejectedModal(gallery)"></i>
                                         </div>
@@ -129,7 +160,7 @@
 
                                 </div>
                             </div>
-                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -146,11 +177,12 @@ const toastr = useToastr();
 const gallariesData = ref();
 const showModal = ref(false);
 const modalImage = ref('');
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
-const selectedGallery=ref({});
+const selectedGallery = ref({});
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;
@@ -160,6 +192,9 @@ function isVideo(url) {
     const ext = url.split('.').pop().toLowerCase();
     return ['mp4', 'mov', 'avi', 'webm'].includes(ext);
 }
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
+}
 const closeModal = () => {
     showModal.value = false;
 };
@@ -168,7 +203,8 @@ const rejectedModal = (gallery) => {
     rejectedRemarks.value = '';
     rejectedRemarksError.value = false;
 };
-
+const filteredGalleryData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const rejected = async () => {
     if (!rejectedRemarks.value.trim()) {
         rejectedRemarksError.value = true;
@@ -211,9 +247,8 @@ const getGalleries = async () => {
     try {
         const response = await axios.get('/get_galleries');
         gallariesData.value = response.data;
-
+        filteredGalleryData.value = response.data;
         await nextTick(); // Wait for DOM to update
-
         // Destroy and reinitialize DataTable
         if ($.fn.dataTable.isDataTable('#galleriesTable')) {
             $('#galleriesTable').DataTable().destroy();
@@ -230,8 +265,10 @@ const getGalleries = async () => {
 };
 const approveGallery = async (id, index) => {
     try {
-        const response = await axios.post('/approved_gallery', { id,menu_id: route.params.menuId,
-            page_section_master_id: route.params.page_section_id});
+        const response = await axios.post('/approved_gallery', {
+            id, menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
         if (response) {
             gallariesData.value[index].flag = 'A'; // update UI immediately
             getGalleries();
@@ -241,6 +278,45 @@ const approveGallery = async (id, index) => {
         console.error('Approval failed:', error);
     }
 };
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#galleriesTable')) {
+        $('#galleriesTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredGalleryData.value = [...gallariesData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredGalleryData.value = gallariesData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredGalleryData.value = gallariesData.value.filter(item => item.flag === flag);
+    }
+    await nextTick();
+    initDataTable();
+
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#galleriesTable')) {
+        $('#galleriesTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#galleriesTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
 
 
 

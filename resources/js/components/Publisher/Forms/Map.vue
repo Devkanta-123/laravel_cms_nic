@@ -11,6 +11,15 @@
                     <h5 class="card-title pb-0 border-0">Map </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="MapTable">
                             <thead>
                                 <tr class="text-dark">
@@ -41,8 +50,8 @@
                                         <label v-if="map.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
-                                        <label v-else-if="map.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                        <label v-else-if="map.flag === 'U'" class="badge bg-warning">
+                                            Pending
                                         </label>
                                         <div v-else-if="map.flag === 'R'">
                                             <label class="badge bg-danger">
@@ -67,8 +76,9 @@
 
                                             &nbsp;
                                             <!-- Show icon only if flag is not 'A' -->
-                                            <i class="fas fa-times text-danger" data-toggle="modal" v-if="map.flag !== 'A' && map.flag !== 'R'" 
-                                                data-target="#rejectedModal" @click="rejectedModal(map)"></i>
+                                            <i class="fas fa-times text-danger" data-toggle="modal"
+                                                v-if="map.flag !== 'A' && map.flag !== 'R'" data-target="#rejectedModal"
+                                                @click="rejectedModal(map)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -133,12 +143,16 @@ import axios from 'axios';
 const MapData = ref();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 // Reactive state
 let formData = ref({
     iframe: ""
 });
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
+}
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {

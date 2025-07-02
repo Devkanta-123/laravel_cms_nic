@@ -7,9 +7,39 @@
                     <h5 class="card-title pb-0 border-0">FAQ's</h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                     <button type="button"
+                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                    @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="faqTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>English Question</th>
                                     <th>English Answer</th>
                                     <th>Hindi Question</th>
@@ -23,7 +53,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(faq, index) in faqdata" :key="index">
+                                <tr v-for="(faq, index) in filteredFAQData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td>{{ faq.english_title_question || 'N/A' }}</td>
                                     <td>{{ faq.english_answer || 'N/A' }}</td>
                                     <td>{{ faq.hindi_title_question || 'N/A' }}</td>
@@ -36,8 +67,8 @@
                                         <label v-if="faq.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
-                                        <label v-else-if="faq.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                        <label v-else-if="faq.flag === 'U'" class="badge bg-warning">
+                                            Pending
                                         </label>
                                         <div v-else-if="faq.flag === 'R'">
                                             <label class="badge bg-danger">
@@ -114,7 +145,8 @@ import axios from 'axios';
 import { useToastr } from '../../../toaster.js';
 const faqdata = ref();
 const toastr = useToastr();
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
+const router = useRouter();
 import Swal from 'sweetalert2';
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
@@ -124,13 +156,14 @@ onMounted(() => {
     console.log("Component Mounted");
     getFaq();
 });
-
-
+const filteredFAQData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const getFaq = async () => {
     try {
         const response = await axios.get('/get_faq');
         console.log(response.data);
         faqdata.value = response.data;
+        filteredFAQData.value = response.data;
         await nextTick() // wait until DOM is updated
         if ($.fn.dataTable.isDataTable('#faqTable')) {
             $('#faqTable').DataTable().destroy()
@@ -141,6 +174,10 @@ const getFaq = async () => {
     }
 };
 
+
+const onBack = () => {
+    router.push('/publisher/pages-form/1/Home')
+}
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -199,6 +236,42 @@ const rejected = async () => {
         console.error(error);
         alert('Something went wrong');
     }
+};
+
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#faqTable')) {
+        $('#faqTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredFAQData.value = [...faqdata.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredFAQData.value = faqdata.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredFAQData.value = faqdata.value.filter(item => item.flag === flag);
+    }
+    await nextTick();
+    initDataTable();
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#faqTable')) {
+        $('#faqTable').DataTable().destroy();
+    }
+    nextTick(() => {
+        $('#faqTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
 };
 
 

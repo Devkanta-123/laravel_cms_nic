@@ -35,7 +35,7 @@
                                 </div>
                             </div>
 
-                            
+
 
                             <!-- Cover Image Preview -->
                             <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
@@ -56,7 +56,7 @@
                                     </video>
                                 </div>
                             </div>
-                            
+
 
                             <!-- Dynamic Gallery Items Section -->
                             <div class="mt-4">
@@ -88,18 +88,18 @@
                                 </div>
                                 <button type="button" class="btn btn-primary" @click="addGalleryItem">+ Add Row</button>
                             </div>
-                             <div class="col-4">
-                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
-                                        <option value="" disabled>Select the Publisher</option>
-                                        <option v-for="publisher in publisherData" :key="publisher.id"
-                                            :value="publisher.id">
-                                            {{ publisher.name }}
-                                        </option>
-                                    </select>
-                                </div>
-                            
+                            <div class="col-4">
+                                <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                    <option value="" disabled>Select the Publisher</option>
+                                    <option v-for="publisher in publisherData" :key="publisher.id"
+                                        :value="publisher.id">
+                                        {{ publisher.name }}
+                                    </option>
+                                </select>
+                            </div>
+
                         </div>
 
                         <!-- Save Button -->
@@ -123,9 +123,39 @@
                     <h5 class="card-title pb-0 border-0">All Galleries</h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                        <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                      <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="galleriesTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Image</th>
                                     <th>Image Title</th>
                                     <th>Added On</th>
@@ -135,7 +165,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(gallery, index) in gallariesData" :key="index">
+                                <tr v-for="(gallery, index) in filteredGalleryData" :key="index">
+                                    <td>{{ index + 1 }}</td>
                                     <td @click="openModal(`/storage/${gallery.gallery_image}`)"
                                         style="cursor: pointer;">
                                         <template v-if="!isVideo(gallery.gallery_image)">
@@ -152,7 +183,7 @@
                                     <td>{{ gallery.gallery_name }}</td>
                                     <td>{{ formatDate(gallery.created_at) }}</td>
                                     <td>
-                                         <label v-if="gallery.flag === 'A'" class="badge bg-success">
+                                        <label v-if="gallery.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
                                         <label v-else-if="gallery.flag === 'U'" class="badge bg-primary">
@@ -171,7 +202,8 @@
                                         </label>
                                     </td>
                                     <td>{{ gallery.addedby }}</td>
-                                    <td><i class="fas fa-trash-alt text-danger"  v-if="gallery.flag !== 'A'" @click="deleteGallery(gallery.id)"></i></td>
+                                    <td><i class="fas fa-trash-alt text-danger" v-if="gallery.flag !== 'A'"
+                                            @click="deleteGallery(gallery.id)"></i></td>
                                 </tr>
                             </tbody>
 
@@ -221,9 +253,10 @@ const galleryName = ref('');
 const galleryItems = ref([
     { name: '', file: null, url: '' }
 ]);
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 const route = useRoute();
+const router = useRouter();
 const selectedPublisher = ref("");
 const publisherData = ref([]); // Store publisher categories
 const galleryDescription = ref('');
@@ -237,6 +270,11 @@ const openModal = (imageSrc) => {
 const closeModal = () => {
     showModal.value = false;
 };
+const onBack = () => {
+    router.push('/contentcreator/pages-form/1/Home')
+}
+const filteredGalleryData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const MAX_FILE_SIZE_MB = 20;
 function isVideo(url) {
     if (!url) return false;
@@ -318,7 +356,7 @@ const uploadImages = () => {
         toastr.error('Please enter gallery name and description');
         return;
     }
-       if (!selectedPublisher.value) {
+    if (!selectedPublisher.value) {
         toastr.error("Please select a publisher.");
         return false;
     }
@@ -417,6 +455,7 @@ const getGalleries = async () => {
 
         // Step 2: Update reactive data (this triggers Vue DOM update)
         gallariesData.value = response.data;
+        filteredGalleryData.value = response.data;    
 
         // Step 3: Wait for DOM update (Vue rendering)
         await nextTick();
@@ -432,6 +471,46 @@ const getGalleries = async () => {
         console.error('Error fetching data:', error);
     }
 };
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#galleriesTable')) {
+        $('#galleriesTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredGalleryData.value = [...gallariesData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredGalleryData.value = gallariesData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredGalleryData.value = gallariesData.value.filter(item => item.flag === flag);
+    }
+    await nextTick();
+    initDataTable();
+
+};
+
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#galleriesTable')) {
+        $('#galleriesTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#galleriesTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
 
 const deleteGallery = async (id) => {
     const result = await Swal.fire({
@@ -452,7 +531,7 @@ const deleteGallery = async (id) => {
             });
             await nextTick();
             await getGalleries(); // Refresh table
-             Swal.fire('Deleted!', response.data.message || 'Gallery and it items  has been removed.', 'success');
+            Swal.fire('Deleted!', response.data.message || 'Gallery and it items  has been removed.', 'success');
         } catch (error) {
             console.error('Error deleting card:', error);
             Swal.fire('Error!', 'An error occurred during deletion.', 'error');
