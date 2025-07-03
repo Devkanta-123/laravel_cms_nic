@@ -10,27 +10,9 @@
       <a class="navbar-brand brand-logo" href="index.html"><img src="images/logo-dark.png" alt=""></a>
       <a class="navbar-brand brand-logo-mini" href="index.html"><img src="images/logo-icon-dark.png" alt=""></a>
     </div>
-    <!-- Top bar left -->
-    <ul class="nav navbar-nav me-auto">
-      <li class="nav-item">
-        <a id="button-toggle" class="button-toggle-nav inline-block ml-20 pull-left" href="javascript:void(0);"><i
-            class="zmdi zmdi-menu ti-align-right"></i></a>
-      </li>
-      <li class="nav-item">
-        <div class="search">
-          <a class="search-btn not_click" href="javascript:void(0);"></a>
-          <div class="search-box not-click">
-            <input type="text" class="not-click form-control" placeholder="Search" value="" name="search">
-            <button class="search-button" type="submit"> <i class="fa fa-search not-click"></i></button>
-          </div>
-        </div>
-      </li>
-    </ul>
     <!-- top bar right -->
     <ul class="nav navbar-nav ms-auto">
-      <li class="nav-item fullscreen">
-        <a id="btnFullscreen" href="#" class="nav-link"><i class="ti-fullscreen"></i></a>
-      </li>
+
       <li class="nav-item dropdown ">
         <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
           aria-expanded="false">
@@ -41,66 +23,17 @@
             <span class="badge bg-warning">{{ activityLogData.length }}</span>
           </div>
           <div class="dropdown-divider"></div>
-
           <router-link v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
             :to="{ path: '/app/activitylog', query: { id: activity.id } }" class="dropdown-item">
-            {{ activity.remarks.slice(0,50) }}... by {{ activity.user_from_name }}
+            {{ activity.remarks.slice(0, 50) }}... by {{ activity.user_from_name }}
             <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </router-link>
-
           <router-link class="dropdown-item" :to="{ path: '/app/activitylog' }">
             View All
           </router-link>
+        </div>
+      </li>
 
-        </div>
-      </li>
-      <li class="nav-item dropdown ">
-        <a class="nav-link top-nav" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
-          aria-expanded="true"> <i class=" ti-view-grid"></i> </a>
-        <div class="dropdown-menu dropdown-menu-right dropdown-big">
-          <div class="dropdown-header">
-            <strong>Quick Links</strong>
-          </div>
-          <div class="dropdown-divider"></div>
-          <div class="nav-grid">
-            <a href="#" class="nav-grid-item"><i class="ti-files text-primary"></i>
-              <h5>New Task</h5>
-            </a>
-            <a href="#" class="nav-grid-item"><i class="ti-check-box text-success"></i>
-              <h5>Assign Task</h5>
-            </a>
-          </div>
-          <div class="nav-grid">
-            <a href="#" class="nav-grid-item"><i class="ti-pencil-alt text-warning"></i>
-              <h5>Add Orders</h5>
-            </a>
-            <a href="#" class="nav-grid-item"><i class="ti-truck text-danger "></i>
-              <h5>New Orders</h5>
-            </a>
-          </div>
-        </div>
-      </li>
-      <li class="nav-item dropdown mr-30">
-        <a class="nav-link nav-pill user-avatar" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true"
-          aria-expanded="false">
-          <img src="images/profile-avatar.jpg" alt="avatar">
-        </a>
-        <div class="dropdown-menu dropdown-menu-right">
-          <div class="dropdown-header">
-            <h5 class="mt-0 mb-0">{{ name }}</h5>
-            <span>{{ email }}</span>
-          </div>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#"><i class="text-secondary ti-reload"></i>Activity</a>
-          <a class="dropdown-item" href="#"><i class="text-success ti-email"></i>Messages</a>
-          <a class="dropdown-item" href="#"><i class="text-warning ti-user"></i>Profile</a>
-          <a class="dropdown-item" href="#"><i class="text-dark ti-layers-alt"></i>Projects <span
-              class="badge bg-info">6</span> </a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#"><i class="text-info ti-settings"></i>Settings</a>
-          <a class="dropdown-item" href="#"><i class="text-danger ti-unlock"></i>Logout</a>
-        </div>
-      </li>
     </ul>
   </nav>
 
@@ -270,56 +203,90 @@
         </div>
       </div>
     </div> -->
+
+  </div>
+  <!-- Bootstrap Modal Structure -->
+  <div class="modal fade show d-block" v-if="showModal" id="notificationModal" tabindex="-1" role="dialog"
+    aria-labelledby="notificationModalLabel" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title" id="notificationModalLabel">Notifications</h5>
+          <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
+        </div>
+        <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
+          <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
+            class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2">
+            <div class="w-100 text-truncate">
+              {{ activity.remarks.slice(0, 50) }}...
+              <span class="fw-bold" @click.prevent="goToActivityLog(activity.id)">by {{ activity.user_from_name
+                }}</span>
+            </div>
+            <small class="text-muted align-self-end mt-1">
+              {{ formatRelativeTime(activity.created_at) }}
+            </small>
+          </div>
+          <router-link class="dropdown-item text-center fw-semibold" :to="{ path: '/app/activitylog' }">
+            View All
+          </router-link>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { reactive, toRefs, onMounted, ref } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const role = ref(null)
 const email = ref('')
 const name = ref('')
-// Duration in milliseconds (e.g., 15 minutes)
-const CACHE_DURATION = 15 * 60 * 1000
-
+const showModal = ref(false)
 const fetchUser = async () => {
-
   const cachedUser = JSON.parse(sessionStorage.getItem('login_user_cache_data'))
   const now = new Date().getTime()
 
-  // If data exists and is still valid
+  const CACHE_DURATION = 15 * 60 * 1000 // 15 minutes
+  // Use cached user if valid
   if (cachedUser && now - cachedUser.timestamp < CACHE_DURATION) {
-    console.log('Loaded from cache')
+    console.log('Loaded user from cache')
     role.value = cachedUser.role
     email.value = cachedUser.email
     name.value = cachedUser.name
-    return
+    return cachedUser.email
   }
 
   try {
     const response = await axios.get('/api/get_user')
     const user = response.data[0]
 
-    console.log('Fetched from API', user)
-
-    // Update refs
     role.value = user.role_id
     email.value = user.email
     name.value = user.name
 
-    // Store in sessionStorage with timestamp
-    sessionStorage.setItem(
-      'user_data',
-      JSON.stringify({
-        role: user.role_id,
-        email: user.email,
-        name: user.name,
-        timestamp: now,
-      })
-    )
+    const userData = {
+      role: user.role_id,
+      email: user.email,
+      name: user.name,
+      timestamp: now
+    }
+
+    sessionStorage.setItem('user_data', JSON.stringify(userData))
+    sessionStorage.setItem('login_user_cache_data', JSON.stringify(userData))
+
+    return user.email
   } catch (error) {
     console.error('Failed to fetch user:', error)
+    return null
   }
+}
+function goToActivityLog(id) {
+  router.push({ path: '/app/activitylog', query: { id } })
 }
 const formatRelativeTime = (dateStr) => {
   const now = new Date();
@@ -343,9 +310,21 @@ const getActivityLog = async () => {
     toastr.error('Failed to fetch activity log.');
   }
 }
-onMounted(() => {
+function closeModal() {
+  showModal.value = false
+}
+onMounted(async () => {
   fetchUser();
   getActivityLog();
+  const userEmail = await fetchUser() // wait for fetchUser to complete
+  if (!userEmail) return
+  const shownKey = `notificationShown_${userEmail}`
+  const hasShown = sessionStorage.getItem(shownKey)
+
+  if (!hasShown) {
+    showModal.value = true
+    sessionStorage.setItem(shownKey, 'true')
+  }
 });
 
 </script>

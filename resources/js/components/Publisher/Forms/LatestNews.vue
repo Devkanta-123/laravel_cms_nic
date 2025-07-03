@@ -4,7 +4,7 @@
         <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
                 <div class="card-body">
-                    <h5 class="card-title pb-0 border-0">List </h5>
+                    <h5 class="card-title pb-0 border-0">Latest News</h5>
                     <!-- action group -->
                     <div class="table-responsive">
                         <div class="fc-toolbar fc-header-toolbar">
@@ -35,8 +35,6 @@
 
                                 </div>
                             </div>
-
-
                         </div>
                         <table class="table center-aligned-table mb-0" id="latestNewsTable">
                             <thead>

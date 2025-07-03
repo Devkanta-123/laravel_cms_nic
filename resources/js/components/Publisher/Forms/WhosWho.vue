@@ -7,6 +7,35 @@
                     <h5 class="card-title pb-0 border-0">WhosWho</h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                         <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="whoswhoTable">
                             <thead>
                                 <tr class="text-dark">
@@ -23,7 +52,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(whoswho, index) in WhosWhoData" :key="index">
+                                <tr v-for="(whoswho, index) in filteredWhosWhoData" :key="index">
                                     <td>
                                         <img class="direct-chat-img" :src="whoswho.profile_image
                                             ? `/storage/${whoswho.profile_image.replace('public/', '')}`
@@ -138,6 +167,8 @@ import userlogo from '@/assets/images/user.jpg'
 const selectedWhosWho = ref({})
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
+const filteredWhosWhoData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-IN', {
@@ -161,6 +192,7 @@ const getWhosWho = async () => {
     try {
         const response = await axios.get('/get_whoswho');
         WhosWhoData.value = response.data;
+        filteredWhosWhoData.value = response.data;
         await nextTick(); // Wait for DOM to update
         if ($.fn.dataTable.isDataTable('#whoswhoTable')) {
             $('#whoswhoTable').DataTable().destroy();
@@ -227,6 +259,49 @@ const rejected = async () => {
     }
 };
 
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#whoswhoTable')) {
+        $('#whoswhoTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#whoswhoTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#whoswhoTable')) {
+        $('#whoswhoTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredWhosWhoData.value = [...WhosWhoData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredWhosWhoData.value = WhosWhoData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredWhosWhoData.value = WhosWhoData.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+};
+
+
+const onBack = () => {
+    router.push('/contentcreator/pages')
+}
 
 
 onMounted(() => {

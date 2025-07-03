@@ -101,6 +101,35 @@
                     <h5 class="card-title pb-0 border-0">List </h5>
                     <!-- action group -->
                     <div class="table-responsive">
+                             <div class="fc-toolbar fc-header-toolbar">
+                            <div class="fc-right mb-3">
+                                <div class="fc-button-group">
+                                    <button type="button"
+                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
+                                        @click="onBack()"> Back</button>
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('ALL')">All</button>
+
+                                    <button type="button" :class="[
+                                        'fc-month-button fc-button fc-state-default fc-corner-left',
+                                        activeFlag === 'A' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('A')">Approved</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaWeek-button fc-button fc-state-default',
+                                        activeFlag === 'R' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('R')">Rejected</button>
+
+                                    <button type="button" :class="[
+                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+
+                                </div>
+                            </div>
+                        </div>
                         <table class="table center-aligned-table mb-0" id="whoswhoTable">
                             <thead>
                                 <tr class="text-dark">
@@ -117,7 +146,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(whoswho, index) in WhosWhoData" :key="index">
+                                <tr v-for="(whoswho, index) in filteredWhosWhoData" :key="index">
                                     <td>
                                         <img class="direct-chat-img" :src="whoswho.profile_image
                                             ? `/storage/${whoswho.profile_image.replace('public/', '')}`
@@ -136,8 +165,8 @@
                                         <label v-if="whoswho.flag === 'A'" class="badge bg-success">
                                             Approved
                                         </label>
-                                        <label v-else-if="whoswho.flag === 'U'" class="badge bg-primary">
-                                            Updated
+                                        <label v-else-if="whoswho.flag === 'U'" class="badge bg-warning">
+                                            Pending
                                         </label>
                                         <div v-else-if="whoswho.flag === 'R'">
                                             <label class="badge bg-danger">
@@ -153,9 +182,9 @@
                                         </label>
                                     </td>
                                     <td>
-                                        <i class="fas fa-trash-alt text-danger"
-                                            @click="deleteWhosWho(whoswho.id)"></i>&nbsp;
-                                        <i class="fas fa-pencil-alt text-success" data-toggle="modal"
+                                        <!-- <i class="fas fa-trash-alt text-danger"
+                                            @click="deleteWhosWho(whoswho.id)"></i>&nbsp; -->
+                                        <i class="fas fa-pencil-alt text-success" data-toggle="modal" v-if="whoswho.flag==='N' || whoswho.flag==='U'"
                                             data-target="#editModal" @click="editModal(whoswho)">
                                         </i>
                                     </td>
@@ -289,9 +318,12 @@ const selectedWhosWho = ref({});
 const editImagePreview = ref(null);
 const selectedEditFile = ref(null);
 const editFileInput = ref(null);
+const filteredWhosWhoData = ref([]);
+const activeFlag = ref('ALL'); // Default to 'ALL'
 import userlogo from '@/assets/images/user.jpg'
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 import Swal from 'sweetalert2';
 // Initialize required references
 const imagePreview = ref(null); // Stores preview URL
@@ -357,16 +389,12 @@ const getWhosWho = async () => {
     try {
         const response = await axios.get('/get_whoswho');
         WhosWhoData.value = response.data;
+        filteredWhosWhoData.value = response.data;
         await nextTick(); // Wait for DOM to update
         if ($.fn.dataTable.isDataTable('#whoswhoTable')) {
             $('#whoswhoTable').DataTable().destroy();
         }
-        $('#whoswhoTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-        });
-        console.log(response.data);
-
+       initDataTable();
     }
     catch (error) {
         console.error('Error fetching whoswhodata', error.response);
@@ -374,6 +402,50 @@ const getWhosWho = async () => {
     }
 }
 
+
+const initDataTable = () => {
+    // Destroy if already exists
+    if ($.fn.dataTable.isDataTable('#whoswhoTable')) {
+        $('#whoswhoTable').DataTable().destroy();
+    }
+
+    nextTick(() => {
+        $('#whoswhoTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+};
+
+// Filter handler
+const filterByFlag = async (flag) => {
+    activeFlag.value = flag; // Update active button state
+
+    // Destroy existing DataTable
+    if ($.fn.dataTable.isDataTable('#whoswhoTable')) {
+        $('#whoswhoTable').DataTable().destroy();
+    }
+
+    // Filter logic
+    if (flag === 'ALL') {
+        filteredWhosWhoData.value = [...WhosWhoData.value];
+    } else if (flag === 'PENDING') {
+        // Both 'U' (Unapproved) and 'N' (New) are considered pending
+        filteredWhosWhoData.value = WhosWhoData.value.filter(
+            item => item.flag === 'U' || item.flag === 'N'
+        );
+    } else {
+        filteredWhosWhoData.value = WhosWhoData.value.filter(item => item.flag === flag);
+    }
+
+    await nextTick();
+    initDataTable();
+};
+
+
+const onBack = () => {
+    router.push('/contentcreator/pages')
+}
 // Watch for changes in selectedLevel and update dynamic fields accordingly
 watch(selectedLevel, (newVal) => {
     console.log("Selected level changed to:", newVal); // Check if the watch is triggered

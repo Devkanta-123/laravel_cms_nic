@@ -1,5 +1,4 @@
 <template>
-    <Loader v-if="isLoading" />
     <br>
     <div class="content ml-4 mr-4">
         <div class="container-fluid ">
