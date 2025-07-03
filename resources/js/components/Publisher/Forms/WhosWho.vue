@@ -39,6 +39,7 @@
                         <table class="table center-aligned-table mb-0" id="whoswhoTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.NO</th>
                                     <th>Profile</th>
                                     <th>Name</th>
                                     <th>Level</th>
@@ -53,6 +54,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(whoswho, index) in filteredWhosWhoData" :key="index">
+                                    <td>{{ index + 1}}</td>
                                     <td>
                                         <img class="direct-chat-img" :src="whoswho.profile_image
                                             ? `/storage/${whoswho.profile_image.replace('public/', '')}`
@@ -163,6 +165,9 @@ const toastr = useToastr();
 const showModal = ref(false);
 const modalImage = ref('');
 const WhosWhoData = ref();
+import { useRoute,useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 import userlogo from '@/assets/images/user.jpg'
 const selectedWhosWho = ref({})
 const rejectedRemarks = ref('');
@@ -177,8 +182,7 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
-import { useRoute } from 'vue-router';
-const route = useRoute();
+
 const openModal = (imageSrc) => {
     modalImage.value = imageSrc;
     showModal.value = true;

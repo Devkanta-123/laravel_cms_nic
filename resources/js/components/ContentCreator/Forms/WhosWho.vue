@@ -1,7 +1,6 @@
 <template>
 
     <br>
-
     <div>
         <div class="col-xl-12 mb-30">
             <!-- First Card (Carousel) -->
@@ -133,6 +132,7 @@
                         <table class="table center-aligned-table mb-0" id="whoswhoTable">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>SL.No</th>
                                     <th>Profile</th>
                                     <th>Name</th>
                                     <th>Level</th>
@@ -147,6 +147,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(whoswho, index) in filteredWhosWhoData" :key="index">
+                                    <td>{{ index + 1}}</td>
                                     <td>
                                         <img class="direct-chat-img" :src="whoswho.profile_image
                                             ? `/storage/${whoswho.profile_image.replace('public/', '')}`
