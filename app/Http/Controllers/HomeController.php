@@ -1592,24 +1592,41 @@ class HomeController extends Controller
     {
         $flag = $request->query('flag');
         $user = Auth::user();
+
+        // Case 1: Return only approved base64 strings from website cache
         if ($flag === 'A') {
-            // Return all raw base64 data strings for carousel type with flag 'A'
             $caches = WebsiteCache::where('type', 'carousel')
                 ->where('flag', 'A')
-                ->pluck('data');  // Just pluck the base64 data column
+                ->pluck('data'); // Return just base64 strings
 
-            // Return as array of base64 strings directly
             return response()->json($caches);
-        } elseif ($user && in_array($user->role_id, [3, 4])) {
-            // Return carousel records for specific roles
-            return DB::table('carousel as cs')
-                ->join('users as u', 'cs.user_id', '=', 'u.id')
-                ->join('users as u2', 'cs.publisher_id', '=', 'u2.id')
-                ->select('cs.image', 'cs.flag', 'cs.created_at as addedon', 'u.name as addedby', 'cs.id', 'cs.rejected_remarks', 'u2.name as approver')
-                ->get();
         }
 
-        // Default: return all Carousel records
+        // Case 2: Role-based filtered carousel records
+        if ($user && in_array($user->role_id, [3, 4])) {
+            $query = DB::table('carousel as cs')
+                ->leftJoin('users as u', 'cs.user_id', '=', 'u.id')
+                ->leftJoin('users as u2', 'cs.publisher_id', '=', 'u2.id')
+                ->select(
+                    'cs.image',
+                    'cs.flag',
+                    'cs.created_at as addedon',
+                    'u.name as addedby',
+                    'cs.id',
+                    'cs.rejected_remarks',
+                    'u2.name as approver'
+                );
+
+            if ($user->role_id == 3) {
+                $query->where('cs.user_id', $user->id);
+            } elseif ($user->role_id == 4) {
+                $query->where('cs.publisher_id', $user->id);
+            }
+
+            return $query->get();
+        }
+
+        // Case 3: Default (admin or other roles) - return all carousel records
         return Carousel::all();
     }
 
@@ -1902,7 +1919,6 @@ class HomeController extends Controller
         ]);
 
         return response()->json(['message' => 'Logo deleted successfully']);
-
     }
 
 
@@ -2269,138 +2285,102 @@ class HomeController extends Controller
 
     public function getDashboardData()
     {
-        // Cards count
-        $cards = DB::table('cards')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
+        $user = Auth::user();
+        $userId = $user->id;
+        $filterByUser = $user->role_id == 3; // true only for role_id 3
 
-        // Latest News count
-        $latestNews = DB::table('latest_news')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
+        // Helper to build the query
+        $buildQuery = function ($table, $includeUpdated = false) use ($filterByUser, $userId) {
+            $query = DB::table($table);
+            if ($filterByUser) {
+                $query->where('user_id', $userId);
+            }
 
-        // Notice Board count
-        $noticeBoard = DB::table('notifications')
-            ->selectRaw("
+            $select = "
             COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
             COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount,
-            COUNT(CASE WHEN flag = 'U' THEN 1 END) AS updatedcount
-        ")
-            ->first();
+            COUNT(CASE WHEN flag = 'R' THEN 1 END) AS rejectedcount
+        ";
 
-        //Carousel Count
-        $carousel = DB::table('carousel')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
+            if ($includeUpdated) {
+                $select .= ",
+                COUNT(CASE WHEN flag = 'U' THEN 1 END) AS updatedcount
+            ";
+            }
 
-        //Gallery Count
-        $gallery = DB::table('gallery')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
+            return $query->selectRaw($select)->first();
+        };
 
-        //Paragraph Count
+        // Run queries
+        $cards = $buildQuery('cards');
+        $latestNews = $buildQuery('latest_news');
+        $noticeBoard = $buildQuery('notifications', true);
+        $carousel = $buildQuery('carousel');
+        $gallery = $buildQuery('gallery');
+        $paragraph = $buildQuery('paragraph', true);
+        $whos_who = $buildQuery('whos_who');
+        $logo = $buildQuery('logo');
+        $map = $buildQuery('map');
+        $faqs = $buildQuery('faqs');
 
-        $paragraph = DB::table('paragraph')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount,
-            COUNT(CASE WHEN flag = 'U' THEN 1 END) AS updatedcount
-
-        ")
-            ->first();
-
-
-        //Whos Who Count
-        $whos_who = DB::table('whos_who')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
-
-        //Logo Count
-
-        $logo = DB::table('logo')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
-        //Map Count
-        $map = DB::table('map')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
-        //FAQs Count
-        $faqs = DB::table('faqs')
-            ->selectRaw("
-            COUNT(CASE WHEN flag = 'N' THEN 1 END) AS pendingcount,
-            COUNT(CASE WHEN flag = 'A' THEN 1 END) AS approvedcount
-        ")
-            ->first();
-
-
-
+        // Return result
         return response()->json([
             'cards' => [
                 'pending' => $cards->pendingcount,
                 'approved' => $cards->approvedcount,
+                'rejected' => $cards->rejectedcount,
             ],
             'latest_news' => [
                 'pending' => $latestNews->pendingcount,
                 'approved' => $latestNews->approvedcount,
+                'rejected' => $latestNews->rejectedcount,
             ],
             'notice_board' => [
                 'pending' => $noticeBoard->pendingcount,
                 'approved' => $noticeBoard->approvedcount,
                 'updated' => $noticeBoard->updatedcount,
+                'rejected' => $noticeBoard->rejectedcount,
             ],
             'carousel' => [
                 'pending' => $carousel->pendingcount,
                 'approved' => $carousel->approvedcount,
+                'rejected' => $carousel->rejectedcount,
             ],
             'gallery' => [
                 'pending' => $gallery->pendingcount,
                 'approved' => $gallery->approvedcount,
+                'rejected' => $gallery->rejectedcount,
             ],
             'paragraph' => [
                 'pending' => $paragraph->pendingcount,
                 'approved' => $paragraph->approvedcount,
                 'updated' => $paragraph->updatedcount,
+                'rejected' => $paragraph->rejectedcount,
             ],
             'whos_who' => [
                 'pending' => $whos_who->pendingcount,
                 'approved' => $whos_who->approvedcount,
+                'rejected' => $whos_who->rejectedcount,
             ],
             'logo' => [
                 'pending' => $logo->pendingcount,
                 'approved' => $logo->approvedcount,
+                'rejected' => $logo->rejectedcount,
             ],
             'map' => [
                 'pending' => $map->pendingcount,
                 'approved' => $map->approvedcount,
+                'rejected' => $map->rejectedcount,
             ],
             'faqs' => [
                 'pending' => $faqs->pendingcount,
                 'approved' => $faqs->approvedcount,
-            ]
-
+                'rejected' => $faqs->rejectedcount,
+            ],
         ]);
     }
+
+
 
     public function getArchiveData()
     {

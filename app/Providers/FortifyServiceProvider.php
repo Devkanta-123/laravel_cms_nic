@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Models\AuditLog;
 use Illuminate\Support\Facades\Hash;
 use Mews\Captcha\Facades\Captcha;
 class FortifyServiceProvider extends ServiceProvider
@@ -29,26 +30,83 @@ class FortifyServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
+    // public function boot(): void
+    // {
+    //     Fortify::loginView(function(){
+    //         return view('auth.login');
+    //     });
+    //     Fortify::createUsersUsing(CreateNewUser::class);
+    //     Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
+    //     Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
+    //     Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+    //     RateLimiter::for('login', function (Request $request) {
+    //         $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+
+    //         return Limit::perMinute(5)->by($throttleKey);
+    //     });
+
+    //     RateLimiter::for('two-factor', function (Request $request) {
+    //         return Limit::perMinute(5)->by($request->session()->get('login.id'));
+    //     });
+    // }
     public function boot(): void
     {
-        Fortify::loginView(function(){
+        Fortify::loginView(function () {
             return view('auth.login');
         });
+
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
-
+            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
             return Limit::perMinute(5)->by($throttleKey);
         });
 
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
+
+        // ✅ Login Audit Logging with proper login return
+        Fortify::authenticateUsing(function (Request $request) {
+            static $alreadyLogged = false;
+
+            $user = User::where('email', $request->email)->first();
+            $ip = $request->ip();
+            $agent = $request->userAgent();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                if (!$alreadyLogged) {
+                    AuditLog::create([
+                        'user_id' => $user->id,
+                        'action' => 'login',
+                        'status' => 'success',
+                        'ip_address' => $ip,
+                        'user_agent' => $agent,
+                    ]);
+                    $alreadyLogged = true;
+                }
+                return $user; // ✅ Must return to let Fortify continue
+            }
+
+            if (!$alreadyLogged) {
+                AuditLog::create([
+                    'user_id' => optional($user)->id,
+                    'action' => 'login',
+                    'status' => 'failed',
+                    'ip_address' => $ip,
+                    'user_agent' => $agent,
+                ]);
+                $alreadyLogged = true;
+            }
+
+            return null;
+        });
     }
+
 
     // public function boot(): void
     // {

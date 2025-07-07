@@ -6,6 +6,7 @@ import Website from './pages/website/Website.vue';
 import Pages from './pages/pages/Pages.vue';
 import Archive from './pages/pages/Archive.vue';
 import ActivityLog from './pages/pages/ActivityLog.vue';
+import AuditLog from './pages/pages/Audit.vue';
 import PagesForm from './pages/pages/PagesForm.vue';
 import Login from './pages/auth/Login.vue';
 import MainComponent from './pages/main_component/MainComponent.vue';
@@ -111,7 +112,7 @@ export default [
 
     },
     {
-        path: '/admin/archive',
+        path: '/app/archive',
         name: 'admin.archive',
         component: Archive,
 
@@ -119,11 +120,16 @@ export default [
 
     {
         path: '/app/activitylog',
-        name: 'admin.activitylog',
+        name: 'app.activitylog',
         component: ActivityLog,
 
     },
+    {
+        path: '/app/auditlogs',
+        name: 'admin.auditlogs',
+        component: AuditLog,
 
+    },
 
 
     //Content Creator  

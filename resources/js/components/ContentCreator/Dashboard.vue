@@ -216,10 +216,10 @@
         </div>
         <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
           <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
-            class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2">
+            class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2" @click.prevent="goToActivityLog(activity.id)">
             <div class="w-100 text-truncate">
               {{ activity.remarks.slice(0, 50) }}...
-              <span class="fw-bold" @click.prevent="goToActivityLog(activity.id)">by {{ activity.user_from_name
+              <span class="fw-bold" >by {{ activity.user_from_name
                 }}</span>
             </div>
             <small class="text-muted align-self-end mt-1">
@@ -301,7 +301,6 @@ const formatRelativeTime = (dateStr) => {
 const activityLogData = ref([]);
 const getActivityLog = async () => {
   try {
-    debugger;
     const response = await axios.get('/api/get_archivitylog');
     if (response.data && response.data.status === 'success') {
       activityLogData.value = response.data.data;

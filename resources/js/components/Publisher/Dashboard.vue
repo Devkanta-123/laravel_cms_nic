@@ -30,7 +30,7 @@
           <div class="dropdown-divider"></div>
           <router-link v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
             :to="{ path: '/app/activitylog', query: { id: activity.id } }" class="dropdown-item">
-            {{ activity.remarks.slice(0,50) }}... by {{ activity.user_from_name }}
+            {{ activity.remarks.slice(0, 50) }}... by {{ activity.user_from_name }}
             <small class="float-end text-muted time">{{ formatRelativeTime(activity.created_at) }}</small>
           </router-link>
           <router-link class="dropdown-item" :to="{ path: '/app/activitylog' }">
@@ -44,7 +44,8 @@
     <div class="row">
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Carousel', page_section_id: 1 })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Carousel', page_section_id: 1 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
@@ -55,6 +56,7 @@
                 <p class="card-text text-dark">Carousel</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.carousel.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.carousel.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.carousel.rejected }}</p>
               </div>
             </div>
           </div>
@@ -62,7 +64,8 @@
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Cards', page_section_id: 4 })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Cards', page_section_id: 4 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-danger">
@@ -73,6 +76,7 @@
                 <p class="card-text text-dark">Cards</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.cards.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.cards.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.cards.rejected }}</p>
               </div>
             </div>
           </div>
@@ -80,7 +84,8 @@
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Latest News', page_section_id: 2 })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Latest News', page_section_id: 2 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-warning">
@@ -91,6 +96,8 @@
                 <p class="card-text text-dark">Latest News</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.latest_news.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.latest_news.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.latest_news.rejected }}</p>
+
               </div>
             </div>
           </div>
@@ -112,7 +119,7 @@
                 <p class="card-text text-dark">Notice Board</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.notice_board.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.notice_board.approved }}</p>
-                <p class="card-text text-dark">Updated : {{ dashboardData.notice_board.updated }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.notice_board.rejected }}</p>
               </div>
             </div>
           </div>
@@ -120,7 +127,8 @@
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Gallery',page_section_id: 5 })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Gallery', page_section_id: 5 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
@@ -131,6 +139,7 @@
                 <p class="card-text text-dark">Gallery</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.gallery.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.gallery.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.gallery.rejected }}</p>
               </div>
             </div>
           </div>
@@ -138,7 +147,8 @@
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Paragraph' ,page_section_id: 7})">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Paragraph', page_section_id: 7 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
@@ -149,7 +159,7 @@
                 <p class="card-text text-dark">Paragraph</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.paragraph.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.paragraph.approved }}</p>
-                <p class="card-text text-dark">Updated : {{ dashboardData.paragraph.updated }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.paragraph.rejected}}</p>
               </div>
             </div>
           </div>
@@ -160,7 +170,8 @@
     <div class="row">
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'WhosWho',page_section_id: 9 })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'WhosWho', page_section_id: 9 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-danger">
@@ -171,6 +182,7 @@
                 <p class="card-text text-dark">Whos Who</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.whos_who.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.whos_who.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.whos_who.rejected }}</p>
               </div>
             </div>
           </div>
@@ -178,7 +190,8 @@
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Logo',page_section_id: 11 })">
+          <div class="card-body"
+            @click="openPageSection({ menu_id: 1, page_section_name: 'Logo', page_section_id: 11 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-warning">
@@ -190,6 +203,7 @@
                 <p class="card-text text-dark">Logo</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.logo.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.logo.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.logo.rejected }}</p>
               </div>
             </div>
           </div>
@@ -197,7 +211,7 @@
       </div>
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Map',page_section_id: 10 })">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Map', page_section_id: 10 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
@@ -208,6 +222,7 @@
                 <p class="card-text text-dark">Map</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.map.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.map.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.map.rejected }}</p>
               </div>
             </div>
           </div>
@@ -218,7 +233,7 @@
     <div class="row">
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'FAQ',page_section_id: 8})">
+          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'FAQ', page_section_id: 8 })">
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
@@ -229,6 +244,7 @@
                 <p class="card-text text-dark">FAQs</p>
                 <p class="card-text text-dark">Pending : {{ dashboardData.faqs.pending }}</p>
                 <p class="card-text text-dark">Approved : {{ dashboardData.faqs.approved }}</p>
+                <p class="card-text text-dark">Rejected : {{ dashboardData.faqs.rejected }}</p>
               </div>
             </div>
           </div>
@@ -279,10 +295,11 @@
           </div>
           <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
             <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
-              class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2">
+              class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2"
+              @click.prevent="goToActivityLog(activity.id)">
               <div class="w-100 text-truncate">
                 {{ activity.remarks.slice(0, 50) }}...
-                <span class="fw-bold" @click.prevent="goToActivityLog(activity.id)">by {{ activity.user_from_name }}</span>
+                <span class="fw-bold">by {{ activity.user_from_name }}</span>
               </div>
               <small class="text-muted align-self-end mt-1">
                 {{ formatRelativeTime(activity.created_at) }}
@@ -395,8 +412,10 @@ const fetchUser = async () => {
 
 const getDashboardData = async () => {
   try {
+    debugger;
     const response = await axios.get('/getDashboardData')
     dashboardData.value = response.data
+    console.log(response.data);
   } catch (error) {
     console.error('Failed to fetch DashboardData:', error)
   }
@@ -409,7 +428,7 @@ function goToActivityLog(id) {
   router.push({ path: '/app/activitylog', query: { id } })
 }
 onMounted(async () => {
-   getDashboardData()
+  getDashboardData()
   getActivityLog()
   const userEmail = await fetchUser() // wait for fetchUser to complete
   if (!userEmail) return

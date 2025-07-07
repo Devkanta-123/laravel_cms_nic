@@ -36,110 +36,137 @@
         </div>
       </div>
       <br>
-      <div id="sticky-header" class="tg-header__area tg-header__area-five">
-        <div class="row">
-          <div class="col-12">
-            <div class="tgmenu__wrap"></div>
+     <div id="sticky-header" class="tg-header__area tg-header__area-five">
+  <div class="container custom-container">
+    <div class="row">
+      <div class="col-12">
+        <div class="tgmenu__wrap">
+          <nav class="tgmenu__nav">
+            <!-- Logo -->
+            <!-- <div class="logo">
+              <router-link to="/page/1">
+                <img :src="getLogoUrl()" alt="Logo" class="logo-img" />
+              </router-link>
+            </div> -->
 
-            <!-- Mobile Menu -->
-            <nav class="tgmenu__nav">
-              <!-- Navbar Toggle Button for Mobile -->
-
-              <!-- Hide logo when mobile view is active -->
-              <!-- <div v-if="!isMobileView">
-                <a href="page/1">
-                  <img :src="getLogoUrl()" alt="Logo" class="logo-img" style="margin-left: auto;" /> </a>
-              </div> -->
-
-              <!-- Menu Wrapper -->
-              <div
-                :class="['collapse', 'navbar-collapse', 'tgmenu__navbar-wrap', 'tgmenu__main-menu', { show: isMobileMenuOpen, 'mobile-menu-left': isMobileView }]">
-                <ul class="navigation">
-                  <li v-for="item in sortedMenuItems" :key="item.id" :class="{
+            <!-- Menu Wrapper -->
+            <div
+              :class="['collapse', 'navbar-collapse', 'tgmenu__navbar-wrap', 'tgmenu__main-menu', { show: isMobileMenuOpen, 'mobile-menu-left': isMobileView }]"
+              id="navbarSupportedContent"
+            >
+              <ul class="navigation">
+                <li
+                  v-for="item in sortedMenuItems"
+                  :key="item.id"
+                  :class="{
                     'menu-item': !item.submenus || !item.submenus.length,
-                    'menu-item-has-children': item.submenus && item.submenus.length,
-                  }">
-                    <!-- <router-link :to="{ name: 'Page', params: { id: item.id } }"
-                      :style="{ fontSize: menuFontSize + 'px' }">
-                      {{ getMenuItemName(item) }}
-                    </router-link> -->
-                    <router-link :to="{ name: 'Page', params: { id: item.id }, query: { page_name: item.menu_name } }"
-                      :style="{ fontSize: menuFontSize + 'px' }">
-                      {{ getMenuItemName(item) }}
-                    </router-link>
+                    'menu-item-has-children': item.submenus && item.submenus.length
+                  }"
+                >
+                  <router-link
+                    :to="{ name: 'Page', params: { id: item.id }, query: { page_name: item.menu_name } }"
+                    :style="{ fontSize: menuFontSize + 'px' }"
+                  >
+                    {{ getMenuItemName(item) }}
+                  </router-link>
 
+                  <!-- Submenu -->
+                  <ul v-if="item.submenus && item.submenus.length" class="sub-menu">
+                    <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id">
+                      <router-link
+                        :to="{ name: 'Page', params: { id: subItem.id }, query: { page_name: subItem.menu_name } }"
+                        :style="{ fontSize: menuFontSize + 'px' }"
+                      >
+                        {{ getMenuItemName(subItem) }}
+                      </router-link>
 
-                    <!-- Submenus -->
-                    <ul v-if="item.submenus && item.submenus.length" class="sub-menu">
-                      <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id">
-                        <router-link
-                          :to="{ name: 'Page', params: { id: subItem.id }, query: { page_name: subItem.menu_name } }"
-                          :style="{ fontSize: menuFontSize + 'px' }">
-                          {{ getMenuItemName(subItem) }}
-                        </router-link>
+                      <!-- Sub-submenu -->
+                      <ul v-if="subItem.submenus && subItem.submenus.length" class="sub-menu">
+                        <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id">
+                          <router-link
+                            :to="{ name: 'Page', params: { id: subSubItem.id }, query: { page_name: subSubItem.menu_name } }"
+                            :style="{ fontSize: menuFontSize + 'px' }"
+                          >
+                            {{ getMenuItemName(subSubItem) }}
+                          </router-link>
 
-                        <!-- Nested Submenus -->
-                        <ul v-if="subItem.submenus && subItem.submenus.length" class="sub-menu">
-                          <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id">
-                            <router-link
-                              :to="{ name: 'Page', params: { id: subSubItem.id }, query: { page_name: subItem.menu_name } }"
-                              :style="{ fontSize: menuFontSize + 'px' }">
-                              {{ getMenuItemName(subSubItem) }}
-                            </router-link>
+                          <!-- Sub-sub-submenu -->
+                          <ul
+                            v-if="subSubItem.submenus && subSubItem.submenus.length"
+                            class="sub-menu"
+                          >
+                            <li
+                              v-for="subSubSubItem in sortedSubmenus(subSubItem)"
+                              :key="subSubSubItem.id"
+                            >
+                              <router-link
+                                :to="{
+                                  name: 'Page',
+                                  params: { id: subSubSubItem.id },
+                                  query: { page_name: subSubSubItem.menu_name }
+                                }"
+                                :style="{ fontSize: menuFontSize + 'px' }"
+                              >
+                                {{ getMenuItemName(subSubSubItem) }}
+                              </router-link>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
 
-                            <!-- Further Nested Submenus -->
-                            <ul v-if="subSubItem.submenus && subSubItem.submenus.length" class="sub-menu">
-                              <li v-for="subSubSubItem in sortedSubmenus(subSubItem)" :key="subSubSubItem.id">
-                                <router-link
-                                  :to="{ name: 'Page', params: { id: subSubSubItem.id }, query: { page_name: subItem.menu_name } }"
-                                  :style="{ fontSize: menuFontSize + 'px' }">
-                                  {{ getMenuItemName(subSubSubItem) }}
-                                </router-link>
-                              </li>
-                            </ul>
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
-              <div class="mobile-nav-toggler" @click="toggleMobileMenu">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none">
-                  <path
-                    d="M0 2C0 0.895431 0.895431 0 2 0C3.10457 0 4 0.895431 4 2C4 3.10457 3.10457 4 2 4C0.895431 4 0 3.10457 0 2Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M0 9C0 7.89543 0.895431 7 2 7C3.10457 7 4 7.89543 4 9C4 10.1046 3.10457 11 2 11C0.895431 11 0 10.1046 0 9Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M0 16C0 14.8954 0.895431 14 2 14C3.10457 14 4 14.8954 4 16C4 17.1046 3.10457 18 2 18C0.895431 18 0 17.1046 0 16Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M7 2C7 0.895431 7.89543 0 9 0C10.1046 0 11 0.895431 11 2C11 3.10457 10.1046 4 9 4C7.89543 4 7 3.10457 7 2Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M7 9C7 7.89543 7.89543 7 9 7C10.1046 7 11 7.89543 11 9C11 10.1046 10.1046 11 9 11C7.89543 11 7 10.1046 7 9Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M7 16C7 14.8954 7.89543 14 9 14C10.1046 14 11 14.8954 11 16C11 17.1046 10.1046 18 9 18C7.89543 18 7 17.1046 7 16Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M14 2C14 0.895431 14.8954 0 16 0C17.1046 0 18 0.895431 18 2C18 3.10457 17.1046 4 16 4C14.8954 4 14 3.10457 14 2Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9Z"
-                    fill="currentcolor" />
-                  <path
-                    d="M14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16Z"
-                    fill="currentcolor" />
-                </svg>
-              </div>
-            </nav>
-            <!-- End Mobile Menu -->
-          </div>
+            <!-- Mobile Nav Toggler -->
+            <div class="mobile-nav-toggler" @click="toggleMobileMenu">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none">
+                <path
+                  d="M0 2C0 0.895431 0.895431 0 2 0C3.10457 0 4 0.895431 4 2C4 3.10457 3.10457 4 2 4C0.895431 4 0 3.10457 0 2Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M0 9C0 7.89543 0.895431 7 2 7C3.10457 7 4 7.89543 4 9C4 10.1046 3.10457 11 2 11C0.895431 11 0 10.1046 0 9Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M0 16C0 14.8954 0.895431 14 2 14C3.10457 14 4 14.8954 4 16C4 17.1046 3.10457 18 2 18C0.895431 18 0 17.1046 0 16Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M7 2C7 0.895431 7.89543 0 9 0C10.1046 0 11 0.895431 11 2C11 3.10457 10.1046 4 9 4C7.89543 4 7 3.10457 7 2Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M7 9C7 7.89543 7.89543 7 9 7C10.1046 7 11 7.89543 11 9C11 10.1046 10.1046 11 9 11C7.89543 11 7 10.1046 7 9Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M7 16C7 14.8954 7.89543 14 9 14C10.1046 14 11 14.8954 11 16C11 17.1046 10.1046 18 9 18C7.89543 18 7 17.1046 7 16Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M14 2C14 0.895431 14.8954 0 16 0C17.1046 0 18 0.895431 18 2C18 3.10457 17.1046 4 16 4C14.8954 4 14 3.10457 14 2Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9Z"
+                  fill="currentcolor"
+                />
+                <path
+                  d="M14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16Z"
+                  fill="currentcolor"
+                />
+              </svg>
+            </div>
+          </nav>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
     </header>
     <br>
     <br>

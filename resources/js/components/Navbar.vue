@@ -176,7 +176,7 @@
                         </router-link>
                     </li>
                     <li class="nav-item" v-if="role == 2">
-                        <router-link to="/admin/archive" active-class="active" class="nav-link">
+                        <router-link to="/app/archive" active-class="active" class="nav-link">
                             <i class="nav-icon fas fa-folder-open"></i>
                             <p>Archive Data</p>
                         </router-link>
@@ -242,10 +242,17 @@
                             </p>
                         </router-link>
                     </li>
+                     <li class="nav-item"v-if="[1, 2].includes(role)"   >
+                        <router-link to="/app/auditlogs" active-class="active" class="nav-link">
+                            <i class="nav-iconfas fas fa-user-shield"></i>
+                            <p>
+                                Audit Log   
+                            </p>
+                        </router-link>
+                    </li>
                     <li class="nav-item">
                         <router-link to="/app/activitylog" active-class="active" class="nav-link">
                             <i class="nav-icon fas fa-history"></i>
-
                             <p>
                                 Activity Log
                             </p>

@@ -15,6 +15,7 @@ use App\Http\Controllers\FAQController;
 use App\Http\Controllers\LevelMasterController;
 use App\Http\Controllers\WhosWhoController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\AuditController;
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -142,6 +143,7 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/updateNotice', [NotificationsController::class, 'updateNotice']); //added by Dev on 12/06/2025
     Route::post('/api/rejectedNotification', [NotificationsController::class, 'rejectedNotification']); //added by Dev on 16/06/2025
     Route::get('/api/get_archivitylog', [NotificationsController::class, 'getActivityLog']); //added by Dev on 16/06/2025
+    Route::get('/api/get_auditlogs', [AuditController::class, 'getAuditLogs']); //added by Dev on 07/07/2025
     Route::post('/api/deleteNotification', [NotificationsController::class, 'deleteNotification']); //added by Dev on 12/06/2025
     Route::post('/api/submitFAQData', [FAQController::class, 'submitFAQData']); //added by Dev on 03/03/2025
     Route::post('/api/update_faq/{id}', [FAQController::class, 'updateFAQ']); //added by Dev on 03/03/2025
