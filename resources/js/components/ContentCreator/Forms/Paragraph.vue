@@ -8,7 +8,7 @@
                     <div class="content clearfix">
 
                         <ckeditor v-model="editorContent" :config="editorConfig"></ckeditor>
-                        
+
                         <div class="col-md-4">
                             <label class="form-label">Publisher<span class="text-danger">*</span></label>
                             <select class="form-control" v-model="selectedPublisher" required>
@@ -33,8 +33,7 @@
                                         Save Changes
                                     </button>
 
-                                      <button type="button" class="btn btn-primary" role="menuitem"
-                                        @click="onBack()">
+                                    <button type="button" class="btn btn-primary" role="menuitem" @click="onBack()">
                                         Back
                                     </button>
                                 </li>
@@ -50,6 +49,7 @@
 <script setup>
 import { ref, defineProps, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 import { component as ckeditor } from '@mayasabha/ckeditor4-vue3';
 import { useToastr } from '../../../toaster.js';
 const hasExistingContent = ref(false); // To toggle buttons
@@ -61,7 +61,7 @@ const editorConfig = ref({}); // CKEditor configuration
 const errors = ref({ file: null });
 const paragraphData = ref();
 const fileInput = ref(null); // Reference for the file input
-import { useRoute,useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 const route = useRoute();
 const router = useRouter();
@@ -74,11 +74,19 @@ const paraID = ref(null);
 //old method
 const saveContent = async () => {
     try {
+        // Sanitize content from CKEditor
+        const sanitizedContent = DOMPurify.sanitize(editorContent.value, {
+            ALLOWED_TAGS: ['p', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li', 'br', 'img', 'iframe'],
+            ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen']
+        });
+
+
         const response = await axios.post('/api/save-content', {
-            content: editorContent.value,
+            content: sanitizedContent,
             menu: props.menuId,
             publisher_id: selectedPublisher.value,
         });
+
         toastr.success('Page created successfully');
     } catch (error) {
         console.error('Error saving content:', error);
@@ -116,43 +124,16 @@ const updateContent = async () => {
             menu_id: route.params.menuId,
             page_section_id: route.params.page_section_id,
             publisher_id: selectedPublisher.value,
-            id : paraID.value
+            id: paraID.value
         });
-        if(response)
-        toastr.success('Page updated successfully');
+        if (response)
+            toastr.success('Page updated successfully');
     } catch (error) {
         console.error('Error updating content:', error);
     }
 };
 
-//   const saveContent = async () => {
-//     try {
-//       
-//       const formData = new FormData();
-//       formData.append("content", editorContent.value);
-//       formData.append("menu", props.menuId);
-//       formData.append("page_section", props.menuName);
 
-//       const files = fileInput.value?.files;
-//       if (files && files.length > 0) {
-//         for (let i = 0; i < files.length; i++) {
-//           formData.append("files[]", files[i]);
-//         }
-//       }
-
-//       await axios.post("/api/save-content", formData, {
-//         headers: { "Content-Type": "multipart/form-data" },
-//       });
-
-//       toastr.success("Page created successfully");
-//       //window.location.href = "/admin/pages";
-//     } catch (error) {
-//       console.error("Error saving content:", error);
-//       if (error.response?.data?.errors) {
-//         Object.assign(errors, error.response.data.errors); // Populate errors
-//       }
-//     }
-//   };
 const fetchPageContent = async () => {
     try {
         const response = await axios.get(`/get_page_content/${props.menuId}`);

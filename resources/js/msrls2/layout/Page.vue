@@ -6,13 +6,14 @@
             <div class="row">
                 <div class="col-lg-6">
                     <div class="breadcrumb__content">
-                        <h6 class="title text-white">{{ pageName }}</h6>
+                        <h6 class="title text-white">{{ decrypt(route.query.page_name || '') }}</h6>
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item active text-white">
                                     <router-link to="/page/1">Home</router-link>
                                 </li>
-                                <li class="breadcrumb-item active text-white" aria-current="page">{{ pageName }}</li>
+                                <li class="breadcrumb-item active text-white" aria-current="page">{{
+                                    decrypt(route.query.page_name || '') }}</li>
                             </ol>
                         </nav>
                     </div>
@@ -75,11 +76,9 @@
 
 <script setup>
 import { ref, onMounted, inject, watch, provide, shallowRef } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 import axios from 'axios';
-
 import bgImage from '../assets/images/msrls.jpg';
-
 import Archive from '../components/Achive.vue';
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
@@ -87,18 +86,17 @@ import FAQS from '../components/FAQ.vue';
 import WhosWho from '../components/WhosWho.vue';
 import ContactUs from '../components/ContactUs.vue';
 import LeftMenu from './LeftMenu.vue';
-
+import { decrypt } from '../assets/js/cryptoUtil.js'
 const route = useRoute();
-
+const router = useRouter();
+const isHome = ref(false);
 const props = defineProps({
     language: String,
     id: String,
     pageName: String
 });
-
 const language = inject("language");
 provide("language", language);
-
 const pageContent = ref('');
 const gallerydata = ref([]);
 const noticeboarddata = ref([]);
@@ -115,11 +113,23 @@ const pageName = ref('');
 
 const fetchPageContent = async () => {
     try {
+        debugger;
         isLoading.value = true;
-        const cardId = route.query.cardid;
-        pageName.value = route.query.page_name || props.pageName || '';
 
-        // Reset data
+        const decryptedId = decrypt(route.params.id || '');
+        const pageName = decrypt(route.query.page_name || '');
+
+        isHome.value = (pageName === 'Home');
+
+        if (isHome.value) {
+            // Redirect to default Home page with unencrypted route
+            router.push('/page/1');
+            return;
+        }
+
+        const cardId = route.query.cardid;
+
+        // Reset state
         pageContent.value = '';
         gallerydata.value = [];
         noticeboarddata.value = [];
@@ -138,47 +148,47 @@ const fetchPageContent = async () => {
             return;
         }
 
-        switch (pageName.value) {
-            case "Gallery":
+        switch (pageName) {
+            case 'Gallery':
                 [response] = await Promise.all([
                     axios.get('/get_galleries', { params: { flag: 'A' } })
                 ]);
                 gallerydata.value = response.data || [];
                 break;
 
-            case "Notice Board":
+            case 'Notice Board':
                 [response] = await Promise.all([
                     axios.get('/get_notifications', { params: { flag: 'A' } })
                 ]);
                 noticeboarddata.value = response.data || [];
                 break;
 
-            case "Newsletter":
-            case "Recruitments":
-            case "Tenders":
-            case "Notification":
+            case 'Newsletter':
+            case 'Recruitments':
+            case 'Tenders':
+            case 'Notification':
                 [response] = await Promise.all([
-                    axios.get(`/get_notificationbycategory/${pageName.value}`)
+                    axios.get(`/get_notificationbycategory/${pageName}`)
                 ]);
                 notificationdata.value = response.data || [];
                 break;
 
-            case "FAQ":
+            case 'FAQ':
                 activeComponent.value = FAQS;
                 break;
 
-            case "WhosWho":
+            case 'WhosWho':
                 showWhosWho.value = true;
                 break;
 
-            case "Contact Us":
+            case 'Contact Us':
                 contactus.value = true;
-                response = await axios.get(`/get_page_content/${route.params.id}`);
+                response = await axios.get(`/get_page_content/${decryptedId}`);
                 pageContent.value = response.data?.content || '';
                 contactUsData.value = response.data || null;
                 break;
 
-            case "Archive Data":
+            case 'Archive Data':
                 [response] = await Promise.all([
                     axios.get('/get_archivedata')
                 ]);
@@ -186,18 +196,19 @@ const fetchPageContent = async () => {
                 break;
 
             default:
-                response = await axios.get(`/get_page_content/${route.params.id}`);
+                response = await axios.get(`/get_page_content/${decryptedId}`);
                 pageContent.value = response.data?.content || '';
         }
 
     } catch (error) {
-        console.error("Error fetching page content:", error);
+        console.error('Error fetching page content:', error);
         pageContent.value = '';
     } finally {
         isLoading.value = false;
     }
 };
 
+// Watch for route param or language change
 watch(
     () => [route.params.id, route.query.page_name, props.language],
     () => {
@@ -206,7 +217,6 @@ watch(
     },
     { immediate: true }
 );
-
 onMounted(() => {
     fetchPageContent();
 });

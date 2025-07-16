@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Helpers\HtmlSanitizer;
 
 class HomeController extends Controller
 {
@@ -245,10 +246,12 @@ class HomeController extends Controller
     // }
     public function saveContent(Request $request)
     {
-        // Validate request
+        // Validate the request
         $validatedData = $request->validate([
             'content' => 'nullable|string',
-            'menu_id' => 'required'
+            'menu_id' => 'required|integer',
+            'page_section_id' => 'required|integer',
+            'publisher_id' => 'nullable|integer'
         ]);
 
         $user = Auth::user();
@@ -256,25 +259,29 @@ class HomeController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        // Determine flag based on role_id
-        if ($user->role_id == 2) {
-            $flag = 'A'; // Admin save
-        } elseif ($user->role_id == 3) {
-            $flag = 'N'; // New content by creator
-        } else {
+        // Determine the flag based on role
+        $flag = match ($user->role_id) {
+            2 => 'A', // Admin
+            3 => 'N', // Creator
+            default => null,
+        };
+
+        if (!$flag) {
             return response()->json(['message' => 'Invalid role'], 403);
         }
 
-        $content = $request->content ?? '';
+        // Sanitize the content using helper
+        $content = HtmlSanitizer::sanitize($request->content ?? '');
         $publisher = User::find($request->publisher_id);
         $isUpdate = false;
-        $paragraph = null;
+
+        // Update case
         if ($request->has('id')) {
-            // Update logic
             $paragraph = Paragraph::find($request->id);
             if (!$paragraph) {
                 return response()->json(['message' => 'Paragraph not found'], 404);
             }
+
             $paragraph->description = $content;
             $paragraph->flag = $flag;
             $paragraph->user_id = $user->id;
@@ -282,7 +289,7 @@ class HomeController extends Controller
             $paragraph->publisher_id = $request->publisher_id ?? null;
             $paragraph->save();
             $isUpdate = true;
-            // App tracking log (Update)
+
             AppTrack::create([
                 'application_id' => $paragraph->application_id,
                 'menu_id' => $request->menu_id,
@@ -290,14 +297,15 @@ class HomeController extends Controller
                 'user_from' => $user->id,
                 'user_from_name' => $user->name,
                 'user_to' => $request->publisher_id,
-                'user_to_name' => $publisher ? $publisher->name : null,
+                'user_to_name' => $publisher?->name,
                 'remarks' => 'Paragraph updated: ' . Str::limit($content, 15, '...'),
                 'flag' => 'U',
                 'action' => 'Updated'
             ]);
         } else {
-            // Create logic
+            // Create case
             $applicationId = 'PARA' . now()->format('YmdHis');
+
             $paragraph = Paragraph::create([
                 'menu_id' => $request->menu_id,
                 'page_section_id' => $request->page_section_id,
@@ -305,7 +313,7 @@ class HomeController extends Controller
                 'description' => $content,
                 'hindi_description' => '',
                 'khasi_description' => '',
-                'status' => "1",
+                'status' => '1',
                 'flag' => $flag,
                 'user_id' => $user->id,
                 'role_id' => $user->role_id,
@@ -313,7 +321,6 @@ class HomeController extends Controller
                 'publisher_id' => $request->publisher_id ?? null
             ]);
 
-            // App tracking log (Create)
             AppTrack::create([
                 'application_id' => $applicationId,
                 'menu_id' => $request->menu_id,
@@ -321,7 +328,7 @@ class HomeController extends Controller
                 'user_from' => $user->id,
                 'user_from_name' => $user->name,
                 'user_to' => $request->publisher_id,
-                'user_to_name' => $publisher ? $publisher->name : null,
+                'user_to_name' => $publisher?->name,
                 'remarks' => 'Paragraph submitted: ' . Str::limit($content, 15, '...'),
                 'flag' => $flag,
                 'action' => 'Add',

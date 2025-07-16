@@ -42,55 +42,51 @@
 
             <!-- Mobile Menu -->
             <nav class="tgmenu__nav">
-              <!-- Navbar Toggle Button for Mobile -->
-
-              <!-- Hide logo when mobile view is active -->
-              <!-- <div v-if="!isMobileView">
-                <a href="page/1">
-                  <img :src="getLogoUrl()" alt="Logo" class="logo-img" style="margin-left: auto;" /> </a>
-              </div> -->
-
-              <!-- Menu Wrapper -->
               <div :class="['collapse', 'navbar-collapse', 'tgmenu__navbar-wrap', 'tgmenu__main-menu']">
                 <ul class="navigation">
                   <li v-for="item in sortedMenuItems" :key="item.id" :class="{
                     'menu-item': !item.submenus || !item.submenus.length,
                     'menu-item-has-children': item.submenus && item.submenus.length,
                   }">
-                    <!-- <router-link :to="{ name: 'Page', params: { id: item.id } }"
-                      :style="{ fontSize: menuFontSize + 'px' }">
-                      {{ getMenuItemName(item) }}
-                    </router-link> -->
-                    <router-link :to="{ name: 'Page', params: { id: item.id }, query: { page_name: item.menu_name } }"
-                      :style="{ fontSize: menuFontSize + 'px' }">
+                    <!-- Main Menu Item -->
+                    <router-link :to="{
+                      name: 'Page',
+                      params: { id: encrypt(item.id ?? 1) },
+                      query: { page_name: encrypt(item.menu_name ?? '') }
+                    }" :style="{ fontSize: menuFontSize + 'px' }">
                       {{ getMenuItemName(item) }}
                     </router-link>
-
 
                     <!-- Submenus -->
                     <ul v-if="item.submenus && item.submenus.length" class="sub-menu">
                       <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id">
-                        <router-link
-                          :to="{ name: 'Page', params: { id: subItem.id }, query: { page_name: subItem.menu_name } }"
-                          :style="{ fontSize: menuFontSize + 'px' }">
+                        <router-link :to="{
+                          name: 'Page',
+                          params: { id: encrypt(subItem.id ?? 1) },
+                          query: { page_name: encrypt(subItem.menu_name ?? '') }
+                        }" :style="{ fontSize: menuFontSize + 'px' }">
                           {{ getMenuItemName(subItem) }}
                         </router-link>
 
                         <!-- Nested Submenus -->
                         <ul v-if="subItem.submenus && subItem.submenus.length" class="sub-menu">
                           <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id">
-                            <router-link
-                              :to="{ name: 'Page', params: { id: subSubItem.id }, query: { page_name: subItem.menu_name } }"
-                              :style="{ fontSize: menuFontSize + 'px' }">
+                            <router-link :to="{
+                              name: 'Page',
+                              params: { id: encrypt(subSubItem.id ?? 1) },
+                              query: { page_name: encrypt(subSubItem.menu_name ?? '') }
+                            }" :style="{ fontSize: menuFontSize + 'px' }">
                               {{ getMenuItemName(subSubItem) }}
                             </router-link>
 
                             <!-- Further Nested Submenus -->
                             <ul v-if="subSubItem.submenus && subSubItem.submenus.length" class="sub-menu">
                               <li v-for="subSubSubItem in sortedSubmenus(subSubItem)" :key="subSubSubItem.id">
-                                <router-link
-                                  :to="{ name: 'Page', params: { id: subSubSubItem.id }, query: { page_name: subItem.menu_name } }"
-                                  :style="{ fontSize: menuFontSize + 'px' }">
+                                <router-link :to="{
+                                  name: 'Page',
+                                  params: { id: encrypt(subSubSubItem.id ?? 1) },
+                                  query: { page_name: encrypt(subSubSubItem.menu_name ?? '') }
+                                }" :style="{ fontSize: menuFontSize + 'px' }">
                                   {{ getMenuItemName(subSubSubItem) }}
                                 </router-link>
                               </li>
@@ -133,60 +129,49 @@
                     fill="currentcolor" />
                 </svg>
               </div>
+            </nav>
+            <br>
+            <div class="mobile-menu-container-wrapper">
+              <!-- Main Menu Section -->
+              <div v-show="isMobileMenuOpen" class="mobile-menu-wrapper">
+                <ul class="mobile-menu">
+                  <li v-for="item in sortedMenuItems" :key="item.id" class="mobile-menu-item">
+                    <div class="menu-label">
+                      <router-link class="menu-link" :to="{
+                        name: 'Page',
+                        params: { id: encrypt(item.id ?? 1) }, // 🔒 Encrypted ID
+                        query: { page_name: encrypt(item.menu_name ?? '') } // 🔒 Encrypted name
+                      }">
+                        {{ getMenuItemName(item) }}
+                      </router-link>
+                      <button v-if="item.submenus?.length" @click="toggleSubmenu(item)" class="submenu-toggle">
+                        {{ openSubmenus.includes(item.id) ? '-' : '+' }}
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
 
-           <div v-show="isMobileMenuOpen" class="mobile-menu-container">
-    <ul class="mobile-menu">
-      <li v-for="item in sortedMenuItems" :key="item.id" class="mobile-menu-item">
-        <div class="menu-label">
-          <router-link class="menu-link" :to="{
-            name: 'Page',
-            params: { id: item.id },
-            query: { page_name: item.menu_name },
-          }">
-            {{ getMenuItemName(item) }}
-          </router-link>
-          <button v-if="item.submenus?.length" @click="toggleSubmenu(item.id)" class="submenu-toggle">
-            {{ openSubmenus.includes(item.id) ? '-' : '+' }}
-          </button>
-        </div>
-
-        <!-- Level 1 Submenu -->
-        <ul v-if="item.submenus?.length && openSubmenus.includes(item.id)" class="submenu-mobile">
-          <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id" class="mobile-submenu-item">
-            <div class="menu-label">
-              <router-link class="menu-link" :to="{
-                name: 'Page',
-                params: { id: subItem.id },
-                query: { page_name: subItem.menu_name },
-              }">
-                {{ getMenuItemName(subItem) }}
-              </router-link>
-              <button v-if="subItem.submenus?.length" @click="toggleSubmenu(subItem.id)" class="submenu-toggle">
-                {{ openSubmenus.includes(subItem.id) ? '-' : '+' }}
-              </button>
+              <!-- Submenu Section Outside Wrapper -->
+              <div v-if="activeSubmenuItem?.submenus?.length" class="submenu-container">
+                <ul class="submenu-mobile">
+                  <li v-for="subItem in sortedSubmenus(activeSubmenuItem)" :key="subItem.id"
+                    class="mobile-submenu-item">
+                    <router-link class="menu-link" :to="{
+                      name: 'Page',
+                      params: { id: encrypt(subItem.id ?? 1) }, // 🔒 Encrypted ID
+                      query: { page_name: encrypt(subItem.menu_name ?? '') } // 🔒 Encrypted name
+                    }">
+                      {{ getMenuItemName(subItem) }}
+                    </router-link>
+                  </li>
+                </ul>
+              </div>
             </div>
 
-            <!-- Level 2 Submenu -->
-            <ul v-if="subItem.submenus?.length && openSubmenus.includes(subItem.id)" class="submenu-mobile nested">
-              <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id" class="mobile-submenu-item">
-                <router-link class="menu-link" :to="{
-                  name: 'Page',
-                  params: { id: subSubItem.id },
-                  query: { page_name: subSubItem.menu_name },
-                }">
-                  {{ getMenuItemName(subSubItem) }}
-                </router-link>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div>
 
-              <div class="tgmobile__menu-backdrop"></div>
-            </nav>
             <!-- End Mobile Menu -->
+
           </div>
         </div>
       </div>
@@ -466,6 +451,7 @@ import Accessibility from '../settings/Accessibility.vue';
 import Page from './Page.vue';
 import { useRoute } from "vue-router";
 import '../assets/css/bootstrap.min.css';
+import { encrypt } from '../assets/js/cryptoUtil.js'
 import '../assets/css/animate.min.css';
 import '../assets/css/magnific-popup.css';
 import '../assets/css/fontawesome-all.min.css';
@@ -490,7 +476,7 @@ const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
 const openSubmenus = ref([]) // ✅ Correct initialization as an empty array
-
+const encryptParam = (val) => encrypt(val.toString());
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
@@ -504,12 +490,20 @@ const initializeMenuItems = (items) => {
   }))
 }
 
-const toggleSubmenu = (id) => {
-  const index = openSubmenus.value.indexOf(id)
-  if (index > -1) openSubmenus.value.splice(index, 1)
-  else openSubmenus.value.push(id)
+const toggleSubmenu = (item) => {
+  const index = openSubmenus.value.indexOf(item.id)
+  if (index > -1) {
+    openSubmenus.value.splice(index, 1)
+  } else {
+    openSubmenus.value = [item.id] // Only one submenu open at a time
+  }
 }
 
+// Computed to find the current active submenu item
+const activeSubmenuItem = computed(() => {
+  const id = openSubmenus.value[0]
+  return sortedMenuItems.value.find(item => item.id === id)
+})
 const sortedMenuItems = computed(() => {
   return menuItems.value.slice().sort((a, b) => a.order - b.order);
 });
@@ -700,8 +694,6 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateWindowWidth);
 });
 
-// Computed property to check if it's a mobile view
-const isMobileView = computed(() => windowWidth.value <= 991);
 
 onMounted(async () => {
   try {
@@ -766,161 +758,6 @@ ul::after {
 }
 
 
-
-.mobile-menu-container {
-  padding: 1rem;
-  background-color: #ffffff !important; /* Ensure white, override grey */
-  width: 100%;
-  overflow-y: auto;
-}
-
-.mobile-menu,
-.submenu {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.mobile-menu-item,
-.mobile-submenu-item {
-  border-bottom: 1px solid #e0e0e0;
-  padding: 0.75rem 0;
-}
-
-.menu-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.menu-link {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0c0c55;
-  text-decoration: none;
-  flex: 1;
-}
-
-.submenu-toggle {
-  background-color: transparent;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-.submenu {
-  padding-left: 1.5rem;
-  transition: all 0.3s ease-in-out;
-}
-
-.submenu li {
-  padding: 0.5rem 0;
-}
-
-.font-size-controls {
-  list-style: none;
-  display: flex;
-  gap: 1px;
-  padding: 0;
-  margin-bottom: 15px;
-}
-
-.font-size-controls li a {
-  text-decoration: none;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.submenu-item {
-  padding: 0.4rem 0;
-}
-
-.submenu-link {
-  color: #333;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-
-
-
-
-/* Main menu and submenus are vertical stacks */
-.mobile-menu,
-.submenu-mobile {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Indent nested submenus */
-.submenu-mobile.nested {
-  padding-left: 1.5rem;
-}
-
-/* Menu item container */
-.mobile-menu-item,
-.mobile-submenu-item {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Row for label + toggle */
-.menu-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-/* Link style */
-.menu-link {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0c0c55;
-  text-decoration: none;
-  flex: 1;
-}
-
-/* Button for +/- toggle */
-.submenu-toggle {
-  background-color: transparent;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-/* Responsive handling */
-@media (max-width: 768px) {
-  .mobile-menu-container {
-    padding: 0.5rem;
-  }
-
-  .menu-link {
-    font-size: 15px;
-  }
-
-  .submenu-toggle {
-    width: 26px;
-    height: 26px;
-    font-size: 14px;
-  }
-}
 /* Show submenu when hovering over parent */
 .menu-item-has-children:hover>.sub-menu {
   display: block;
@@ -1089,5 +926,102 @@ ul::after {
 .btn::before,
 .btn::after {
   content: none !important;
+}
+
+.mobile-menu-container-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.mobile-menu-wrapper {
+  padding: 1rem;
+  background-color: #ffffff !important;
+  width: 60%;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  z-index: 1;
+}
+
+.submenu-container {
+  width: 40%;
+  background: #f9f9f9;
+  padding: 1rem;
+  z-index: 2;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.mobile-menu,
+.submenu-mobile {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.mobile-menu-item,
+.mobile-submenu-item {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.menu-link {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0c0c55;
+  text-decoration: none;
+  flex: 1;
+}
+
+.submenu-toggle {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mobile-menu-container-wrapper {
+    flex-direction: column;
+  }
+
+  .mobile-menu-wrapper,
+  .submenu-container {
+    width: 100%;
+  }
+
+  .submenu-container {
+    margin-top: 0.5rem;
+    border-left: none;
+    background: #f1f1f1;
+  }
+
+  .submenu-toggle {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+
+  .menu-link {
+    font-size: 15px;
+  }
 }
 </style>
