@@ -25,7 +25,6 @@
                       {{ lang.language_name }}
                     </option>
                   </select>
-
                 </li>
                 <li class="header-btn">
                   <Accessibility></Accessibility>
@@ -36,242 +35,162 @@
         </div>
       </div>
       <br>
-      <div id="sticky-header" class="tg-header__area">
-        <div class="container custom-container">
-          <div class="row">
-            <div class="col-12">
-              <div class="tgmenu__wrap">
-                <nav class="tgmenu__nav">
-                  <div class="logo">
-                    <a href="index.html"><img src="assets/img/logo/logo.png" alt="Logo" /></a>
-                  </div>
-                  <div class="tgmenu__navbar-wrap tgmenu__main-menu d-none d-lg-flex">
-                    <ul class="navigation">
-                      <li class="active menu-item-has-children">
-                        <a href="#">Home</a>
-                        <ul class="sub-menu">
-                          <li class="active"><a href="index.html">01. Business</a></li>
-                          <li><a href="index-2">02. Finance</a></li>
-                          <li><a href="index-3">03. Consulting</a></li>
-                          <li><a href="index-4">04. Insurance</a></li>
-                          <li><a href="index-5">05. Digital Agency</a></li>
-                          <li><a href="index-6">06. Finance Solutions</a></li>
-                          <li><a href="index-7">07. Accounting Services</a></li>
-                          <li><a href="index-8">08. IT Solutions</a></li>
-                          <li><a href="index-9">09. Startup Agency</a></li>
-                          <li><a href="index-10">10. Corporate</a></li>
-                          <li><a href="index-11">11.Marketing Consulting</a></li>
-                          <li><a href="index-12">12.App Landing</a></li>
-                        </ul>
-                      </li>
-                      <li class="menu-item-has-children">
-                        <a href="#">About Us</a>
-                        <ul class="sub-menu">
-                          <li>
-                            <a href="about">Business About</a>
-                            <ul class="sub-menu">
-                              <li><a href="about">Menu level 2</a></li>
-                              <li>
-                                <a href="about-2">Menu level 2</a>
-                                <ul class="sub-menu">
-                                  <li><a href="about">Menu level 3</a></li>
-                                  <li><a href="about-2">Menu level 3</a></li>
-                                  <li><a href="about-5">Menu level 3</a></li>
-                                  <li><a href="about-3">Menu level 3</a></li>
-                                  <li><a href="about-4">Menu level 3</a></li>
-                                </ul>
+      <div id="sticky-header" class="tg-header__area tg-header__area-five">
+        <div class="row">
+          <div class="col-12">
+            <div class="tgmenu__wrap"></div>
+
+            <!-- Mobile Menu -->
+            <nav class="tgmenu__nav">
+              <!-- Navbar Toggle Button for Mobile -->
+
+              <!-- Hide logo when mobile view is active -->
+              <!-- <div v-if="!isMobileView">
+                <a href="page/1">
+                  <img :src="getLogoUrl()" alt="Logo" class="logo-img" style="margin-left: auto;" /> </a>
+              </div> -->
+
+              <!-- Menu Wrapper -->
+              <div :class="['collapse', 'navbar-collapse', 'tgmenu__navbar-wrap', 'tgmenu__main-menu']">
+                <ul class="navigation">
+                  <li v-for="item in sortedMenuItems" :key="item.id" :class="{
+                    'menu-item': !item.submenus || !item.submenus.length,
+                    'menu-item-has-children': item.submenus && item.submenus.length,
+                  }">
+                    <!-- <router-link :to="{ name: 'Page', params: { id: item.id } }"
+                      :style="{ fontSize: menuFontSize + 'px' }">
+                      {{ getMenuItemName(item) }}
+                    </router-link> -->
+                    <router-link :to="{ name: 'Page', params: { id: item.id }, query: { page_name: item.menu_name } }"
+                      :style="{ fontSize: menuFontSize + 'px' }">
+                      {{ getMenuItemName(item) }}
+                    </router-link>
+
+
+                    <!-- Submenus -->
+                    <ul v-if="item.submenus && item.submenus.length" class="sub-menu">
+                      <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id">
+                        <router-link
+                          :to="{ name: 'Page', params: { id: subItem.id }, query: { page_name: subItem.menu_name } }"
+                          :style="{ fontSize: menuFontSize + 'px' }">
+                          {{ getMenuItemName(subItem) }}
+                        </router-link>
+
+                        <!-- Nested Submenus -->
+                        <ul v-if="subItem.submenus && subItem.submenus.length" class="sub-menu">
+                          <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id">
+                            <router-link
+                              :to="{ name: 'Page', params: { id: subSubItem.id }, query: { page_name: subItem.menu_name } }"
+                              :style="{ fontSize: menuFontSize + 'px' }">
+                              {{ getMenuItemName(subSubItem) }}
+                            </router-link>
+
+                            <!-- Further Nested Submenus -->
+                            <ul v-if="subSubItem.submenus && subSubItem.submenus.length" class="sub-menu">
+                              <li v-for="subSubSubItem in sortedSubmenus(subSubItem)" :key="subSubSubItem.id">
+                                <router-link
+                                  :to="{ name: 'Page', params: { id: subSubSubItem.id }, query: { page_name: subItem.menu_name } }"
+                                  :style="{ fontSize: menuFontSize + 'px' }">
+                                  {{ getMenuItemName(subSubSubItem) }}
+                                </router-link>
                               </li>
-                              <li><a href="about-5">Menu level 2</a></li>
-                              <li><a href="about-3">Menu level 2</a></li>
-                              <li><a href="about-4">Menu level 2</a></li>
                             </ul>
                           </li>
-                          <li><a href="about-2">Finance About</a></li>
-                          <li><a href="about-5">Consulting About</a></li>
-                          <li><a href="about-3">Insurance About</a></li>
-                          <li><a href="about-4">Digital agency About</a></li>
                         </ul>
                       </li>
-                      <li class="menu-item-has-children">
-                        <a href="#">Services</a>
-                        <ul class="sub-menu">
-                          <li><a href="services">Business Service</a></li>
-                          <li><a href="services-2">Finance Service</a></li>
-                          <li><a href="services-3">Consulting Service</a></li>
-                          <li><a href="services-4">Insurance Service</a></li>
-                          <li><a href="services-5">Digital agency Service</a></li>
-                          <li><a href="services-details">Service Details One</a></li>
-                          <li><a href="services-details-2">Service Details Two</a></li>
-                          <li><a href="services-details-3">Service Details Three</a></li>
-                          <li><a href="services-details-4">Service Details Four</a></li>
-                          <li><a href="services-details-5">Service Details Five</a></li>
-                        </ul>
-                      </li>
-                      <li class="menu-item-has-children">
-                        <a href="#">Pages</a>
-                        <ul class="sub-menu">
-                          <li><a href="team">Team One</a></li>
-                          <li><a href="team-2">Team Two</a></li>
-                          <li><a href="team-3">Team Three</a></li>
-                          <li><a href="team-4">Team Four</a></li>
-                          <li><a href="team-details">Team Details</a></li>
-                          <li><a href="project-details">Project Details</a></li>
-                          <li><a href="error">404 Error Page</a></li>
-                          <li><a href="login">Login Page</a></li>
-                          <li><a href="register">Register Page</a></li>
-                          <li><a href="forgot-password">Forgot password Page</a></li>
-                        </ul>
-                      </li>
-                      <li class="menu-item-has-children">
-                        <a href="#">Blog</a>
-                        <ul class="sub-menu">
-                          <li><a href="blog">Our Blog</a></li>
-                          <li><a href="blog-details">Blog Details</a></li>
-                        </ul>
-                      </li>
-                      <li><a href="contact">contacts</a></li>
                     </ul>
-                  </div>
-                  <div class="tgmenu__action d-none d-md-block">
-                    <ul class="list-wrap">
-                      <li class="header-search">
-                        <a href="javascript:void(0)" class="search-open-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">
-                            <path
-                              d="M19 19.0002L14.657 14.6572M14.657 14.6572C15.3999 13.9143 15.9892 13.0324 16.3912 12.0618C16.7933 11.0911 17.0002 10.0508 17.0002 9.00021C17.0002 7.9496 16.7933 6.90929 16.3913 5.93866C15.9892 4.96803 15.3999 4.08609 14.657 3.34321C13.9141 2.60032 13.0322 2.01103 12.0616 1.60898C11.0909 1.20693 10.0506 1 9.00002 1C7.94942 1 6.90911 1.20693 5.93848 1.60898C4.96785 2.01103 4.08591 2.60032 3.34302 3.34321C1.84269 4.84354 0.999817 6.87842 0.999817 9.00021C0.999817 11.122 1.84269 13.1569 3.34302 14.6572C4.84335 16.1575 6.87824 17.0004 9.00002 17.0004C11.1218 17.0004 13.1567 16.1575 14.657 14.6572Z"
-                              stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                          </svg>
-                        </a>
-                      </li>
-                      <li class="offCanvas-menu" @click="toggleMobileMenu">
-                        <a href="javascript:void(0)" class="menu-tigger">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none">
-                            <path
-                              d="M0 2C0 0.895431 0.895431 0 2 0C3.10457 0 4 0.895431 4 2C4 3.10457 3.10457 4 2 4C0.895431 4 0 3.10457 0 2Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M0 9C0 7.89543 0.895431 7 2 7C3.10457 7 4 7.89543 4 9C4 10.1046 3.10457 11 2 11C0.895431 11 0 10.1046 0 9Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M0 16C0 14.8954 0.895431 14 2 14C3.10457 14 4 14.8954 4 16C4 17.1046 3.10457 18 2 18C0.895431 18 0 17.1046 0 16Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M7 2C7 0.895431 7.89543 0 9 0C10.1046 0 11 0.895431 11 2C11 3.10457 10.1046 4 9 4C7.89543 4 7 3.10457 7 2Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M7 9C7 7.89543 7.89543 7 9 7C10.1046 7 11 7.89543 11 9C11 10.1046 10.1046 11 9 11C7.89543 11 7 10.1046 7 9Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M7 16C7 14.8954 7.89543 14 9 14C10.1046 14 11 14.8954 11 16C11 17.1046 10.1046 18 9 18C7.89543 18 7 17.1046 7 16Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M14 2C14 0.895431 14.8954 0 16 0C17.1046 0 18 0.895431 18 2C18 3.10457 17.1046 4 16 4C14.8954 4 14 3.10457 14 2Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9Z"
-                              fill="currentcolor" />
-                            <path
-                              d="M14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16Z"
-                              fill="currentcolor" />
-                          </svg>
-                        </a>
-                      </li>
-                      <li class="header-btn"><a href="contact" class="btn">let’s Talk</a></li>
-                    </ul>
-                  </div>
-                  <div class="mobile-nav-toggler" @click="toggleMobileMenu">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none">
-                      <path
-                        d="M0 2C0 0.895431 0.895431 0 2 0C3.10457 0 4 0.895431 4 2C4 3.10457 3.10457 4 2 4C0.895431 4 0 3.10457 0 2Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M0 9C0 7.89543 0.895431 7 2 7C3.10457 7 4 7.89543 4 9C4 10.1046 3.10457 11 2 11C0.895431 11 0 10.1046 0 9Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M0 16C0 14.8954 0.895431 14 2 14C3.10457 14 4 14.8954 4 16C4 17.1046 3.10457 18 2 18C0.895431 18 0 17.1046 0 16Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M7 2C7 0.895431 7.89543 0 9 0C10.1046 0 11 0.895431 11 2C11 3.10457 10.1046 4 9 4C7.89543 4 7 3.10457 7 2Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M7 9C7 7.89543 7.89543 7 9 7C10.1046 7 11 7.89543 11 9C11 10.1046 10.1046 11 9 11C7.89543 11 7 10.1046 7 9Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M7 16C7 14.8954 7.89543 14 9 14C10.1046 14 11 14.8954 11 16C11 17.1046 10.1046 18 9 18C7.89543 18 7 17.1046 7 16Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M14 2C14 0.895431 14.8954 0 16 0C17.1046 0 18 0.895431 18 2C18 3.10457 17.1046 4 16 4C14.8954 4 14 3.10457 14 2Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9Z"
-                        fill="currentcolor" />
-                      <path
-                        d="M14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16Z"
-                        fill="currentcolor" />
-                    </svg>
-                  </div>
-                </nav>
+                  </li>
+                </ul>
               </div>
-              <!-- Mobile Menu  -->
-              <div  v-show="isMobileMenuOpen">
-                <nav class="tgmobile__menu-box">
-                  <div class="close-btn" @click="closeMobileMenu">
-                    <i class="fas fa-times"></i>
-                  </div>
-                  <div class="nav-logo">
-                    <a href="index.html"><img src="assets/img/logo/logo.png" alt="Logo" /></a>
-                  </div>
-                  <div class="tgmobile__search">
-                    <form action="#">
-                      <input type="text" placeholder="Search here..." />
-                      <button><i class="fas fa-search"></i></button>
-                    </form>
-                  </div>
-                  <div class="tgmobile__menu-outer">
-                    <!--Here Menu Will Come Automatically Via Javascript / Same Menu as in Header-->
-                  </div>
-                  <div class="tgmobile__menu-bottom">
-                    <div class="contact-info">
-                      <ul class="list-wrap">
-                        <li><a href="mailto:info@apexa.com">info@apexa.com</a></li>
-                        <li><a href="tel:0123456789">+123 888 9999</a></li>
-                      </ul>
-                    </div>
-                    <div class="social-links">
-                      <ul class="list-wrap">
-                        <li>
-                          <a href="javascript:void(0)"><i class="fab fa-facebook-f"></i></a>
-                        </li>
-                        <li>
-                          <a href="javascript:void(0)"><i class="fab fa-twitter"></i></a>
-                        </li>
-                        <li>
-                          <a href="javascript:void(0)"><i class="fab fa-instagram"></i></a>
-                        </li>
-                        <li>
-                          <a href="javascript:void(0)"><i class="fab fa-linkedin-in"></i></a>
-                        </li>
-                        <li>
-                          <a href="javascript:void(0)"><i class="fab fa-youtube"></i></a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </nav>
+              <div class="mobile-nav-toggler" @click="toggleMobileMenu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="none">
+                  <path
+                    d="M0 2C0 0.895431 0.895431 0 2 0C3.10457 0 4 0.895431 4 2C4 3.10457 3.10457 4 2 4C0.895431 4 0 3.10457 0 2Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M0 9C0 7.89543 0.895431 7 2 7C3.10457 7 4 7.89543 4 9C4 10.1046 3.10457 11 2 11C0.895431 11 0 10.1046 0 9Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M0 16C0 14.8954 0.895431 14 2 14C3.10457 14 4 14.8954 4 16C4 17.1046 3.10457 18 2 18C0.895431 18 0 17.1046 0 16Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M7 2C7 0.895431 7.89543 0 9 0C10.1046 0 11 0.895431 11 2C11 3.10457 10.1046 4 9 4C7.89543 4 7 3.10457 7 2Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M7 9C7 7.89543 7.89543 7 9 7C10.1046 7 11 7.89543 11 9C11 10.1046 10.1046 11 9 11C7.89543 11 7 10.1046 7 9Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M7 16C7 14.8954 7.89543 14 9 14C10.1046 14 11 14.8954 11 16C11 17.1046 10.1046 18 9 18C7.89543 18 7 17.1046 7 16Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M14 2C14 0.895431 14.8954 0 16 0C17.1046 0 18 0.895431 18 2C18 3.10457 17.1046 4 16 4C14.8954 4 14 3.10457 14 2Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9Z"
+                    fill="currentcolor" />
+                  <path
+                    d="M14 16C14 14.8954 14.8954 14 16 14C17.1046 14 18 14.8954 18 16C18 17.1046 17.1046 18 16 18C14.8954 18 14 17.1046 14 16Z"
+                    fill="currentcolor" />
+                </svg>
               </div>
-               <!-- Backdrop -->
-  <div
-    class="tgmobile__menu-backdrop"
-    v-show="isMobileMenuOpen"
-    @click="closeMobileMenu"
-  ></div>
-              <!-- End Mobile Menu -->
+
+           <div v-show="isMobileMenuOpen" class="mobile-menu-container">
+    <ul class="mobile-menu">
+      <li v-for="item in sortedMenuItems" :key="item.id" class="mobile-menu-item">
+        <div class="menu-label">
+          <router-link class="menu-link" :to="{
+            name: 'Page',
+            params: { id: item.id },
+            query: { page_name: item.menu_name },
+          }">
+            {{ getMenuItemName(item) }}
+          </router-link>
+          <button v-if="item.submenus?.length" @click="toggleSubmenu(item.id)" class="submenu-toggle">
+            {{ openSubmenus.includes(item.id) ? '-' : '+' }}
+          </button>
+        </div>
+
+        <!-- Level 1 Submenu -->
+        <ul v-if="item.submenus?.length && openSubmenus.includes(item.id)" class="submenu-mobile">
+          <li v-for="subItem in sortedSubmenus(item)" :key="subItem.id" class="mobile-submenu-item">
+            <div class="menu-label">
+              <router-link class="menu-link" :to="{
+                name: 'Page',
+                params: { id: subItem.id },
+                query: { page_name: subItem.menu_name },
+              }">
+                {{ getMenuItemName(subItem) }}
+              </router-link>
+              <button v-if="subItem.submenus?.length" @click="toggleSubmenu(subItem.id)" class="submenu-toggle">
+                {{ openSubmenus.includes(subItem.id) ? '-' : '+' }}
+              </button>
             </div>
+
+            <!-- Level 2 Submenu -->
+            <ul v-if="subItem.submenus?.length && openSubmenus.includes(subItem.id)" class="submenu-mobile nested">
+              <li v-for="subSubItem in sortedSubmenus(subItem)" :key="subSubItem.id" class="mobile-submenu-item">
+                <router-link class="menu-link" :to="{
+                  name: 'Page',
+                  params: { id: subSubItem.id },
+                  query: { page_name: subSubItem.menu_name },
+                }">
+                  {{ getMenuItemName(subSubItem) }}
+                </router-link>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+              <div class="tgmobile__menu-backdrop"></div>
+            </nav>
+            <!-- End Mobile Menu -->
           </div>
         </div>
       </div>
     </header>
-
     <br>
     <br>
     <br>
@@ -288,7 +207,6 @@
                 <div class="features__item">
                   <div class="features__icon">
                     <i class="fa-solid fa-trophy"></i>
-
                   </div>
                   <div class="features__content">
                     <h4 class="title contactus"><a href="#">Households Mobilised</a></h4>
@@ -565,21 +483,32 @@ const isLoading = ref(true);
 const route = useRoute();
 const menuFontSize = ref(14); // Example font size
 const homepragraphdata = ref([]);
-const isMobileMenuOpen = ref(false);
+const isMobileMenuOpen = ref(false)
 const windowWidth = ref(window.innerWidth);
 const activatelanguageData = ref();
-
-
 const toggleMobileMenu = () => {
-  debugger;
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+const openSubmenus = ref([]) // ✅ Correct initialization as an empty array
 
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
+const initializeMenuItems = (items) => {
+  if (!Array.isArray(items)) return []  // Safely handle non-array input
 
+  return items.map(item => ({
+    ...item,
+    expanded: false,
+    submenus: initializeMenuItems(item.submenus) // safely recurse
+  }))
+}
 
+const toggleSubmenu = (id) => {
+  const index = openSubmenus.value.indexOf(id)
+  if (index > -1) openSubmenus.value.splice(index, 1)
+  else openSubmenus.value.push(id)
+}
 
 const sortedMenuItems = computed(() => {
   return menuItems.value.slice().sort((a, b) => a.order - b.order);
@@ -658,6 +587,9 @@ const fetchMenuItems = async () => {
     console.error('Failed to fetch menu items:', error);
   }
 };
+
+
+sortedMenuItems.value = initializeMenuItems(fetchMenuItems)
 
 
 const fetchPageContent = async () => {
@@ -809,13 +741,22 @@ ul::after {
   -moz-appearance: none;
 }
 
-/* Style for the sub-submenu */
-.sub-menu .sub-menu {
-  margin-left: 13px;
-  /* Adjust the value as needed to move it further right */
-  top: 0;
-  /* Keep it aligned vertically */
+.menu-link {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0c0c55;
+  text-decoration: none;
+  flex: 1;
+  /* ✅ Allows space between text and + icon */
 }
+
+
+.menu-link.router-link-exact-active {
+  color: #ffa500;
+  /* Highlight active (e.g., "Home") */
+}
+
+
 
 .brand__area-eight {
   max-height: 150px;
@@ -824,6 +765,64 @@ ul::after {
   /* Center the div within its parent container */
 }
 
+
+
+.mobile-menu-container {
+  padding: 1rem;
+  background-color: #ffffff !important; /* Ensure white, override grey */
+  width: 100%;
+  overflow-y: auto;
+}
+
+.mobile-menu,
+.submenu {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-menu-item,
+.mobile-submenu-item {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.75rem 0;
+}
+
+.menu-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.menu-link {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0c0c55;
+  text-decoration: none;
+  flex: 1;
+}
+
+.submenu-toggle {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.submenu {
+  padding-left: 1.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.submenu li {
+  padding: 0.5rem 0;
+}
 
 .font-size-controls {
   list-style: none;
@@ -839,17 +838,89 @@ ul::after {
   font-size: 1rem;
 }
 
-
-
-/* Hide submenus by default */
-.sub-menu {
-  display: none;
-  position: absolute;
-  top: 0;
-  right: 100%;
-  /* Move submenu to the left of the parent */
+.submenu-item {
+  padding: 0.4rem 0;
 }
 
+.submenu-link {
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+
+
+
+
+/* Main menu and submenus are vertical stacks */
+.mobile-menu,
+.submenu-mobile {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Indent nested submenus */
+.submenu-mobile.nested {
+  padding-left: 1.5rem;
+}
+
+/* Menu item container */
+.mobile-menu-item,
+.mobile-submenu-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Row for label + toggle */
+.menu-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Link style */
+.menu-link {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0c0c55;
+  text-decoration: none;
+  flex: 1;
+}
+
+/* Button for +/- toggle */
+.submenu-toggle {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+/* Responsive handling */
+@media (max-width: 768px) {
+  .mobile-menu-container {
+    padding: 0.5rem;
+  }
+
+  .menu-link {
+    font-size: 15px;
+  }
+
+  .submenu-toggle {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+}
 /* Show submenu when hovering over parent */
 .menu-item-has-children:hover>.sub-menu {
   display: block;
@@ -986,9 +1057,6 @@ ul::after {
     /* Align menu items to the left */
   }
 
-  .mobile-menu-left {
-    align-items: flex-start !important;
-  }
 
   .navigation {
     width: 100%;

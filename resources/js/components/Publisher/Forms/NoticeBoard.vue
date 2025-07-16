@@ -58,8 +58,8 @@
                                 <tr v-for="(notice, index) in filteredNoticeboardData" :key="index">
                                     <td>{{ index + 1 }}</td>
                                     <td><a :href="`/storage/${notice.file}`" target="_blank" class="text-primary">
-                                            {{ notice.title }}
-                                        </a>
+                                            {{ notice.title }} <span v-if="notice.ispinned === 1"> <i
+                                                    class="fas fa-thumbtack text-danger"></i></span> </a>
                                     </td>
                                     <td>{{ notice.addedby }}</td>
                                     <td>{{ notice.approver || 'N/A' }}</td>
@@ -152,7 +152,7 @@ const toastr = useToastr();
 const categorydata = ref([]); // Store fetched categories
 const noticeboarddata = ref([]);
 const selectedNotice = ref({}) // To store the clicked notice
-import { useRoute,useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const rejectedRemarks = ref('');

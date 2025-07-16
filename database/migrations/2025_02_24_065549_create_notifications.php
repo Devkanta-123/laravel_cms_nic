@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('rejected_remarks'); // Store one file path per row
             $table->unsignedBigInteger('publisher_id'); // Store one file path per row
             $table->string('application_id', 30)->nullable();
+            $table->unsignedBigInteger('ispinned', 1)->nullable();
             $table->timestamps();
             });
     }

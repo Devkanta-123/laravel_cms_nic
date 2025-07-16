@@ -8,7 +8,7 @@
                         <ul class="list-wrap">
                             <h5 class="m-0">{{ pageName }}</h5>
                             <br>
-                            <li v-for="notice in props.noticeboard" :key="notice.id" style="margin-left:4px;">
+                            <li v-for="notice in props.noticeboard" :key="notice.id"  class="w-100 d-flex align-items-center mb-2 ms-1">
                                 <i class="fa fa-arrow-right"></i>
                                 <a href="#"  style="color: #2A3335;" @click.prevent="openfile(notice)">{{ notice.title }} ({{
                                     formatDate(notice.date) }})</a>
@@ -19,14 +19,13 @@
                 </div>
             </template>
 
-
             <template v-else-if="hasNotification">
                 <div class="about__content-inner-four">
                     <div class="about__list-box">
                         <ul class="list-wrap">
                             <h5 class="m-0">{{ pageName }}</h5>
                             <br>
-                            <li v-for="notify in notification" :key="notify.id" style="margin-left:4px;">
+                            <li v-for="notify in notification" :key="notify.id"  class="w-100 d-flex align-items-center mb-2 ms-1" >
                                 <i class="fa fa-arrow-right"></i>
                                 <a href="#"  style="color: #2A3335;"  @click.prevent="openfile(notify)">{{ notify.title }} ({{
                                     formatDate(notify.date) }})</a>
@@ -92,6 +91,10 @@ const isNewNotice = (noticeDate) => {
     100% {
         opacity: 1;
     }
+}
+.list-wrap li {
+  display: block;
+  margin-bottom: 10px;
 }
 
 

@@ -24,6 +24,14 @@
                         </select>
                     </div>
 
+                    <div class="col-6">
+                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                            <input type="checkbox" class="custom-control-input" id="customSwitch3" v-model="isPinned">
+                            <label class="custom-control-label" for="customSwitch3"> <span></span> <i
+                                    class="fas fa-thumbtack text-danger"></i> Is high priority?</label>
+                        </div>
+                    </div>
+
                     <!-- Dynamic Rows -->
                     <div v-for="(row, index) in rows" :key="index" class="mb-3 row">
                         <div class="col-md-4">
@@ -82,7 +90,8 @@
                                             <td>
                                                 <a :href="`/storage/${notice.file}`" target="_blank"
                                                     class="text-primary">
-                                                    {{ notice.title }}
+                                                    {{ notice.title }} <span v-if="notice.ispinned === 1"> <i
+                                                            class="fas fa-thumbtack text-danger"></i></span>
                                                 </a>
                                             </td>
                                             <td>{{ notice.addedby }}</td>
@@ -96,7 +105,7 @@
                                             </td>
                                             <td>
                                                 <i class="fas fa-trash-alt text-danger"
-                                                   @click="deleteNotification(notice.id)"></i>&nbsp;
+                                                    @click="deleteNotification(notice.id)"></i>&nbsp;
                                                 <i class="fas fa-pencil-alt text-success" data-toggle="modal"
                                                     data-target="#editModal" @click="editModal(notice)">
                                                 </i>
@@ -138,8 +147,7 @@
                                                 <!-- Category -->
                                                 <div class="form-group">
                                                     <label>Category</label>
-                                                    <select class="form-control"
-                                                        v-model="selectedNotice.category_id">
+                                                    <select class="form-control" v-model="selectedNotice.category_id">
                                                         <option value="" disabled>Select the category</option>
                                                         <option v-for="category in categorydata" :key="category.id"
                                                             :value="category.id">
@@ -193,6 +201,7 @@ const props = defineProps({
     section: Object,
     menu: Number
 })
+const isPinned = ref(false);
 const selectedNotice = ref({}) // To store the clicked notice
 const editModal = (notice) => {
     debugger;
@@ -279,6 +288,7 @@ const submitData = async () => {
     formData.append("category_id", selectedCategory.value);
     formData.append("menu_id", route.params.menuId);
     formData.append("page_section_master_id", props.section.page_section_id);
+    formData.append("ispinned", isPinned.value ? 1 : 0);
     rows.value.forEach((row, index) => {
         formData.append(`title[${index}]`, row.title);
         formData.append(`date[${index}]`, row.date);
@@ -318,7 +328,7 @@ const updateNotice = async () => {
     formData.append('category_id', selectedNotice.value.category_id)
     formData.append('date', selectedNotice.value.date),
         formData.append("menu_id", route.params.menuId),
-        formData.append("page_section_master_id",  props.section.page_section_id)
+        formData.append("page_section_master_id", props.section.page_section_id)
     if (file.value) {
         formData.append('file', file.value)
     }
@@ -358,7 +368,7 @@ const deleteNotification = async (id) => {
             const response = await axios.post('/api/deleteNotification', {
                 id: id,
                 menu_id: route.params.menuId,
-                page_section_master_id:props.section.page_section_id
+                page_section_master_id: props.section.page_section_id
             });
 
             await getAllNotifications(); // refresh the list
@@ -391,8 +401,8 @@ const getAllNotifications = async () => {
     }
 };
 onMounted(() => {
-  getAllNotifications();
-  getAllCategoryMaster();
+    getAllNotifications();
+    getAllCategoryMaster();
 });
 </script>
 

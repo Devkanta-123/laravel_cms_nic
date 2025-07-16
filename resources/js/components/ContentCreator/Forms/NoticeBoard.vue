@@ -20,6 +20,16 @@
                                         </option>
                                     </select>
                                 </div>
+                                <div class="col-6">
+                                    <div class="form-group mb-3">
+                                        <div class="checkbox checbox-switch switch-primary">
+                                            <label>
+                                                <input type="checkbox" v-model="isPinned">
+                                                <span></span> <i class="fas fa-thumbtack text-danger"></i> Is high priority?
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <br>
                             <div class="row">
@@ -135,7 +145,7 @@
                                 <tr v-for="(notice, index) in filteredNoticeboardData" :key="index">
                                     <td>
                                         <a :href="`/storage/${notice.file}`" target="_blank" class="text-primary">
-                                            {{ notice.title }}
+                                            {{ notice.title }} <span v-if="notice.ispinned===1"> <i class="fas fa-thumbtack text-danger" ></i></span>
                                         </a>
                                     </td>
                                     <td>{{ notice.addedby }}</td>
@@ -150,13 +160,13 @@
                                             <div class="mt-1 text-muted">Remarks: {{ notice.rejected_remarks }}</div>
                                         </div>
                                         <label v-else class="badge bg-warning">Pending</label>
-                                    </td>   
+                                    </td>
                                     <td>
                                         <!-- <i class="fas fa-trash-alt text-danger"
                                             @click="deleteNotification(notice.id)"></i> -->
-                                            &nbsp;&nbsp;
-                                        <i class="fas fa-pencil-alt text-success" v-if="notice.flag=='R'" data-toggle="modal"
-                                            data-target="#editModal" @click="editModal(notice)"></i>
+                                        &nbsp;&nbsp;
+                                        <i class="fas fa-pencil-alt text-success" v-if="notice.flag == 'R'"
+                                            data-toggle="modal" data-target="#editModal" @click="editModal(notice)"></i>
                                     </td>
                                 </tr>
                             </tbody>
@@ -234,7 +244,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2';
-import { useRoute,useRouter} from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 import { useToastr } from '../../../toaster.js';
@@ -244,8 +254,8 @@ const selectedPublisher = ref("");
 const rows = ref([{ title: "", date: "", files: [] }]); // Initial row
 const categorydata = ref([]); // Store fetched categories
 const publisherData = ref([]); // Store publisher categories
-const showLinkInput = ref(false)
 const file = ref(null)
+const isPinned = ref(false);
 const link = ref('')
 const title = ref('')
 const fileInput = ref(null) // this will reference the file input
@@ -327,10 +337,11 @@ const submitData = async () => {
     formData.append("category_id", selectedCategory.value);
     formData.append("publisher_id", selectedPublisher.value);
     formData.append("menu_id", route.params.menuId);
+    formData.append("ispinned", isPinned.value ? 1 : 0);
     formData.append("page_section_master_id", route.params.page_section_id);
     rows.value.forEach((row, index) => {
-        formData.append(`title[${index}]`, row.title);
-        formData.append(`date[${index}]`, row.date);
+    formData.append(`title[${index}]`, row.title);
+     formData.append(`date[${index}]`, row.date);
 
         row.files.forEach((file, fileIndex) => {
             formData.append(`file[${index}][${fileIndex}]`, file);

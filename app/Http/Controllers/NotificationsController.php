@@ -72,6 +72,7 @@ class NotificationsController extends Controller
                         'user_id' => $user->id,
                         'flag' => $flag,
                         'role_id' => $user->role_id,
+                        'ispinned' => $request->ispinned,
                         'publisher_id' => $request->publisher_id ?? null,
                     ]);
 
@@ -190,6 +191,7 @@ class NotificationsController extends Controller
         // If flag=A is explicitly passed, return only approved notifications
         if ($flag === 'A') {
             $notifications = Notifications::where('flag', 'A')
+                ->orderByDesc('ispinned') // Pinned items first
                 ->orderBy('date', 'desc')
                 ->get();
             return response()->json($notifications, 200);
@@ -288,14 +290,20 @@ class NotificationsController extends Controller
 
         $notifications = Notifications::whereMonth('date', date('m'))
             ->where('flag', $flag)
+            ->orderByDesc('ispinned') // Pinned notifications come first
+            ->orderByDesc('date')     // Then sort by most recent date
             ->get();
-
         return response()->json($notifications, 200);
     }
 
     public function getRecruitmentsForCurrentMonth()
     {
-        $notifications = Notifications::where('category_id', 3)->whereMonth('date', date('m'))->get();
+        $notifications = Notifications::where('category_id', 3)
+            ->whereMonth('date', date('m'))
+            ->orderByDesc('ispinned') // Pinned items first
+            ->orderByDesc('date')     // Then sort by most recent date
+            ->get();
+
         return response()->json($notifications, 200);
     }
 
