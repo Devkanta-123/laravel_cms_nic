@@ -24,7 +24,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="userTable">
                         <thead>
                             <tr>
                                 <td>#</td>
@@ -82,9 +82,6 @@
                             </option>
                         </select>
 
-
-
-
                         <div class="form-group">
                             <label for="email">Email</label>
                             <Field type="email" class="form-control " name="email" id="email" v-model="formValues.email"
@@ -116,7 +113,7 @@
 
 </template>
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed,nextTick} from "vue";
 import axios from 'axios';
 import * as yup from 'yup';
 import { Form, Field, useSetFieldError } from 'vee-validate';
@@ -132,10 +129,10 @@ const editing = ref(false);
 const formValues = ref({ name: '', email: '', id: '', password: '', roles: [] });
 
 const form = ref(null);
-
+let selectedRoleID = ref();
 const onRoleChange = (event) => {
-
-    selectedRole.value = parseInt(event.target.value); // or just event.target.value if string is fine
+    debugger;
+  selectedRoleID.value = parseInt(event.target.value);
 };
 
 const createUserschema = yup.object({
@@ -151,15 +148,20 @@ const editUserschema = yup.object({
 });
 
 const currentSchema = computed(() => editing.value ? editUserschema : createUserschema);
-
+const initializeDataTable = () => {
+  $('#userTable').DataTable({
+    destroy: true, // important to allow re-initialization
+  });
+};
 const getUsers = async () => {
   try {
     const response = await axios.get('/api/get_users');
     users.value = response.data;
-    console.log('USERS', users.value);
+
+    await nextTick(); // wait for DOM update
+    initializeDataTable();
   } catch (error) {
     console.error('Error:', error);
-    throw error; // propagate error if needed
   }
 };
 
@@ -208,37 +210,55 @@ const handleSubmit = (values, actions) => {
 };
 
 
-const createUser = async (values, { resetForm, setErrors }) => {
-    debugger;
-  const payload = {
-    name: values.name,
-    email: values.email,
-    password: values.password,
-    role: selectedRole.value  // ✅ from onChange
-  };
-
-  try {
-    const response = await axios.post('/api/users', payload);
-
-    users.value.unshift(response.data); // or remove this if getUsers() refreshes all
-    resetForm();
-    $('#userFormModal').modal('hide');
-
-    await getUsers(); // ✅ await used inside async function
-
-    toastr.success('User created successfully');
-  } catch (error) {
-    if (error.response?.data?.errors) {
-      setErrors(error.response.data.errors);
-    } else {
-      console.error('Unexpected error:', error);
+    const createUser = async (values, { resetForm, setErrors }) => {
+        debugger;
+    const payload = {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        role: selectedRoleID.value
+    };
+    if (payload.password.length > 0 && payload.password.length < 8) {
+        toastr.error("Password must be at least 8 characters for a valid preview");
+        return;
     }
-  }
-};
+
+
+    try {
+        await axios.post('/api/users', payload);
+        resetForm();
+        $('#userFormModal').modal('hide');
+
+        // Destroy and re-fetch users to re-render and refresh datatable
+        const table = $('#userTable').DataTable();
+        table.destroy();
+
+        await getUsers();
+
+        toastr.success('User created successfully');
+    } catch (error) {
+        if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors);
+        } else {
+        console.error('Unexpected error:', error);
+        }
+    }
+    };
 
 
 const updateUser = (values) => {
-    axios.post('/api/update_users/' + formValues.value.id, formValues.value)
+    debugger;
+    
+      const payload = {
+      ...formValues.value,
+    };
+    if (payload.password.length > 0 && payload.password.length < 8) {
+        toastr.error("Password must be at least 8 characters for a valid preview");
+        return;
+    }
+
+
+    axios.post('/api/update_users/' + formValues.value.id, formValues.value,payload)
         .then((response) => {
             const index = users.value.findIndex(user => user.id === response.data.id);
             users.value[index] = response.data;
@@ -250,16 +270,13 @@ const updateUser = (values) => {
         })
         .finally(() => {
             form.value.resetForm();
-
         });
 }
-
 const addUser = () => {
     editing.value = false;
     form.value.resetForm();
     $('#userFormModal').modal('show');
 }
-
 const editUser = (user) => {
     editing.value = true;
     console.log("User info" + user.name);
@@ -277,9 +294,9 @@ const userDeleted = (userId) => {
     users.value = users.value.filter(user => user.id !== userId);
 }
 
-onMounted(() => {
-    getUsers();
-    getRoles();
+onMounted(async () => {
+  await getUsers();
+   getRoles();
     fetchUser();
 });
 </script>

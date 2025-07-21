@@ -20,12 +20,13 @@ class ThemeController extends Controller
         }
 
         $currentTheme = Theme::first();
-
         return response()->json([
             'themes' => $themes,
-            'currentThemeId' => $currentTheme ? $currentTheme->id : null,
+            'currentThemeId' => $currentTheme ? $currentTheme->theme : null,
         ]);
     }
+
+  
 
     public function saveTheme(Request $request){
 

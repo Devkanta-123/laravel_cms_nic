@@ -75,18 +75,20 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email',
-            'password' => 'sometimes|min|8'
+            'password' => 'nullable|min:8'
         ]);
 
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'role_id' => $request->roles,
             'password' => $request->password ? Hash::make($request->password) : $user->password
         ]);
 
         $user->load('roles');
         return $user;
     }
+
 
     public function updateRole(Request $request, Role $role)
     {

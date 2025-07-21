@@ -51,6 +51,7 @@ const selectedThemeId = ref(null);
 const isLoading = ref(true);
 
 const getThemes = () => {
+    debugger;
     axios.post('/api/get_themes')  
         .then((response) => {
             themes.value = response.data.themes;
