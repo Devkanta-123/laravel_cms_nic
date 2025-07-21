@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CategoryMaster;
+use App\Models\Menu;
 
 class CategoryMasterController extends Controller
 {
@@ -38,13 +39,51 @@ class CategoryMasterController extends Controller
     {
         $request->validate([
             'id' => 'required',
+            'editcategory_name' => 'required|string|max:255',
         ]);
 
+        // Step 1: Find the category
         $category = CategoryMaster::find($request->id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
+        // Store the old name before updating
+        $oldName = $category->category_name;
+
+        // Step 2: Update the category name
         $category->category_name = $request->editcategory_name;
         $category->save();
-        return response()->json(['message' => 'Category Master updated successfully'], 201);
+
+        // Step 3: Update menu_name in Menu table where it matches old category name
+        Menu::where('menu_name', $oldName)
+            ->update(['menu_name' => $request->editcategory_name]);
+
+        return response()->json(['message' => 'Category and matching Menu names updated successfully'], 201);
     }
-    
+
+    public function deleteCategoryMaster(Request $request)
+    {
+        // Step 1: Validate input
+        $request->validate([
+            'id' => 'required|integer|exists:category_master,id',
+        ]);
+
+        // Step 2: Find the category
+        $category = CategoryMaster::find($request->id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
+        // Step 3: Delete the category
+        $category->delete();
+
+        // Step 4: Return success response
+        return response()->json(['message' => 'Category deleted successfully'], 200);
+    }
+
+
 
 }

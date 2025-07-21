@@ -57,13 +57,13 @@ class MenuController extends Controller
     public function update(Request $request, Menu $menu)
     {
 
-        $request->validate([
-            'menu_name' => 'required',
-            'menu_type' => 'required',
-            'order' => 'required',
-            'parent' => 'required',
+        // $request->validate([
+        //     'menu_name' => 'required',
+        //     'menu_type' => 'required',
+        //     'order' => 'required',
+        //     'parent' => 'required',
 
-        ]);
+        // ]);
         $menu->update([
             'menu_name' => $request->menu_name,
             'menu_master' => $request->menu_type,

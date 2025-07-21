@@ -35,45 +35,40 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table class="table table-responsive-lg mb-0">
+                    <table id="menuTable" class="table table-responsive-lg mb-0">
                         <thead>
                             <tr>
-                                <th> <strong> S.NO. </strong> </th>
-                                <th> <strong> MENU NAME <i class="fa fa-sort asc"></i> </strong> </th>
-                                <th> <strong> MENU TYPE <i class="fa fa-sort asc"></i> </strong> </th>
-                                <th> <strong> ORDER <i class="fa fa-sort asc"></i> </strong> </th>
-                                <th class=""> <strong> ACTIONS </strong> </th>
+                                <th><strong>S.NO.</strong></th>
+                                <th><strong>MENU NAME</strong></th>
+                                <th><strong>MENU TYPE</strong></th>
+                                <th><strong>ORDER</strong></th>
+                                <th><strong>ACTIONS</strong></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(menu, index) in menus" :key="menu.id">
-                                <td>
-                                    {{ index + 1 }}
-                                </td>
-                                <td>
-                                    {{ menu.menu_name }}
-                                </td>
+                                <td>{{ index + 1 }}</td>
+                                <td>{{ menu.menu_name }}</td>
                                 <td>
                                     {{ menu.menu_master.menu_name }}
-                                    <span v-if="menu.parent_name">->
-                                        {{ menu.parent_name }}
-                                    </span>
+                                    <span v-if="menu.parent_name">-> {{ menu.parent_name }}</span>
                                 </td>
+                                <td>{{ menu.order }}</td>
                                 <td>
-                                    {{ menu.order }}
-                                </td>
-
-                                <td class="">
                                     <a href="#" @click.prevent="editMenu(menu)"
-                                        class="btn btn-primary shadow btn-xs  me-1"><i
-                                            class="fas fa-pencil-alt"></i></a>
+                                        class="btn btn-primary shadow btn-xs me-1">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
                                     <a href="#" @click.prevent="confirmMenuDeletion(menu)"
                                         class="btn btn-danger shadow btn-xs sharp"
-                                        v-if="menu.id != 1 && menu.id != 2 && menu.id != 3"><i class="fa fa-trash "></i></a>
+                                        v-if="menu.id != 1 && menu.id != 2 && menu.id != 3">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+
                 </div>
             </div>
 
@@ -220,12 +215,9 @@
         </div>
     </div>
 
-
-
-
 </template>
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed,nextTick } from "vue";
 import axios from 'axios';
 import * as yup from 'yup';
 import { Form, Field, useSetFieldError } from 'vee-validate';
@@ -263,19 +255,31 @@ const editMenuschema = yup.object({
 });
 
 const currentSchema = computed(() => editing.value ? editMenuschema : createMenuschema);
+const getMenus = async () => {
+    try {
+        // Destroy old DataTable before data changes
+        if ($.fn.DataTable.isDataTable('#menuTable')) {
+            $('#menuTable').DataTable().destroy()
+        }
 
-const getMenus = () => {
-    menus.value = '';
-    sub_menus.value = '';
-    axios.get('/api/get_menus')
-        .then((response) => {
-            menus.value = response.data[0];
-            sub_menus.value = response.data[1];
-            console.log(menus.value);
+        const response = await axios.get('/api/get_menus')
+        menus.value = response.data[0]
+        sub_menus.value = response.data[1]
+
+        // Wait for the table DOM to update
+        await nextTick()
+
+        // Initialize DataTable again
+        $('#menuTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            responsive: true
         })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+
+    } catch (error) {
+        console.error('Error loading menus:', error)
+    }
 }
 
 const fetchMenuTypes = () => {
@@ -331,21 +335,22 @@ const handleSubmit = (values, actions) => {
 };
 
 
-const createMenu = (values, { resetForm, setErrors }) => {
-    console.log("Values" + values);
-    axios.post('/api/menus', values)
-        .then((response) => {
-            console.log("Response after saving+ " + response.data);
-            getMenus();
-            resetForm();
-            $('#menuFormModal').modal('hide');
-            toastr.success('Menu added successfully');
-        }).catch((error) => {
-            console.log("Errors" + error.response.data);
-            if (error.response.data.errors)
-                setErrors(error.response.data.errors);
-        });
-};
+const createMenu = async (values, { resetForm, setErrors }) => {
+    try {
+        const response = await axios.post('/api/menus', values)
+        console.log("Response after saving:", response.data)
+        // Await the refresh to ensure DataTables is updated cleanly
+        await getMenus()
+        resetForm()
+        $('#menuFormModal').modal('hide')
+        toastr.success('Menu added successfully')
+    } catch (error) {
+        console.log("Errors:", error.response?.data)
+        if (error.response?.data?.errors) {
+            setErrors(error.response.data.errors)
+        }
+    }
+}
 
 
 const editMenu = (menu) => {
@@ -355,6 +360,8 @@ const editMenu = (menu) => {
     formValues.value = {
         id: menu.id,
         menu_name: menu.menu_name,
+        hindi_name: menu.hindi_name,
+        khasi_name: menu.khasi_name ?? 'N/A',
         menu_type: menu.menu_master.id,
         order: menu.order,
         parent: menu.parent
@@ -364,20 +371,17 @@ const editMenu = (menu) => {
 }
 
 
-const updateMenu = (values) => {
-    console.log("UPDATE VALUES: " + formValues.value);
-    axios.post('/api/update_menu/' + formValues.value.id, formValues.value)
-        .then((response) => {
-            const index = menus.value.findIndex(menu => menu.id === response.data.id);
-            getMenus();
-            $('#menuFormModal').modal('hide');
-            toastr.success('Menu updated successfully');
-        }).catch((errors) => {
-            console.log(errors);
-        })
-        .finally(() => {
-            form.value.resetForm();
-        });
+const updateMenu = async (values) => {
+    try {
+        const response = await axios.post('/api/update_menu/' + formValues.value.id, formValues.value)
+        await getMenus() // This will reinit DataTable after DOM update
+        $('#menuFormModal').modal('hide')
+        toastr.success('Menu updated successfully')
+    } catch (error) {
+        console.log(error)
+    } finally {
+        form.value.resetForm()
+    }
 }
 
 const confirmMenuDeletion = (menu) => {
@@ -409,18 +413,16 @@ const confirmMenuDeletion = (menu) => {
     // $('#deleteMenuModal').modal('show');
 }
 
-const deleteMenu = (menu) => {
-    axios.post('/api/delete_menu/' + menuIdBeingDeleted.value)
-        .then(() => {
-            $('#deleteMenuModal').modal('hide');
-            menus.value = menus.value.filter(menu => menu.id !== menuIdBeingDeleted.value);
-            // sub_menus.value = sub_menus.value.filter(menu => menu.id !== menuIdBeingDeleted.value);
-
-
-            toastr.success("Menu Deleted Successfully");
-            // emit('menuDeleted', userIdBeingDeleted.value);
-        })
-}
+// const deleteMenu = (menu) => {
+//     axios.post('/api/delete_menu/' + menuIdBeingDeleted.value)
+//         .then(() => {
+//             $('#deleteMenuModal').modal('hide');
+//             menus.value = menus.value.filter(menu => menu.id !== menuIdBeingDeleted.value);
+//             // sub_menus.value = sub_menus.value.filter(menu => menu.id !== menuIdBeingDeleted.value);
+//             toastr.success("Menu Deleted Successfully");
+//             // emit('menuDeleted', userIdBeingDeleted.value);
+//         })
+// }
 
 
 

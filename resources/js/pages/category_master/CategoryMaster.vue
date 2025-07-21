@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table ref="dataTable" class="table table-responsive-lg mb-0">
+                    <table ref="dataTable" class="table table-responsive-lg mb-0" id="categoryMastertable">
                         <thead>
                             <tr>
                                 <th>S.No.</th>
@@ -50,6 +50,10 @@
                                     <a href="#" @click.prevent="editCategory(item)"
                                         class="btn btn-primary shadow btn-xs  me-1"><i
                                             class="fas fa-pencil-alt"></i></a>
+                                    <a href="#" @click.prevent="confirmCategoryDeletion(item)"
+                                        class="btn btn-danger shadow btn-xs sharp">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
                                 </td>
                             </tr>
                         </tbody>
@@ -174,7 +178,6 @@ const editpageformValues = reactive({
 });
 
 const handlePageSectionSubmit = async (values, actions) => {
-    
     let formData = new FormData();
     formData.append("category_name", values.category_name || "");
 
@@ -190,7 +193,7 @@ const handlePageSectionSubmit = async (values, actions) => {
         toastr.success("Page Section saved successfully");
         $('#categoryModal').modal('hide');
         console.log("Fetching updated data...");
-        await getAllCategoryMaster(); // Ensure the function is awaited
+        await getAllCategoryMaster(); // ensures re-fetch and DataTable refresh
     } catch (error) {
         if (error.response && error.response.status === 409) {
             // Laravel response with message in case of conflict
@@ -202,18 +205,35 @@ const handlePageSectionSubmit = async (values, actions) => {
         actions.resetForm();
     }
 };
+const getAllCategoryMaster = async () => {
+  try {
+    const response = await axios.get('/api/getAllCategoryMaster');
 
-const getAllCategoryMaster = async () => {  // Add async here
-    try {
-        
-        const response = await axios.get("/api/getAllCategoryMaster");
-        categorymasterdatas.value = response.data;
-        await nextTick(); // Ensure DOM updates before initializing DataTable
-        initializeDataTable();
-    } catch (error) {
-        console.error("Error:", error);
+    // Destroy existing DataTable first (if it exists)
+    if ($.fn.DataTable.isDataTable('#categoryMastertable')) {
+      $('#categoryMastertable').DataTable().destroy();
     }
+
+    // Update the data
+    categorymasterdatas.value = response.data;
+
+    // Wait for Vue to update the DOM with v-for
+    await nextTick();
+
+    // Delay DataTable initialization slightly to ensure DOM is fully updated
+    setTimeout(() => {
+      $('#categoryMastertable').DataTable({
+        destroy: true,
+        responsive: true,
+        paging: true,
+        searching: true,
+      });
+    }, 0); // Even 100ms delay works, but 0 is usually enough
+  } catch (error) {
+    console.error('Error loading categories:', error);
+  }
 };
+
 
 const editCategory = (category) => {
     editpageformValues.id = category.id; // Populate the form id
@@ -221,47 +241,26 @@ const editCategory = (category) => {
     $('#editcategoryModal').modal('show'); // Show modal
 };
 
-const edithandlePageSectionSubmit = () => {
+const edithandlePageSectionSubmit = async () => {
     console.log("Form submitted:", editpageformValues);
     try {
-        axios.post("/api/editCategoryMaster", editpageformValues, {
+        await axios.post("/api/editCategoryMaster", editpageformValues, {
             headers: { "Content-Type": "multipart/form-data" },
         });
         toastr.success("Category name updated successfully");
-        $('#categoryModal').modal('hide');
-        console.log("Fetching updated data...");
+        // Refresh the table data
+        await getAllCategoryMaster(); // ensures re-fetch and DataTable refresh
+        $('#editcategoryModal').modal('hide'); // Hide the modal
     } catch (error) {
         if (error.response && error.response.status === 409) {
-            // Laravel response with message in case of conflict
             toastr.error(error.response.data.message || "Error saving Page Section");
         } else {
             toastr.error("Error saving Page Section");
         }
-    } finally {
-        $('#editcategoryModal').modal('hide'); // Show modal
     }
-    // Add API call or form submission logic here
 };
 
 
-
-const initializeDataTable = () => {
-    if ($.fn.DataTable.isDataTable(dataTable.value)) {
-        $(dataTable.value).DataTable().destroy();
-    }
-    $(dataTable.value).DataTable({
-        responsive: true,
-        autoWidth: false,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search here...",
-        },
-        dom:
-            "<'row'<'col-md-6'l><'col-md-6'f>>" + // Align search to right
-            "<'row'<'col-md-12'tr>>" +
-            "<'row'<'col-md-6'i><'col-md-6'p>>", // Align pagination to right
-    });
-};
 
 
 
@@ -283,18 +282,46 @@ const editSavedValue = (index) => {
     $('#categoryModal').modal('show');
 };
 
-const deleteSavedValue = (index) => {
-    axios.post('/api/delete_component/', footerValues.value[index])
-        .then((response) => {
-            getAllCategoryMaster();
-            toastr.success('Footer deleted successfully');
-        }).catch((errors) => {
-            console.log(errors);
-        })
-        .finally(() => {
-            form.value.resetForm();
-        });
+
+
+const confirmCategoryDeletion = async (category) => {
+    debugger;
+    const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await axios.post('/api/delete_mastercategory', {
+                id: category.id,
+            });
+
+            await getAllCategoryMaster(); // Refresh table with latest data
+            Swal.fire({
+                title: "Deleted!",
+                text: "Category has been deleted.",
+                icon: "success"
+            });
+        } catch (error) {
+            console.error("Deletion error:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "Something went wrong while deleting.",
+                icon: "error"
+            });
+        }
+    }
 };
+
+
+
+
 
 onMounted(() => {
     getAllCategoryMaster();
