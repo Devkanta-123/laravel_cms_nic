@@ -155,6 +155,8 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/addLevelMaster', [LevelMasterController::class, 'addLevelMaster']); //added by Dev on 25/03/2025
     //GET LEVEL MASTER MENU
     Route::get('/api/getAllLevelMaster', [LevelMasterController::class, 'getAllLevelMaster']); //added by Dev on 25/03/2025
+    Route::post('/api/editLevelMaster', [LevelMasterController::class, 'editLevelMaster']); //added by Dev on 21/07/2025
+    Route::post('/api/delete_levelmaster', [LevelMasterController::class, 'deleteLevelMaster']); //added by Dev on 21/07/2025
     //add whos who data 
     Route::post('/api/addWhosWho', [WhosWhoController::class, 'addWhosWho']); //added by Dev on 25/03/2025
     Route::post('/api/updateWhosWho', [WhosWhoController::class, 'updateWHosWho']); //added by Dev on 26/06/2025

@@ -34,17 +34,27 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table ref="dataTable" class="table table-responsive-lg mb-0">
+                    <table  class="table table-responsive-lg mb-0" id="levelMasterTable">
                         <thead>
                             <tr>
                                 <th>S.No.</th>
                                 <th>Page Section Name <i class="fa fa-sort asc"></i></th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in levelmasterdatas" :key="item.id">
                                 <td width="10%">{{ index + 1 }}</td>
                                 <td width="20%">{{ item.level_name }}</td>
+                                <td width="20%">
+                                    <a href="#" @click.prevent="editLevel(item)"
+                                        class="btn btn-primary shadow btn-xs  me-1"><i
+                                            class="fas fa-pencil-alt"></i></a>
+                                    <a href="#" @click.prevent="confirmLevelMasterDeletion(item)"
+                                        class="btn btn-danger shadow btn-xs sharp">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -96,7 +106,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editLevelModalLabel">Edit Category Master</h5>
+                    <h5 class="modal-title" id="editLevelModalLabel">Edit Level Master</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -115,12 +125,7 @@
                                     <span class="invalid-feedback">{{ errors.editlevel_name }}</span>
                                 </div>
                             </div>
-
-
                         </div>
-
-
-
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary">Save</button>
@@ -179,7 +184,7 @@ const handleLevelDataSubmit = async (values, actions) => {
         toastr.success("Data saved successfully");
         $('#LevelModal').modal('hide');
         console.log("Fetching updated data...");
-        await getAllCategoryMaster(); // Ensure the function is awaited
+        await gellLevelMaster(); // Ensure the function is awaited
     } catch (error) {
         if (error.response && error.response.status === 409) {
             // Laravel response with message in case of conflict
@@ -192,65 +197,83 @@ const handleLevelDataSubmit = async (values, actions) => {
     }
 };
 
-const getAllCategoryMaster = async () => {  // Add async here
+const gellLevelMaster = async () => {  // Add async here
     try {
-        
         const response = await axios.get("/api/getAllLevelMaster");
         levelmasterdatas.value = response.data;
         await nextTick(); // Ensure DOM updates before initializing DataTable
-        initializeDataTable();
     } catch (error) {
         console.error("Error:", error);
     }
 };
 
-const editCategory = (category) => {
-    editpageformValues.id = category.id; // Populate the form id
-    editpageformValues.editlevel_name = category.level_name; // Populate the form value
+const editLevel = (level) => {
+    editpageformValues.id = level.id; // Populate the form id
+    editpageformValues.editlevel_name = level.level_name; // Populate the form value
     $('#editLevelModal').modal('show'); // Show modal
 };
 
-const edithandleLevelDataSubmit = () => {
-    console.log("Form submitted:", editpageformValues);
-    try {
-        axios.post("/api/editCategoryMaster", editpageformValues, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-        toastr.success("Category name updated successfully");
-        $('#LevelModal').modal('hide');
-        console.log("Fetching updated data...");
-    } catch (error) {
-        if (error.response && error.response.status === 409) {
-            // Laravel response with message in case of conflict
-            toastr.error(error.response.data.message || "Error saving Page Section");
-        } else {
-            toastr.error("Error saving Page Section");
-        }
-    } finally {
-        $('#editLevelModal').modal('hide'); // Show modal
-    }
-    // Add API call or form submission logic here
-};
+const edithandleLevelDataSubmit = async () => {
+  console.log("Form submitted:", editpageformValues);
 
-
-
-const initializeDataTable = () => {
-    if ($.fn.DataTable.isDataTable(dataTable.value)) {
-        $(dataTable.value).DataTable().destroy();
-    }
-    $(dataTable.value).DataTable({
-        responsive: true,
-        autoWidth: false,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search here...",
-        },
-        dom:
-            "<'row'<'col-md-6'l><'col-md-6'f>>" + // Align search to right
-            "<'row'<'col-md-12'tr>>" +
-            "<'row'<'col-md-6'i><'col-md-6'p>>", // Align pagination to right
+  try {
+    await axios.post("/api/editLevelMaster", editpageformValues, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
+
+    toastr.success("Level name updated successfully");
+    $('#editLevelModal').modal('hide');
+
+    console.log("Fetching updated data...");
+    await gellLevelMaster(); // This requires the function to be async
+  } catch (error) {
+    if (error.response && error.response.status === 409) {
+      toastr.error(error.response.data.message || "Error updating Level name");
+    } else {
+      toastr.error("Error updating Level name");
+    }
+  } finally {
+    $('#editLevelModal').modal('hide');
+  }
 };
+
+
+const confirmLevelMasterDeletion = async (level) => {
+    debugger;
+    const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await axios.post('/api/delete_levelmaster', {
+                id: level.id,
+            });
+
+            await gellLevelMaster(); // Refresh table with latest data
+            Swal.fire({
+                title: "Deleted!",
+                text: "Level Master has been deleted.",
+                icon: "success"
+            });
+        } catch (error) {
+            console.error("Deletion error:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "Something went wrong while deleting.",
+                icon: "error"
+            });
+        }
+    }
+};
+
+
 
 
 
@@ -259,34 +282,11 @@ const openLevelMasterModal = () => {
     $('#LevelModal').modal('show');
 };
 
-const editSavedValue = (index) => {
-    editingFooterItem.value = true;
-    pageformValues.value = {
-        id: footerValues.value[index].id,
-        type: footerValues.value[index].type,
-        content: footerValues.value[index].content,
-        link: footerValues.value[index].link,
-        order: footerValues.value[index].order,
-        logoUrl: footerValues.value[index].link ? footerValues.value[index].link : null,
-    };
-    $('#LevelModal').modal('show');
-};
 
-const deleteSavedValue = (index) => {
-    axios.post('/api/delete_component/', footerValues.value[index])
-        .then((response) => {
-            getAllCategoryMaster();
-            toastr.success('Footer deleted successfully');
-        }).catch((errors) => {
-            console.log(errors);
-        })
-        .finally(() => {
-            form.value.resetForm();
-        });
-};
+
 
 onMounted(() => {
-    getAllCategoryMaster();
+    gellLevelMaster();
 });
 
 </script>

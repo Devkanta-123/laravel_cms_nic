@@ -206,32 +206,32 @@ const handlePageSectionSubmit = async (values, actions) => {
     }
 };
 const getAllCategoryMaster = async () => {
-  try {
-    const response = await axios.get('/api/getAllCategoryMaster');
+    try {
+        const response = await axios.get('/api/getAllCategoryMaster');
 
-    // Destroy existing DataTable first (if it exists)
-    if ($.fn.DataTable.isDataTable('#categoryMastertable')) {
-      $('#categoryMastertable').DataTable().destroy();
+        // Destroy existing DataTable first (if it exists)
+        if ($.fn.DataTable.isDataTable('#categoryMastertable')) {
+            $('#categoryMastertable').DataTable().destroy();
+        }
+
+        // Update the data
+        categorymasterdatas.value = response.data;
+
+        // Wait for Vue to update the DOM with v-for
+        await nextTick();
+
+        // Delay DataTable initialization slightly to ensure DOM is fully updated
+        setTimeout(() => {
+            $('#categoryMastertable').DataTable({
+                destroy: true,
+                responsive: true,
+                paging: true,
+                searching: true,
+            });
+        }, 0); // Even 100ms delay works, but 0 is usually enough
+    } catch (error) {
+        console.error('Error loading categories:', error);
     }
-
-    // Update the data
-    categorymasterdatas.value = response.data;
-
-    // Wait for Vue to update the DOM with v-for
-    await nextTick();
-
-    // Delay DataTable initialization slightly to ensure DOM is fully updated
-    setTimeout(() => {
-      $('#categoryMastertable').DataTable({
-        destroy: true,
-        responsive: true,
-        paging: true,
-        searching: true,
-      });
-    }, 0); // Even 100ms delay works, but 0 is usually enough
-  } catch (error) {
-    console.error('Error loading categories:', error);
-  }
 };
 
 
