@@ -176,7 +176,7 @@ class HomeController extends Controller
         }
 
         // Then delete from master component table
-        DB::table('page_section_master')->where('id', $page_section_master_id)->delete();
+        //DB::table('page_section_master')->where('id', $page_section_master_id)->delete();
 
         return response()->json(['status' => 'success']);
     }

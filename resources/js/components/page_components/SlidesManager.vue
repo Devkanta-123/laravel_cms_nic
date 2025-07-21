@@ -70,6 +70,7 @@ const props = defineProps({
     section: Object,
     menu: Number
 })
+console.log("section",props.section);
 const selectFile = () => {
     fileInput.value.click();
 }
@@ -136,20 +137,22 @@ const uploadImages = () => {
     console.log('Images uploaded successfully:', response.data);
     toastr.success('Images uploaded successfully');
     images.value = [];
-    fileInput = ref(null);
   })
   .catch(error => {
     console.error('Error uploading images:', error);
   });
 };
 
-const deleteDBImage = (slide,index) => {
- 
-  axios.post('/api/delete_slide', {id:slide.id})
+const deleteDBImage = (slide, index) => {
+  axios.post('/api/delete_slide', {
+    id: slide.id,
+    menu_id: route.params.menuId,
+    page_section_master_id: props.section.page_section_master.id // Embed the menu_id from route
+  })
   .then(response => {
     console.log('Slide deleted successfully:', response.data);
     toastr.success('Slide deleted successfully');
-    slides.value.splice(index,1);
+    slides.value.splice(index, 1); // remove slide from list
   })
   .catch(error => {
     console.error('Error deleting slide:', error);

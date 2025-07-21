@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table ref="dataTable" class="table table-responsive-lg mb-0">
+                    <table  id="pageSectionTable"  class="table table-responsive-lg mb-0">
                         <thead>
                             <tr>
                                 <th>S.No.</th>
@@ -218,34 +218,42 @@ const handlePageSectionSubmit = async (values, actions) => {
     }
 };
 
-const getPageSectionMaster = async () => {  // Add async here
-    try {
-        const response = await axios.get("/api/getPageSectionMaster");
-        pagemasterdata.value = response.data;
-        await nextTick(); // Ensure DOM updates before initializing DataTable
-        initializeDataTable();
-    } catch (error) {
-        console.error("Error:", error);
+const getPageSectionMaster = async () => {
+  try {
+    const response = await axios.get("/api/getPageSectionMaster");
+    
+    // First, destroy DataTable (if it exists)
+    if ($.fn.DataTable.isDataTable('#pageSectionTable')) {
+      $('#pageSectionTable').DataTable().destroy();
     }
+
+    // Then update your reactive table data
+    pagemasterdata.value = response.data;
+
+    // Wait for DOM to be updated
+    await nextTick();
+
+    // Then initialize the DataTable
+    initializeDataTable();
+  } catch (error) {
+    console.error("Error:", error);
+  }
 };
 
 
 const initializeDataTable = () => {
-    if ($.fn.DataTable.isDataTable(dataTable.value)) {
-        $(dataTable.value).DataTable().destroy();
+  setTimeout(() => {
+    if ($.fn.DataTable.isDataTable('#pageSectionTable')) {
+      $('#pageSectionTable').DataTable().destroy();
     }
-    $(dataTable.value).DataTable({
-        responsive: true,
-        autoWidth: false,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search here...",
-        },
-        dom:
-            "<'row'<'col-md-6'l><'col-md-6'f>>" + // Align search to right
-            "<'row'<'col-md-12'tr>>" +
-            "<'row'<'col-md-6'i><'col-md-6'p>>", // Align pagination to right
+
+    $('#pageSectionTable').DataTable({
+      responsive: true,
+      destroy: true, // Always destroy before reinitializing
+      paging: true,
+      searching: true,
     });
+  }, 0); // Delay ensures Vue has finished rendering
 };
 
 const editComponent = (component) => {
