@@ -408,12 +408,5 @@ onMounted(() => {
 
 
 <style scoped>
-.container {
-    max-width: 800px;
-}
 
-.row {
-    display: flex;
-    align-items: center;
-}
 </style>

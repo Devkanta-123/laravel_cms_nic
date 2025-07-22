@@ -79,15 +79,16 @@
 
 <script setup>
 import { ref, onMounted, defineProps } from 'vue';
-import { component as ckeditor } from '@mayasabha/ckeditor4-vue3';
 import { useToastr } from '../../toaster.js';
+import { useLatestNews } from '@/composables/useLatestNews';
+const { fetchData } = useLatestNews(); // Reuse the same composable
 const title = ref('');
 const titleK = ref('');
 const titleH = ref('');
 const titleO = ref('');
 const link = ref('');
-import { useRoute } from 'vue-router';
 const route = useRoute();
+import { useRoute } from 'vue-router';
 const fileInput = ref(null);
 const errors = ref({ title: '', file: '', link: '', menu_type: null });
 let file = null;
@@ -150,7 +151,7 @@ const validateInputs = () => {
 };
 
 const saveLatestNews = () => {
-  debugger;
+  debugger
   if (!validateInputs()) {
     toastr.error('Please correct the errors before submitting.');
     return; // Stop execution if validation fails
@@ -176,6 +177,7 @@ const saveLatestNews = () => {
   })
     .then(response => {
       console.log('Latest News saved successfully:', response.data.message);
+      fetchData(); // ✅ calling fetchData after save
       toastr.success(response.data.message);
     })
     .catch(error => {
@@ -184,7 +186,10 @@ const saveLatestNews = () => {
     });
 };
 
-onMounted(() => {
+onMounted(() => 
+{
+    fetchData();
+
 });
 </script>
 

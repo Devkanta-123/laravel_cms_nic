@@ -22,6 +22,7 @@
         "admin-lte": "3.2",
         "bootstrap4-toggle": "^3.6.1",
         "crypto-js": "^4.2.0",
+        "datatables.net": "^2.3.2",
         "dompurify": "^3.2.6",
         "i": "^0.3.7",
         "idb": "^8.0.2",

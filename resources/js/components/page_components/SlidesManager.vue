@@ -147,7 +147,7 @@ const deleteDBImage = (slide, index) => {
   axios.post('/api/delete_slide', {
     id: slide.id,
     menu_id: route.params.menuId,
-    page_section_master_id: props.section.page_section_master.id // Embed the menu_id from route
+    page_section_master_id: props.section.page_section_master.id
   })
   .then(response => {
     console.log('Slide deleted successfully:', response.data);
