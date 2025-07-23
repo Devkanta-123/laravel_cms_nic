@@ -58,10 +58,12 @@
           <i class="fa fa-chevron-right"></i>
         </div>
       </div>
-      <router-link :to="{ name: 'Page', params: { id: 73 }, query: { page_name: 'Archive Data' } }" class="btn" data-aos="fade-up"
+      <router-link :to="{ name: 'Page', params: { id: encrypt( 73 )}, query: { page_name: encrypt('Archive Data')} }" class="btn" data-aos="fade-up"
         data-aos-delay="600">
         See Archive data
       </router-link>
+
+       
 
     </div>
   </div>
@@ -72,6 +74,7 @@
 import { ref, onMounted, computed, inject, provide } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { encrypt } from '../assets/js/cryptoUtil.js'
 import logo from '@/assets/images/latest_news.png'
 const language = inject("language");
 const router = useRouter();

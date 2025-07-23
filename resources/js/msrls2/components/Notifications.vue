@@ -102,7 +102,7 @@
                     </div>
                 </template>
             </div>
-            <router-link :to="{ name: 'Page', params: { id: 45 }, query: { page_name: 'Notice Board' } }" class="btn"
+            <router-link :to="{ name: 'Page', params: { id: encrypt(45) }, query: { page_name: encrypt('Notice Board') } }" class="btn"
                 :style="{ position: 'relative', '--after-display': 'none', '--before-display': 'none' }"
                 data-aos="fade-up" data-aos-delay="600">
                 See All  Notification
@@ -144,6 +144,7 @@
 <script setup>
 import { ref, onMounted, inject, provide, computed } from 'vue';
 import axios from 'axios';
+import { encrypt } from '../assets/js/cryptoUtil.js'
 import { useRouter } from 'vue-router';
 import event from '@/assets/images/event.png'
 const router = useRouter();

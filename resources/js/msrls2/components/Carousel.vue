@@ -38,7 +38,7 @@
                       With MSRLS, Together for
                       <span id="typewriter">{{ displayText }}</span>
                     </h2>
-                    <router-link :to="{ name: 'Page', params: { id: 3 }, query: { page_name: 'About us ' } }"
+                    <router-link :to="{ name: 'Page', params: { id: encrypt(3)}, query: { page_name: encrypt('About us ')} }"
                       class="btn"
                       data-aos="fade-up" data-aos-delay="600">
                       Learn More
@@ -100,7 +100,7 @@
 import { ref, onMounted, onUnmounted, defineEmits } from 'vue';
 import axios from 'axios';
 const emit = defineEmits(['loaded']);
-
+import { encrypt } from '../assets/js/cryptoUtil.js'
 const fullText = "Sustainable Rural Growth.";
 const displayText = ref("");
 let index = 0;

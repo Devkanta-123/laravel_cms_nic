@@ -300,10 +300,16 @@
                   <h2 class="title tg-element-title" v-if="homepragraphdata" v-html="homepragraphdata"></h2>
                 </div>
                 <div class="about-bottom">
-                  <router-link :to="{ name: 'Page', params: { id: 3 }, query: { page_name: 'About us' } }" class="btn"
+                  <router-link :to="{ name: 'Page', params: { id: encrypt(3) }, query: { page_name: encrypt('About us') } }" class="btn"
                     data-aos="fade-up" data-aos-delay="600">
                     Read More
                   </router-link>
+<!-- 
+                  <router-link :to="{ name: 'Page', params: { id: encrypt( 73 )}, query: { page_name: encrypt('Archive Data')} }" class="btn" data-aos="fade-up"
+        data-aos-delay="600">
+        See Archive data
+      </router-link> -->
+
                 </div>
               </div>
             </div>
@@ -404,7 +410,7 @@
                   </div>
                 </div>
               </div>
-              <router-link :to="{ name: 'Page', params: { id: 65 }, query: { page_name: 'FAQ' } }" class="btn"
+              <router-link :to="{ name: 'Page', params: { id: encrypt(65) }, query: { page_name: encrypt('FAQ') } }" class="btn"
                 :style="{ position: 'relative', '--after-display': 'none', '--before-display': 'none' }"
                 data-aos="fade-up" data-aos-delay="600">
                 See All FAQs
