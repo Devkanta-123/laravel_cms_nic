@@ -22,14 +22,9 @@
                             <textarea id="galleryDescription" v-model="galleryDescription"
                                 placeholder="Enter gallery description" class="form-control"></textarea>
                         </div>
-                        <div class="drag-area" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave"
-                            @drop.prevent="onDrop">
-                            <span v-if="!isDragging">
-                                Drag Images here
-                                <span class="select" role="button" @click="selectFile">Choose</span>
-                            </span>
-                            <div v-else class="select">Drop Images here</div>
-                            <input type="file" name="file" class="file" ref="fileInput" multiple @change="onFileSelect"
+                        <div class="form-group">
+                            <label class="form-label">Cover Image</label>
+                            <input type="file" class="form-control" ref="fileInput" @change="onFileSelect"
                                 accept="image/*,video/*">
                         </div>
                         <div class="container">
@@ -168,8 +163,8 @@ const addGalleryItem = () => {
     galleryItems.value.push({ name: '', file: null, url: '' });
 };
 const props = defineProps({
-  menu: String,
-  section: Number,
+    menu: String,
+    section: Number,
 });
 const removeGalleryItem = (index) => {
     if (galleryItems.value.length === 1) {
@@ -213,58 +208,32 @@ function isVideo(url) {
     return ['mp4', 'mov', 'avi', 'webm'].includes(ext);
 }
 const onFileSelect = (event) => {
-    const files = event.target.files;
-    if (files.length === 0) return;
+    const file = event.target.files[0];  // ⬅ only take the first file
+    if (!file) return;
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileType = file.type.split('/')[0]; // image or video
+    const fileType = file.type.split('/')[0]; // 'image' or 'video'
 
-        if (!['image', 'video'].includes(fileType)) continue;
-
-        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-            toastr.error(`${file.name} exceeds 20MB limit.`);
-            continue;
-        }
-
-        if (!images.value.some((e) => e.name === file.name)) {
-            images.value.push({
-                name: file.name,
-                file,
-                url: URL.createObjectURL(file),
-                type: fileType
-            });
-        }
+    if (!['image', 'video'].includes(fileType)) {
+        toastr.error('Only image and video files are allowed.');
+        return;
     }
-};
 
+    const maxSize = MAX_FILE_SIZE_MB * 1024 * 1024;
+    if (file.size > maxSize) {
+        toastr.error(`${file.name} exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+        return;
+    }
+
+    // Replace existing image/video (no duplicates)
+    images.value = [{
+        name: file.name,
+        file,
+        url: URL.createObjectURL(file),
+        type: fileType
+    }];
+};
 const deleteImage = (index) => {
     images.value.splice(index, 1);
-};
-
-const onDragOver = (e) => {
-    isDragging.value = true;
-    e.dataTransfer.dropEffect = 'copy';
-};
-
-const onDragLeave = () => {
-    isDragging.value = false;
-};
-
-const onDrop = (e) => {
-    isDragging.value = false;
-    const files = e.dataTransfer.files;
-    if (files.length === 0) return;
-    for (let i = 0; i < files.length; i++) {
-        if (files[i].type.split('/')[0] !== 'image') continue;
-        if (!images.value.some((e) => e.name === files[i].name)) {
-            images.value.push({
-                name: files[i].name,
-                file: files[i],
-                url: URL.createObjectURL(files[i]),
-            });
-        }
-    }
 };
 
 
@@ -277,7 +246,7 @@ const uploadImages = () => {
     formData.append('gallery_name', galleryName.value);
     formData.append('gallery_description', galleryDescription.value);
     formData.append("menu_id", props.menu);
-    formData.append("page_section_master_id", props.section.page_section_id); 
+    formData.append("page_section_master_id", props.section.page_section_id);
 
     // Append main gallery images
     images.value.forEach((image) => {

@@ -29,11 +29,7 @@
                                     <!-- <textarea class="form-control mt-2" v-model="formData.english_answer" rows="2"
                                             placeholder="English Answer"></textarea> -->
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Order <span class="text-danger"> *</span></label>
-                                    <input type="number" class="form-control" v-model="formData.order"
-                                        placeholder="Order" />
-                                </div>
+                             
                             </div>
                             <div class="row">
                                 <div class="col-md-3">
@@ -280,7 +276,6 @@ const formData = reactive({
     hindi_answer: "",
     khasi_question: "",
     khasi_answer: "",
-    order: ""
 });
 const filteredFAQData = ref([]);
 const activeFlag = ref('ALL'); // Default to 'ALL'
@@ -316,8 +311,7 @@ const getAllPublisher = async () => {
 const validateFields = () => {
     if (
         !formData.english_question.trim() ||
-        !formData.english_answer.trim() ||
-        !formData.order.toString().trim()
+        !formData.english_answer.trim()
     ) {
         toastr.error("All fields are required!");
         return false;
@@ -327,10 +321,7 @@ const validateFields = () => {
         toastr.error("Please select a publisher.");
         return false;
     }
-    if (isNaN(parseInt(formData.order))) {
-        toastr.error("Order must be a valid number.");
-        return false;
-    }
+   
 
     return true;
 };
@@ -368,9 +359,7 @@ const validateFields = () => {
 // };
 
 const submitData = async () => {
-    debugger;
     if (!validateFields()) return;
-
     const dataToSend = {
         english_question: formData.english_question,
         english_answer: formData.english_answer,
@@ -378,7 +367,6 @@ const submitData = async () => {
         hindi_answer: formData.hindi_answer,
         khasi_question: formData.khasi_question,
         khasi_answer: formData.khasi_answer,
-        order: formData.order,
         menu_id: route.params.menuId,
         page_section_master_id: route.params.page_section_id,
         publisher_id: selectedPublisher.value

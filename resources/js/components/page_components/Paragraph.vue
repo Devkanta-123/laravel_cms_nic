@@ -96,7 +96,7 @@ const saveContent = async () => {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    toastr.success("Page created successfully");
+    toastr.success("Data saved successfully");
   } catch (error) {
     console.error("Error saving content:", error);
     if (error.response?.data?.errors) {

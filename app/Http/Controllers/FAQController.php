@@ -18,29 +18,27 @@ class FAQController extends Controller
     }
     public function submitFAQData(Request $request)
     {
-        // Check if the same order already exists
-        $existingFAQ = FAQ::where('order', $request->order)->first();
-        $user = Auth::user(); // This will get the authenticated user
+        $user = Auth::user(); // Get authenticated user
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        //before submit check roleid and set flag value
+
         // Determine flag based on role_id
-        if ($user->role_id == 2) { //if admin upload 
+        if ($user->role_id == 2) {
             $flag = 'A';
-        } elseif ($user->role_id == 3) { //if contentcreator upload
+        } elseif ($user->role_id == 3) {
             $flag = 'N';
+        } else {
+            $flag = null;
         }
-        if ($existingFAQ) {
-            return response()->json([
-                'message' => 'Same order number already exists.',
-                'status' => 'warning'
-            ], 409);
-        }
+
+        // Get the next order number by finding the max order and adding 1
+        $maxOrder = FAQ::max('order');
+        $nextOrder = $maxOrder ? $maxOrder + 1 : 1;
+
         $applicationId = 'FAQ' . now()->format('YmdHis');
         $publisher = User::find($request->publisher_id);
 
-        // Ensure only English fields are required; convert empty values to null
         $faqData = [
             'english_title_question' => $request->english_question,
             'hindi_title_question' => $request->hindi_question ?: null,
@@ -48,17 +46,18 @@ class FAQController extends Controller
             'english_answer' => $request->english_answer,
             'hindi_answer' => $request->hindi_answer ?: null,
             'khasi_answer' => $request->khasi_answer ?: null,
-            'order' => $request->order,
+            'order' => $nextOrder,
             'user_id' => $user->id,
             'flag' => $flag,
             'role_id' => $user->role_id,
             'publisher_id' => $request->publisher_id ?? null,
             'application_id' => $applicationId
-
         ];
 
-        // Insert the data into AppTrack table
+        // Insert into FAQ
         FAQ::create($faqData);
+
+        // Track submission
         AppTrack::create([
             'application_id' => $applicationId,
             'menu_id' => $request->menu_id,
@@ -77,6 +76,7 @@ class FAQController extends Controller
             'status' => 'success'
         ], 200);
     }
+
 
 
 
@@ -101,7 +101,7 @@ class FAQController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
         // For role_id 3 or 4 (admin or moderator)
-        if (in_array($user->role_id, [3, 4])) {
+        if (in_array($user->role_id, [2,3, 4])) {
             $faqs = DB::table('faqs as f')
                 ->join('users as u', 'u.id', '=', 'f.user_id')
                 ->select('f.*', 'u.name as addedby')
@@ -148,10 +148,8 @@ class FAQController extends Controller
         $request->validate([
             'english_question' => 'required|string',
             'english_answer' => 'required|string',
-            'order' => 'required|integer',
             'menu_id' => 'required|integer',
             'page_section_master_id' => 'required|integer',
-            'publisher_id' => 'required|integer'
         ]);
         $faq = FAQ::find($id);
         if (!$faq) {
@@ -175,10 +173,10 @@ class FAQController extends Controller
             'hindi_answer' => $request->hindi_answer,
             'khasi_title_question' => $request->khasi_question,
             'khasi_answer' => $request->khasi_answer,
-            'order' => $request->order,
+            'order' => $faq->order,
             'menu_id' => $request->menu_id,
             'page_section_master_id' => $request->page_section_master_id,
-            'publisher_id' => $request->publisher_id,
+            'publisher_id' => $request->publisher_id ?? 0,
             'flag' => 'U',
         ]);
         AppTrack::create([

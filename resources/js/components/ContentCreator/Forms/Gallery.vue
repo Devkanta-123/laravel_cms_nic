@@ -282,31 +282,30 @@ function isVideo(url) {
     return ['mp4', 'mov', 'avi', 'webm'].includes(ext);
 }
 const onFileSelect = (event) => {
-    const files = event.target.files;
-    if (files.length === 0) return;
+    const file = event.target.files[0];  // ⬅ only take the first file
+    if (!file) return;
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileType = file.type.split('/')[0]; // image or video
+    const fileType = file.type.split('/')[0]; // 'image' or 'video'
 
-        if (!['image', 'video'].includes(fileType)) continue;
-
-        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-            toastr.error(`${file.name} exceeds 20MB limit.`);
-            continue;
-        }
-
-        if (!images.value.some((e) => e.name === file.name)) {
-            images.value.push({
-                name: file.name,
-                file,
-                url: URL.createObjectURL(file),
-                type: fileType
-            });
-        }
+    if (!['image', 'video'].includes(fileType)) {
+        toastr.error('Only image and video files are allowed.');
+        return;
     }
-};
 
+    const maxSize = MAX_FILE_SIZE_MB * 1024 * 1024;
+    if (file.size > maxSize) {
+        toastr.error(`${file.name} exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+        return;
+    }
+
+    // Replace existing image/video (no duplicates)
+    images.value = [{
+        name: file.name,
+        file,
+        url: URL.createObjectURL(file),
+        type: fileType
+    }];
+};
 const getAllPublisher = async () => {
     try {
         const response = await axios.get('/api/get_allpublisher');

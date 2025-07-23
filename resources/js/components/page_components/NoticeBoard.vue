@@ -51,11 +51,10 @@
                         </div>
 
                         <div class="col-md-2 d-flex justify-content-end">
-                            <button class="btn btn-danger" @click="removeRow(index)">
-                                <i class="fa fa-trash"></i>
+                            <button class="btn btn-sm py-0 px-1" @click="removeRow(index)">
+                                <i class="fas fa-trash-alt text-danger"></i>
                             </button>
                         </div>
-
                     </div>
                     <div class="col-md-4 d-flex align-items-center gap-2">
                         <!-- Add Row Button -->
@@ -306,6 +305,7 @@ const submitData = async () => {
         });
 
         toastr.success(response.data.message);
+        getAllNotifications();
         rows.value = [{ title: "", date: "", files: [] }]; // Reset form after success
 
     } catch (error) {
@@ -407,6 +407,4 @@ onMounted(() => {
 </script>
 
 
-<style scoped>
-
-</style>
+<style scoped></style>

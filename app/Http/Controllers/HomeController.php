@@ -1462,18 +1462,22 @@ class HomeController extends Controller
         $card = Cards::find($id);
 
         if (!$card) {
-            return response()->json(['message' => 'card not found'], 404);
+            return response()->json(['message' => 'Card not found'], 404);
         }
 
         // Delete the file if it exists
-        if ($card->file && Storage::disk('public')->exists($card->file)) {
-            Storage::disk('public')->delete($card->file);
+        if ($card->image && Storage::disk('public')->exists($card->image)) {
+            Storage::disk('public')->delete($card->image);
         }
+
+        // Save user and card info for tracking (before deleting the card)
+        $user = Auth::user();
+        $userTo = User::find($card->user_id);
+        $appId = $card->application_id;
+        $title = $card->card_title; // assuming 'card_title' is correct column
 
         // Delete the card
         $card->delete();
-        $user = Auth::user();
-        $userTo = User::find($card->user_id);
 
         // Add entry to AppTrack
         AppTrack::create([
@@ -1483,18 +1487,14 @@ class HomeController extends Controller
             'user_from_name' => $user->name,
             'user_to' => $card->user_id,
             'user_to_name' => $userTo ? $userTo->name : null,
-            'remarks' => 'Card Deleted: ' . $card->title,
+            'remarks' => 'Card Deleted: ' . $title,
             'action' => 'Deleted',
             'flag' => 'D',
-            'application_id' => $card->application_id
-
+            'application_id' => $appId
         ]);
 
         return response()->json(['message' => 'Card deleted successfully']);
     }
-
-
-
 
 
 
