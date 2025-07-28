@@ -2387,6 +2387,94 @@ class HomeController extends Controller
         ]);
     }
 
+    public function getAdminDashboardStatistics()
+{
+    $user = Auth::user();
+    $userId = $user->id;
+    $filterByUser = $user->role_id == 3;
+
+    $baseQuery = function ($table) use ($filterByUser, $userId) {
+        $query = DB::table($table)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year);
+
+        if ($filterByUser) {
+            $query->where('user_id', $userId);
+        }
+
+        return $query->count();
+    };
+
+    // Pie chart: Notifications by category (for current month)
+    $notificationsByCategory = DB::table('notifications as n')
+        ->join('category_master as cm', 'cm.id', '=', 'n.category_id')
+        ->select('cm.category_name', DB::raw('COUNT(*) as count'))
+        ->when($filterByUser, fn($q) => $q->where('n.user_id', $userId))
+        ->whereMonth('n.created_at', now()->month)
+        ->whereYear('n.created_at', now()->year)
+        ->groupBy('cm.category_name')
+        ->get();
+
+    // 📊 Pie chart: Content status across all tables for all time
+    $tables = [
+        'cards', 'latest_news', 'notifications', 'carousel', 'gallery',
+        'paragraph', 'whos_who', 'logo', 'map', 'faqs'
+    ];
+
+    $contentStatusData = collect();
+
+    foreach ($tables as $table) {
+        $query = DB::table($table)
+            ->select('flag', DB::raw('COUNT(*) as count'))
+            ->groupBy('flag');
+
+        if ($filterByUser) {
+            $query->where('user_id', $userId);
+        }
+
+        $rows = $query->get();
+
+        foreach ($rows as $row) {
+            $status = match ($row->flag) {
+                'A' => 'Approved',
+                'N' => 'New',
+                'R' => 'Rejected',
+                'U' => 'Updated',
+                default => 'Unknown'
+            };
+
+            $existing = $contentStatusData->firstWhere('category_name', $status);
+            if ($existing) {
+                $existing->count += $row->count;
+            } else {
+                $contentStatusData->push((object)[
+                    'category_name' => $status,
+                    'count' => $row->count
+                ]);
+            }
+        }
+    }
+
+    return response()->json([
+        'notifications_by_category' => $notificationsByCategory,
+        'monthly_component_counts' => [
+            'cards' => $baseQuery('cards'),
+            'latest_news' => $baseQuery('latest_news'),
+            'notifications' => $baseQuery('notifications'),
+            'carousel' => $baseQuery('carousel'),
+            'gallery' => $baseQuery('gallery'),
+            'paragraph' => $baseQuery('paragraph'),
+            'whos_who' => $baseQuery('whos_who'),
+            'logo' => $baseQuery('logo'),
+            'map' => $baseQuery('map'),
+            'faqs' => $baseQuery('faqs'),
+        ],
+        'content_status_data' => $contentStatusData->values(),
+    ]);
+}
+
+
+
 
 
     public function getArchiveData()

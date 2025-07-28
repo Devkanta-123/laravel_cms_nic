@@ -30,7 +30,8 @@ Route::post('/approve_carousel', [HomeController::class, 'approveCarousel']); //
 Route::post('/rejectedSlide', [HomeController::class, 'rejectedSlide']); //for publisher rejected
 Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);
-Route::get('getDashboardData', [HomeController::class, 'getDashboardData']); //for Dashboard statistic data 
+Route::get('getDashboardData', [HomeController::class, 'getDashboardData']); //for Dashboard Count data 
+Route::get('getAdminDashboardStatistics', [HomeController::class, 'getAdminDashboardStatistics']); //for Dashboard statistic data 
 Route::put('approved_logo', [HomeController::class, 'approveLogo']);
 Route::post('update_logo', [HomeController::class, 'updateLogo']);
 Route::post('rejected_logo', [HomeController::class, 'rejectLogo']);
