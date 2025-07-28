@@ -117,10 +117,13 @@ class HomeController extends Controller
                 $footer->save();
             }
 
+
+
             if ($footer) {
                 $footer->type = $request->type;
                 $footer->link = $newFileName;
                 $footer->order = $request->order;
+                $footer->link = $request->link;
                 $footer->content = $request->content;
                 $footer->save();
             } else if ($request->type == 'quicklink') { //create the quick link
@@ -136,7 +139,8 @@ class HomeController extends Controller
                     'type' => $request->type,
                     'content' => $request->content,
                     'order' => $request->order,
-                    'link' => $newFileName
+                    'link' => $newFileName ?? $request->link
+
                 ]);
             }
         }
@@ -2388,93 +2392,153 @@ class HomeController extends Controller
     }
 
     public function getAdminDashboardStatistics()
-{
-    $user = Auth::user();
-    $userId = $user->id;
-    $filterByUser = $user->role_id == 3;
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+        $filterByUser = $user->role_id == 3;
 
-    $baseQuery = function ($table) use ($filterByUser, $userId) {
-        $query = DB::table($table)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year);
+        $baseQuery = function ($table) use ($filterByUser, $userId) {
+            $query = DB::table($table)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year);
 
-        if ($filterByUser) {
-            $query->where('user_id', $userId);
-        }
+            if ($filterByUser) {
+                $query->where('user_id', $userId);
+            }
 
-        return $query->count();
-    };
+            return $query->count();
+        };
 
-    // Pie chart: Notifications by category (for current month)
-    $notificationsByCategory = DB::table('notifications as n')
-        ->join('category_master as cm', 'cm.id', '=', 'n.category_id')
-        ->select('cm.category_name', DB::raw('COUNT(*) as count'))
-        ->when($filterByUser, fn($q) => $q->where('n.user_id', $userId))
-        ->whereMonth('n.created_at', now()->month)
-        ->whereYear('n.created_at', now()->year)
-        ->groupBy('cm.category_name')
-        ->get();
+        // Pie chart: Notifications by category (for current month)
+        $notificationsByCategory = DB::table('notifications as n')
+            ->join('category_master as cm', 'cm.id', '=', 'n.category_id')
+            ->select('cm.category_name', DB::raw('COUNT(*) as count'))
+            ->when($filterByUser, fn($q) => $q->where('n.user_id', $userId))
+            ->whereMonth('n.created_at', now()->month)
+            ->whereYear('n.created_at', now()->year)
+            ->groupBy('cm.category_name')
+            ->get();
 
-    // 📊 Pie chart: Content status across all tables for all time
-    $tables = [
-        'cards', 'latest_news', 'notifications', 'carousel', 'gallery',
-        'paragraph', 'whos_who', 'logo', 'map', 'faqs'
-    ];
+        // 📊 Pie chart: Content status across all tables for all time
+        $tables = [
+            'cards',
+            'latest_news',
+            'notifications',
+            'carousel',
+            'gallery',
+            'paragraph',
+            'whos_who',
+            'logo',
+            'map',
+            'faqs'
+        ];
 
-    $contentStatusData = collect();
+        $contentStatusData = collect();
 
-    foreach ($tables as $table) {
-        $query = DB::table($table)
-            ->select('flag', DB::raw('COUNT(*) as count'))
-            ->groupBy('flag');
+        foreach ($tables as $table) {
+            $query = DB::table($table)
+                ->select('flag', DB::raw('COUNT(*) as count'))
+                ->groupBy('flag');
 
-        if ($filterByUser) {
-            $query->where('user_id', $userId);
-        }
+            if ($filterByUser) {
+                $query->where('user_id', $userId);
+            }
 
-        $rows = $query->get();
+            $rows = $query->get();
 
-        foreach ($rows as $row) {
-            $status = match ($row->flag) {
-                'A' => 'Approved',
-                'N' => 'New',
-                'R' => 'Rejected',
-                'U' => 'Updated',
-                default => 'Unknown'
-            };
+            foreach ($rows as $row) {
+                $status = match ($row->flag) {
+                    'A' => 'Approved',
+                    'N' => 'New',
+                    'R' => 'Rejected',
+                    'U' => 'Updated',
+                    default => 'Unknown'
+                };
 
-            $existing = $contentStatusData->firstWhere('category_name', $status);
-            if ($existing) {
-                $existing->count += $row->count;
-            } else {
-                $contentStatusData->push((object)[
-                    'category_name' => $status,
-                    'count' => $row->count
-                ]);
+                $existing = $contentStatusData->firstWhere('category_name', $status);
+                if ($existing) {
+                    $existing->count += $row->count;
+                } else {
+                    $contentStatusData->push((object) [
+                        'category_name' => $status,
+                        'count' => $row->count
+                    ]);
+                }
             }
         }
+
+        return response()->json([
+            'notifications_by_category' => $notificationsByCategory,
+            'monthly_component_counts' => [
+                'cards' => $baseQuery('cards'),
+                'latest_news' => $baseQuery('latest_news'),
+                'notifications' => $baseQuery('notifications'),
+                'carousel' => $baseQuery('carousel'),
+                'gallery' => $baseQuery('gallery'),
+                'paragraph' => $baseQuery('paragraph'),
+                'whos_who' => $baseQuery('whos_who'),
+                'logo' => $baseQuery('logo'),
+                'map' => $baseQuery('map'),
+                'faqs' => $baseQuery('faqs'),
+            ],
+            'content_status_data' => $contentStatusData->values(),
+        ]);
     }
 
-    return response()->json([
-        'notifications_by_category' => $notificationsByCategory,
-        'monthly_component_counts' => [
-            'cards' => $baseQuery('cards'),
-            'latest_news' => $baseQuery('latest_news'),
-            'notifications' => $baseQuery('notifications'),
-            'carousel' => $baseQuery('carousel'),
-            'gallery' => $baseQuery('gallery'),
-            'paragraph' => $baseQuery('paragraph'),
-            'whos_who' => $baseQuery('whos_who'),
-            'logo' => $baseQuery('logo'),
-            'map' => $baseQuery('map'),
-            'faqs' => $baseQuery('faqs'),
-        ],
-        'content_status_data' => $contentStatusData->values(),
-    ]);
-}
 
+    public function addVisitCount()
+    {
+        try {
+            // Always update the first row (id = 1 assumed)
+            $setting = WebsiteSettings::find(1);
 
+            if ($setting) {
+                // Manually increment the visit_counter and save
+                $setting->visit_counter = $setting->visit_counter + 1;
+                $setting->save();
 
+                return response()->json([
+                    'status' => true,
+                    'visit_count' => $setting->visit_counter
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Settings row not found. Please seed the table with one row.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update visit count',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function getVisitorCount()
+    {
+        try {
+            $setting = WebsiteSettings::find(1);
+
+            if ($setting) {
+                return response()->json([
+                    'status' => true,
+                    'visit_count' => $setting->visit_counter
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Settings row not found.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch visitor count',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     public function getArchiveData()

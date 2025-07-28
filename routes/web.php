@@ -32,6 +32,8 @@ Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);
 Route::get('getDashboardData', [HomeController::class, 'getDashboardData']); //for Dashboard Count data 
 Route::get('getAdminDashboardStatistics', [HomeController::class, 'getAdminDashboardStatistics']); //for Dashboard statistic data 
+Route::post('addVisitCount', [HomeController::class, 'addVisitCount']); //for visit count 
+Route::get('getVisitorCount', [HomeController::class, 'getVisitorCount']); //fetch visit count 
 Route::put('approved_logo', [HomeController::class, 'approveLogo']);
 Route::post('update_logo', [HomeController::class, 'updateLogo']);
 Route::post('rejected_logo', [HomeController::class, 'rejectLogo']);

@@ -300,11 +300,12 @@
                   <h2 class="title tg-element-title" v-if="homepragraphdata" v-html="homepragraphdata"></h2>
                 </div>
                 <div class="about-bottom">
-                  <router-link :to="{ name: 'Page', params: { id: encrypt(3) }, query: { page_name: encrypt('About us') } }" class="btn"
-                    data-aos="fade-up" data-aos-delay="600">
+                  <router-link
+                    :to="{ name: 'Page', params: { id: encrypt(3) }, query: { page_name: encrypt('About us') } }"
+                    class="btn" data-aos="fade-up" data-aos-delay="600">
                     Read More
                   </router-link>
-<!-- 
+                  <!-- 
                   <router-link :to="{ name: 'Page', params: { id: encrypt( 73 )}, query: { page_name: encrypt('Archive Data')} }" class="btn" data-aos="fade-up"
         data-aos-delay="600">
         See Archive data
@@ -410,8 +411,8 @@
                   </div>
                 </div>
               </div>
-              <router-link :to="{ name: 'Page', params: { id: encrypt(65) }, query: { page_name: encrypt('FAQ') } }" class="btn"
-                :style="{ position: 'relative', '--after-display': 'none', '--before-display': 'none' }"
+              <router-link :to="{ name: 'Page', params: { id: encrypt(65) }, query: { page_name: encrypt('FAQ') } }"
+                class="btn" :style="{ position: 'relative', '--after-display': 'none', '--before-display': 'none' }"
                 data-aos="fade-up" data-aos-delay="600">
                 See All FAQs
               </router-link>
@@ -466,6 +467,9 @@ import '../assets/css/main.css';
 import '../assets/js/swiper-bundle.js';
 import '../assets/css/swiper-bundle.css';
 import aboutus from '@/assets/images/aboutus.png';
+// Track if visit has already been counted in this session
+const visitLogged = ref(false)
+const visitCount = ref(0);
 const isCarouselLoaded = ref(false);
 const menuItems = ref([]);
 const header = ref([]);
@@ -696,18 +700,43 @@ const getActivateLanguages = async () => {
   }
 }
 
+
+
+
+const updateVisitCount = async () => {
+  try {
+    const response = await axios.post('/addVisitCount')
+    console.log('Visit count updated:', response.data.visit_count)
+    visitLogged.value = true
+  } catch (error) {
+    console.error('Failed to update visit count:', error)
+  }
+}
+
+onMounted(async () => {
+  try {
+    console.log("Component mounted")
+    await updateVisitCount()
+
+    await Promise.all([
+      fetchMenuItems(),
+      fetchHeader(),
+      fetchPageContent(),
+      fetchFAQs(),
+      getActivateLanguages()
+    ])
+
+    window.addEventListener('resize', updateWindowWidth)
+  } finally {
+    isLoading.value = false
+  }
+})
+
 onUnmounted(() => {
   window.removeEventListener('resize', updateWindowWidth);
 });
 
 
-onMounted(async () => {
-  try {
-    await Promise.all([fetchMenuItems(), fetchHeader(), fetchPageContent(), fetchFAQs(), getActivateLanguages(), window.addEventListener('resize', updateWindowWidth)]);
-  } finally {
-    isLoading.value = false;
-  }
-});
 </script>
 <style scoped>
 /* Remove default bullets and list styles */

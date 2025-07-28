@@ -9,5 +9,5 @@ class WebsiteSettings extends Model
 {
     use HasFactory;
     protected $table = 'website_settings';
-    protected $fillable = ['archieve_duration', 'language_id', 'primary_color', 'secondary_color'];
+    protected $fillable = ['archieve_duration', 'language_id', 'primary_color', 'secondary_color','visit_count'];
 }

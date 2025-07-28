@@ -113,7 +113,6 @@ const pageName = ref('');
 
 const fetchPageContent = async () => {
     try {
-        debugger;
         isLoading.value = true;
 
         const decryptedId = decrypt(route.params.id || '');

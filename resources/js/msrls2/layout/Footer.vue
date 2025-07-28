@@ -1,5 +1,5 @@
 <template>
-  <footer>
+  <!-- <footer>
 
     <div class="footer-area">
       <div class="footer-top" style="margin-top:-6%;height: 510px;">
@@ -59,142 +59,89 @@
         </div>
       </div>
     </div>
-  </footer>
-  <!-- <footer>
+  </footer> -->
+  <footer>
     <div class="footer-area">
       <div class="footer-top">
         <div class="container">
           <div class="row">
-            <div class="col-xl-3 col-lg-4 col-md-6">
+            <!-- Social Media + Footer Text -->
+            <div class="col-xl-3 col-lg-4 col-md-6" v-if="socialLinks.length">
               <div class="footer-widget">
-                <div class="fw-logo mb-25">
-                  <a href="index.html"><img src="assets/img/logo/logo.png" alt="Apexa"></a>
-                </div>
                 <div class="footer-content">
-                  <p>Copyright © 2025 - All Rights Reserved - Official website of Meghalaya State Rural Livelihoods
-                    Society (MSRLS), Government of Meghalaya
-                    Note: Content on this website is published and managed by Meghalaya State Rural Livelihoods Society
-                    (MSRLS), Government of Meghalaya
-                    For any query regarding this website, please contact the Project Manager - Knowledge Management &
-                    Communications (KMC)
-                    E-mail ID: pmkmc[dot]msrls[at]gmail[dot]com</p>
+                  <p v-if="footerText">{{ footerText.content }}</p>
                   <div class="footer-social">
                     <ul class="list-wrap">
-                      <li>
-                        <a href="javascript:void(0)"><i class="fab fa-facebook-f"></i></a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)"><i class="fab fa-twitter"></i></a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)"><i class="fab fa-instagram"></i></a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)"><i class="fab fa-pinterest-p"></i></a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)"><i class="fab fa-youtube"></i></a>
+                      <li v-for="item in socialLinks" :key="item.id">
+                        <a :href="item.link" target="_blank">
+                          <i :class="getSocialIconClass(item.content)"></i>
+                        </a>
                       </li>
                     </ul>
                   </div>
+                  <br>
+                  <p class="mb-0 me-2">Total Visitors: {{ visitorCount }}</p>
+                  <a href="#"> Last Updated on : </a>
                 </div>
               </div>
             </div>
-            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-              <div class="footer-widget">
-                <h4 class="fw-title">Information</h4>
-                <div class="footer-info-list">
-                  <ul class="list-wrap">
-                    <li>
-                      <div class="icon">
-                        <i class="flaticon-phone-call"></i>
-                      </div>
-                      <div class="content">
-                        <a href="tel:0123456789">+123 888 9999</a>
-                      </div>
-                    </li>
-                    <li>
-                      <div class="icon">
-                        <i class="flaticon-envelope"></i>
-                      </div>
-                      <div class="content">
-                        <a href="mailto:info@apexa.com">info@apexa.com</a>
-                      </div>
-                    </li>
-                    <li>
-                      <div class="icon">
-                        <i class="flaticon-pin"></i>
-                      </div>
-                      <div class="content">
-                        <p>Sydney Harbour Bridge Circular City of Sydney, Australia.</p>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+
+            <!-- Quick Links -->
+            <!-- <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6" v-if="validQuickLinks.length">
               <div class="footer-widget">
                 <h4 class="fw-title">Top Links</h4>
                 <div class="footer-link-list">
                   <ul class="list-wrap">
-                    <li><a href="about.html">How it’s Work</a></li>
-                    <li><a href="contact.html">Partners</a></li>
-                    <li><a href="contact.html">Testimonials</a></li>
-                    <li><a href="contact.html">Case Studies</a></li>
-                    <li><a href="contact.html">Pricing</a></li>
+                    <li v-for="item in validQuickLinks" :key="item.id">
+                      <a :href="router.resolve({
+                        name: 'Page',
+                        params: { id: encrypt(item.id ?? 1) }
+                      }).href" target="_blank" rel="noopener noreferrer">
+                        {{ item.link_title }}
+                      </a>
+                    </li>
+
                   </ul>
                 </div>
               </div>
-            </div>
-            <div class="col-xl-3 col-lg-4 col-md-6">
+            </div> -->
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6" v-if="validQuickLinks.length">
               <div class="footer-widget">
-                <h4 class="fw-title">Social Media</h4>
-                <div class="footer-instagram">
+                <h4 class="fw-title">Top Links</h4>
+                <div class="footer-link-list">
                   <ul class="list-wrap">
-                    <li>
-                      <a href="javascript:void(0)"><img src="assets/img/images/footer_insta01.jpg" alt="Apexa"></a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)"><img src="assets/img/images/footer_insta02.jpg" alt="Apexa"></a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)"><img src="assets/img/images/footer_insta03.jpg" alt="Apexa"></a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)"><img src="assets/img/images/footer_insta04.jpg" alt="Apexa"></a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)"><img src="assets/img/images/footer_insta05.jpg" alt="Apexa"></a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)"><img src="assets/img/images/footer_insta06.jpg" alt="Apexa"></a>
+                    <li v-for="item in validQuickLinks" :key="item.id">
+                      <router-link :to="{
+                        name: 'Page',
+                        params: { id: encrypt(item.id ?? 1) },
+                        query: { page_name: encrypt(item.menu_name ?? '') }
+                      }">
+                        {{ item.link_title }}
+                      </router-link>
                     </li>
                   </ul>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <div class="container">
-          <div class="row align-items-center">
-            <div class="col-lg-7 order-0 order-lg-2">
-              <div class="footer-newsletter">
-                <h4 class="title">Newsletter SignUp!</h4>
-                <form action="#">
-                  <input type="text" placeholder="e-mail Type . . .">
-                  <button class="btn btn-two" type="submit">Subscribe</button>
-                </form>
+
+
+            <!-- Logos -->
+            <div class="col-xl-3 col-lg-4 col-md-6" v-if="logos.length">
+              <div class="footer-widget">
+                <h4 class="fw-title">Logo</h4>
+                <div class="footer-instagram">
+                  <ul class="list-unstyled d-flex flex-wrap gap-2 align-items-center">
+                    <li v-for="item in logos" :key="item.id">
+                      <a href="javascript:void(0)">
+                        <img :src="getImageUrl(item.link)" :alt="item.content" class="img-fluid"
+                          style="max-width: 50px;" />
+                      </a>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
-            <div class="col-lg-5">
-              <div class="copyright-text">
-                <p>Copyright © <a href="index.html">MSRLS</a> | All Right Reserved</p>
-                <a href="#">Support Terms &amp; Conditions Privacy Policy.</a>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -208,23 +155,47 @@
           style="transform:translate3d(0.029px, 0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scaleX(1) scaleY(1) scaleZ(1); -webkit-transform:translate3d(0.029px, 0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scaleX(1) scaleY(1) scaleZ(1); ">
       </div>
     </div>
-  </footer> -->
+  </footer>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
-const cacheDuration = 1 * 60 * 1000;  // Cache duration (1 minute) in milliseconds
+import { ref, onMounted, computed } from 'vue'
+import axios from 'axios'
+import { encrypt } from '../assets/js/cryptoUtil.js'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const cacheDuration = 1 * 60 * 1000 // 1 minute
+const visitorCount = ref();
+// Footer content state
+const footerContent = ref([])
+const loadingFooter = ref(false)
 
-// Footer content data
-const footerContent = ref([]);
-const loadingFooter = ref(false);
-const getImageUrl = (path) => {
-  return path ? `/storage/${path.replace("public/", "")}` : "";
+// Get full image path for logo type
+const getImageUrl = (filename) => {
+  return filename ? `/storage/msrls2/footer/${filename.trim()}` : "";
 };
 
+
+const getTotalVisitCounts = async () => {
+  try {
+    const response = await axios.get('/getVisitorCount')
+    if (response.data.status) {
+      const originalCount = response.data.visit_count;
+      visitorCount.value = originalCount === 2
+        ? originalCount - 1
+        : originalCount - 2;
+    } else {
+      visitorCount.value = 'N/A'
+    }
+  } catch (error) {
+    console.error('Failed to fetch visit count:', error)
+    visitorCount.value = 'Error'
+  }
+}
+
+
+// Fetch footer content from cache or API
 const fetchFooterContent = async () => {
-  
   const now = new Date().getTime()
 
   const cachedData = localStorage.getItem("footer")
@@ -250,36 +221,50 @@ const fetchFooterContent = async () => {
   }
 }
 
-// Computed to filter valid quick links
-const validQuickLinks = computed(() => {
-  return footerContent.value.filter(item =>
-    item.type === 'quicklink' && item.link && (item.link_title || item.content)
-  ).map(item => ({
-    ...item,
-    link_title: item.link_title || item.content
-  }))
+// ✅ Computed for "text" type (e.g., copyright)
+const footerText = computed(() => {
+  return footerContent.value.find(item => item.type === 'text')
 })
 
-// Determine social media icon class based on link title
+// ✅ Computed for "quicklink" type
+const validQuickLinks = computed(() => {
+  return footerContent.value
+    .filter(item => item.type === 'quicklink' && item.link && (item.link_title || item.content))
+    .map(item => ({
+      ...item,
+      link_title: item.link_title || item.content
+    }))
+})
+
+// ✅ Computed for "link" type (social links)
+const socialLinks = computed(() => {
+  return footerContent.value
+    .filter(item => item.type === 'link' && item.link && item.content)
+})
+
+// ✅ Computed for "logo" type (footer logos)
+const logos = computed(() => {
+  return footerContent.value.filter(item => item.type === 'logo' && item.link)
+})
+
+// Map content name to font-awesome icon class
 const getSocialIconClass = (linkTitle) => {
   switch (linkTitle?.toLowerCase()) {
-    case 'facebook':
-      return 'fab fa-facebook-f';
-    case 'instagram':
-      return 'fab fa-instagram';
-    case 'youtube':
-      return 'fab fa-youtube';
-    case 'twitter':
-      return 'fab fa-twitter';
-    default:
-      return 'fas fa-link';
+    case 'facebook': return 'fab fa-facebook-f'
+    case 'instagram': return 'fab fa-instagram'
+    case 'youtube': return 'fab fa-youtube'
+    case 'twitter': return 'fab fa-twitter'
+    case 'linkedin': return 'fab fa-linkedin'
+    default: return 'fas fa-link'
   }
-};
+}
 
-// Load content on mount
+// Load footer on mount
 onMounted(() => {
-  fetchFooterContent();
-});
+  fetchFooterContent()
+  getTotalVisitCounts()
+})
 </script>
+
 
 <style scoped></style>
