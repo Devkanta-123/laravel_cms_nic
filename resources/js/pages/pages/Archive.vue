@@ -32,7 +32,8 @@
                                                     <tr class="text-dark">
                                                         <th>Title/Link</th>
                                                         <th>Archived On</th>
-                                                        </tr>
+                                                        <th>Action</th>
+                                                    </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr v-for="(news, index) in archiveData" :key="index">
@@ -49,16 +50,13 @@
                                                             <span v-else>{{ news.title }}</span>
                                                         </td>
                                                         <td>{{ formatDate(news.created_at) }}</td>
-                                                        <!-- <td>
-                                                            <label
-                                                                :class="news.flag === 'A' ? 'badge bg-success' : 'badge bg-warning'">
-                                                                {{ news.flag === 'A' ? 'Approved' : 'Pending' }}
-                                                            </label>
-                                                        </td> -->
-                                                        <!-- <td>
-                                                            <i class="fas fa-trash-alt text-danger"
-                                                                @click="deleteSlide(news.id)"></i>
-                                                        </td> -->
+
+                                                        <td>
+                                                            <i class="fas fa-undo text-success"
+                                                                @click="restoreArchivedNew(news.id)"
+                                                                title="Restore"></i>
+                                                        </td>
+
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -85,19 +83,25 @@ const archiveData = ref();
 const toastr = useToastr();
 const getArchiveData = async () => {
     try {
-        
-        const response = await axios.get('/get_archivedata');
+        const response = await axios.get('/get_archivedata')
         if (response.data) {
-            archiveData.value = response.data;
-            await nextTick(); // Wait for DOM to render rows
+            archiveData.value = response.data
 
+            await nextTick() // Wait for DOM to render updated data
+
+            // Destroy existing DataTable if already initialized
+            if ($.fn.DataTable.isDataTable('#archiveTable')) {
+                $('#archiveTable').DataTable().destroy()
+            }
+
+            // Re-initialize DataTable
             $('#archiveTable').DataTable({
                 responsive: true,
                 pageLength: 10
-            });
+            })
         }
     } catch (error) {
-        toastr.error('Failed to fetch archive settings.');
+        toastr.error('Failed to fetch archive settings.')
     }
 }
 
@@ -109,6 +113,24 @@ const formatDate = (dateStr) => {
         year: 'numeric',
     });
 };
+
+
+const restoreArchivedNew = async (id) => {
+    try {
+        const response = await axios.post('/restoreArchivedNew', { id })
+        toastr.success(response.data.message)
+
+        // Refresh archive data after restore
+        await getArchiveData()
+    } catch (error) {
+        console.error('Restore failed:', error)
+        toastr.error('Failed to restore news item.')
+    }
+}
+
+
+
+
 onMounted(() => {
     getArchiveData()
 })

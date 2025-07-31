@@ -10,7 +10,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <component :is="component" :section="section" :menu="menu"></component>
+          <component :is="component" :section="section" :menu="menu"  :menuName="menuName"></component>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
@@ -29,6 +29,7 @@ const props = defineProps({
   component: Object,
   section: Object,
   menu: String,
+  menuName:String
 });
 
 const emit = defineEmits(['close']);

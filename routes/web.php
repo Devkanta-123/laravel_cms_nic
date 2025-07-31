@@ -49,6 +49,8 @@ Route::get('/getActivateLanguages', [HomeController::class, 'getActivateLanguage
 Route::get('/page/{id}', [HomeController::class, 'index']);
 
 Route::get('/get_latest_news', action: [HomeController::class, 'getLatestNews']); //added by dev on 14/11/24
+Route::post('/archiveSingleNews', action: [HomeController::class, 'archiveSingleNews']); //added by dev on 30/07/25
+Route::post('/restoreArchivedNew', action: [HomeController::class, 'restoreArchivedNew']); //added by dev on 31/07/25
 Route::post('/approved_latestnews', action: [HomeController::class, 'approvedLatestNews']); //added by dev on 06/04/25
 
 Route::get('/get_paragraphs', action: [HomeController::class, 'getParagraphs']); //added by dev on 14/11/24

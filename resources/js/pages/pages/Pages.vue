@@ -205,23 +205,10 @@ const getPageSection = () => {
 }
 
 // Compute structured menus
-
-const getPageDetails = (menuId) => {
-    console.log(menuId);
-    axios.post('/api/get_page_details/' + menuId)
-        .then((response) => {
-            pageSections.value = response.data;
-            menu_id.value = menuId;
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-}
-
 const editMenu = (menu) => {
     router.push({
         name: 'PagesForm',
-        params: { menuId: menu.id, menuName: menu.menu_name }
+        params: { menuId: menu.id, menuName: menu.menu_name,parentID:menu.parent }
     });
 };
 

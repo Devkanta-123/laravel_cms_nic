@@ -99,7 +99,7 @@ export default [
 
     },
     {
-        path: '/pages-form/:menuId/:menuName',
+        path: '/pages-form/:menuId/:menuName/:parentID',
         name: 'PagesForm',
         component: PagesForm,
         props: true

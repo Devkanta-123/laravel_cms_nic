@@ -198,12 +198,13 @@ const selectedCategory = ref("");
 const rows = ref([{ title: "", date: "", files: [] }]); // Initial row
 const props = defineProps({
     section: Object,
-    menu: Number
+    menu: Number,
+    menuName: String,
+
 })
 const isPinned = ref(false);
 const selectedNotice = ref({}) // To store the clicked notice
 const editModal = (notice) => {
-    debugger;
     selectedNotice.value = { ...notice }
 }
 const file = ref(null)
@@ -382,17 +383,31 @@ const deleteNotification = async (id) => {
 
 const getAllNotifications = async () => {
     try {
+        console.log('Props:', props);
         const response = await axios.get('/get_notifications');
-        noticeboarddata.value = response.data;
-        await nextTick(); // Wait for DOM to update
-        // Destroy and reinitialize DataTable
+
+        let filteredData = response.data;
+
+        // Apply filtering only if menu > 1
+        if (props.menu > 1) {
+            filteredData = filteredData.filter(
+                item => item.category_name === props.menuName
+            );
+        }
+
+        noticeboarddata.value = filteredData;
+
+        await nextTick(); // Wait for DOM update
+
+        // Reinitialize DataTable
         if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
             $('#noticaboardTable').DataTable().destroy();
         }
+
         $('#noticaboardTable').DataTable({
             responsive: true,
             pageLength: 5,
-            scrollY: '300px',     // vertical scroll with fixed height
+            scrollY: '300px',
             scrollCollapse: true,
         });
 
@@ -400,6 +415,8 @@ const getAllNotifications = async () => {
         console.error('Error fetching data:', error);
     }
 };
+
+
 onMounted(() => {
     getAllNotifications();
     getAllCategoryMaster();

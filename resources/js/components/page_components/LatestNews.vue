@@ -136,8 +136,15 @@
                 <td>{{ item.addedby }}</td>
                 <td>
                   <a href="#" @click="deleteNews(item.id)"><i class="fa fa-trash text-danger"></i></a> &nbsp;
+                  <a href="#" title="Archive" @click="archiveSingleNews(item.id)"><i class="fa fa-archive"></i></a>
+                  &nbsp;
+
+
                   <!-- <a href="#" @click="onOpenModal(item.page)" class="btn btn-primary btn-xs"><i class="fa fa-plus"></i></a> -->
                   <span class="drag-handle" draggable="true" @dragstart="onDragStart(index)" @dragend="onDragEnd">
+
+
+
 
                   </span>
                 </td>
@@ -245,24 +252,23 @@ const saveLatestNews = () => {
       'Content-Type': 'multipart/form-data',
     },
   })
-  .then(async (response) => {
-    toastr.success(response.data.message);
+    .then(async (response) => {
+      toastr.success(response.data.message);
 
-    // ✅ Wait a short time before fetching latest data
-    setTimeout(async () => {
-      await fetchData();
-      await nextTick();
-      initDataTable();
-    }, 300); // Wait 300ms
-  })
-  .catch(error => {
-    console.error('Error saving news:', error);
-    toastr.error('An error occurred while saving the news.');
-  });
+      // ✅ Wait a short time before fetching latest data
+      setTimeout(async () => {
+        await fetchData();
+        await nextTick();
+        initDataTable();
+      }, 300); // Wait 300ms
+    })
+    .catch(error => {
+      console.error('Error saving news:', error);
+      toastr.error('An error occurred while saving the news.');
+    });
 };
 
 const deleteNews = (id) => {
-  debugger;
   if (confirm('Are you sure you want to delete this item?')) {
     axios.post('/api/delete_news', {
       id: id,
@@ -280,6 +286,20 @@ const deleteNews = (id) => {
       });
   }
 };
+
+const archiveSingleNews = async (id) => {
+  try {
+    const response = await axios.post('/archiveSingleNews', { id });
+    console.log('News archived:', response.data.message);
+    toastr.success(response.data.message);
+    await fetchData();  // Wait for fetchData to complete before continuing
+    await nextTick();
+  } catch (error) {
+    console.error('Error archiving news:', error);
+    toastr.error('An error occurred while archiving the news.');
+  }
+};
+
 
 const fetchData = async () => {
   try {
@@ -321,7 +341,7 @@ const initDataTable = () => {
 watch(selectedTab, async (newVal) => {
   if (newVal === 'manage') {
     await fetchData();
-    
+
     // Wait for Vue to render <tr> rows based on items.value
     await nextTick();
 

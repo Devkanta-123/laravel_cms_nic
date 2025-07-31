@@ -163,8 +163,8 @@
             </div>
         </div>
     </div>
-    <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection" 
-        :menu="menu_id" @close="isModalOpen = false" />
+        <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection"  :menuName="menuName"
+            :menu="menu_id" @close="isModalOpen = false" />
 </template>
 
 <script setup>
@@ -191,28 +191,41 @@ import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
 
-const props = defineProps(['menuId', 'menuName']);
+const props = defineProps(['menuId','parentID','menuName']);
 const allComponents = ref({});
 const pageSections = ref([]);
 const isModalOpen = ref(false);
 const modalTitle = ref('');
 const menu_id = ref('');
+const menuName = ref('');
 const modalComponent = ref(null);
 const selectedSection = ref(null);
 const isLoading = ref(true);
 const toastr = useToastr();
-
 const getPageDetails = () => {
-    console.log(props);
-    axios.post('/api/get_page_details/' + props.menuId)
-        .then((response) => {
-            pageSections.value = response.data;
-            menu_id.value = props.menuId;
-            console.log("get_page_details data ", response.data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+    if (props.parentID > 0) {
+        axios.post('/api/get_page_details/' + props.parentID)
+            .then((response) => {
+                pageSections.value = response.data;
+                menu_id.value = props.parentID;
+                menuName.value = props.menuName;
+                console.log("get_page_details data (using parentID)", response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    } else if (props.parentID !== 0) {
+        axios.post('/api/get_page_details/' + props.menuId)
+            .then((response) => {
+                pageSections.value = response.data;
+                menu_id.value = props.menuId;
+                menuName.value = props.menuName;
+                console.log("get_page_details data (using menuId)", response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
 }
 
 const getAllComponents = () => {
@@ -238,8 +251,8 @@ const onBack = () => {
     router.push('/admin/pages')
 }
 const openModal = (section) => {
-    debugger;
-    selectedSection.value = section;
+    // selectedSection.value = section;
+  selectedSection.value = section;
     modalTitle.value = section.page_section_name;
     switch (section.page_section_name) {
         case 'Carousel':

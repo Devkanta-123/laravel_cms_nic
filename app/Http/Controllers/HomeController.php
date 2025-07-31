@@ -1247,72 +1247,254 @@ class HomeController extends Controller
     //     return response()->json($data);
     // }
 
+    // public function getLatestNews(Request $request)
+    // {
+    //     $flag = $request->input('flag');
+    //     $user = Auth::user();
+    //     // Step 1: Get archive duration from settings (in days)
+    //     $settings = DB::table('website_settings')->get();
+    //     $validSetting = $settings->first(function ($row) {
+    //         return !is_null($row->archieve_duration) && is_numeric($row->archieve_duration);
+    //     });
+    //     $archiveDuration = $validSetting->archieve_duration ?? null;
+
+    //     if ($archiveDuration !== null && is_numeric($archiveDuration)) {
+    //         $thresholdDate = Carbon::now()->subDays($archiveDuration);
+
+    //         // Step 2: Find all news older than archive duration
+    //         $oldNews = DB::table('latest_news')
+    //             ->where('created_at', '<', $thresholdDate)
+    //             ->get();
+
+    //         if ($oldNews->isNotEmpty()) {
+    //             foreach ($oldNews as $newsItem) {
+    //                 $insertToArchive = DB::table('archive_news')->insert([
+    //                     'file' => $newsItem->file,
+    //                     'link' => $newsItem->link,
+    //                     'type' => $newsItem->type,
+    //                     'title' => $newsItem->title,
+    //                     'order' => $newsItem->order,
+    //                     'status' => $newsItem->status,
+    //                     'hindi_title' => $newsItem->hindi_title,
+    //                     'khasi_title' => $newsItem->khasi_title,
+    //                     'other_title' => $newsItem->other_title,
+    //                     'created_at' => $newsItem->created_at,
+    //                     'updated_at' => $newsItem->updated_at,
+    //                 ]);
+    //             }
+
+    //             // Delete from latest_news after archiving
+    //             if ($insertToArchive === true) {
+    //                 DB::table('latest_news')
+    //                     ->where('created_at', '<', $thresholdDate)
+    //                     ->delete();
+    //             }
+    //         }
+    //     }
+    //     // If Approved flag passed, return approved news only
+    //     if ($flag == 'A') {
+    //         return LatestNews::where('flag', 'A')->get();
+    //     } elseif (in_array($user->role_id, [3, 4])) {
+    //         return DB::table('latest_news as ln')
+    //             ->join('users as u', 'ln.user_id', '=', 'u.id')
+    //             ->leftJoin('users as u2', 'ln.publisher_id', '=', 'u2.id')
+    //             ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link', 'ln.rejected_remarks', 'u2.name as approver')
+    //             ->get();
+    //     }
+
+    //     // Step 3: Return news that is within the archive duration
+    //     // $data = DB::table('latest_news')
+    //     //     ->where('created_at', '>=', Carbon::now()->subDays($archiveDuration))
+    //     //     ->get();
+    //     $data = DB::table('latest_news as ln')
+    //         ->join('users as u', 'ln.user_id', '=', 'u.id')
+    //         ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link')
+    //         ->get();
+
+    //     return response()->json($data);
+    // }
+
     public function getLatestNews(Request $request)
     {
         $flag = $request->input('flag');
         $user = Auth::user();
-        // Step 1: Get archive duration from settings (in days)
-        $settings = DB::table('website_settings')->get();
-        $validSetting = $settings->first(function ($row) {
-            return !is_null($row->archieve_duration) && is_numeric($row->archieve_duration);
-        });
-        $archiveDuration = $validSetting->archieve_duration ?? null;
 
-        if ($archiveDuration !== null && is_numeric($archiveDuration)) {
-            $thresholdDate = Carbon::now()->subDays($archiveDuration);
-
-            // Step 2: Find all news older than archive duration
-            $oldNews = DB::table('latest_news')
-                ->where('created_at', '<', $thresholdDate)
-                ->get();
-
-            if ($oldNews->isNotEmpty()) {
-                foreach ($oldNews as $newsItem) {
-                    $insertToArchive = DB::table('archive_news')->insert([
-                        'file' => $newsItem->file,
-                        'link' => $newsItem->link,
-                        'type' => $newsItem->type,
-                        'title' => $newsItem->title,
-                        'order' => $newsItem->order,
-                        'status' => $newsItem->status,
-                        'hindi_title' => $newsItem->hindi_title,
-                        'khasi_title' => $newsItem->khasi_title,
-                        'other_title' => $newsItem->other_title,
-                        'created_at' => $newsItem->created_at,
-                        'updated_at' => $newsItem->updated_at,
-                    ]);
-                }
-
-                // Delete from latest_news after archiving
-                if ($insertToArchive === true) {
-                    DB::table('latest_news')
-                        ->where('created_at', '<', $thresholdDate)
-                        ->delete();
-                }
-            }
-        }
-        // If Approved flag passed, return approved news only
-        if ($flag == 'A') {
+        // Step 1: Auto-archive old news by  archive duration 
+        $this->archiveOldNewsByDuration();
+        // Step 2: Return filtered or role-based data
+        if ($flag === 'A') {
+            // Return only approved news
             return LatestNews::where('flag', 'A')->get();
         } elseif (in_array($user->role_id, [3, 4])) {
+            // For roles 3 & 4: return more detailed data with joins
             return DB::table('latest_news as ln')
                 ->join('users as u', 'ln.user_id', '=', 'u.id')
                 ->leftJoin('users as u2', 'ln.publisher_id', '=', 'u2.id')
-                ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link', 'ln.rejected_remarks', 'u2.name as approver')
+                ->select(
+                    'ln.id',
+                    'ln.title',
+                    'ln.created_at as addedon',
+                    'u.name as addedby',
+                    'ln.file',
+                    'ln.status',
+                    'ln.flag',
+                    'ln.type',
+                    'ln.link',
+                    'ln.rejected_remarks',
+                    'u2.name as approver'
+                )
                 ->get();
         }
 
-        // Step 3: Return news that is within the archive duration
-        // $data = DB::table('latest_news')
-        //     ->where('created_at', '>=', Carbon::now()->subDays($archiveDuration))
-        //     ->get();
+        // Step 3: Default case — return all (non-archived) news
         $data = DB::table('latest_news as ln')
             ->join('users as u', 'ln.user_id', '=', 'u.id')
-            ->select('ln.id', 'ln.title', 'ln.created_at as addedon', 'u.name as addedby', 'ln.file', 'ln.status', 'ln.flag', 'ln.type', 'ln.link')
+            ->select(
+                'ln.id',
+                'ln.title',
+                'ln.created_at as addedon',
+                'u.name as addedby',
+                'ln.file',
+                'ln.status',
+                'ln.flag',
+                'ln.type',
+                'ln.link'
+            )
             ->get();
 
         return response()->json($data);
     }
+
+
+
+    public  function archiveSingleNews(Request $request)
+    {
+        $id = $request->input('id');
+        $newsItem = DB::table('latest_news')->where('id', $id)->first();
+
+        if (!$newsItem) {
+            return response()->json(['message' => 'News item not found.'], 404);
+        }
+
+        DB::table('archive_news')->insert([
+            'file' => $newsItem->file,
+            'link' => $newsItem->link,
+            'type' => $newsItem->type,
+            'title' => $newsItem->title,
+            'order' => $newsItem->order,
+            'status' => $newsItem->status,
+            'hindi_title' => $newsItem->hindi_title,
+            'khasi_title' => $newsItem->khasi_title,
+            'other_title' => $newsItem->other_title,
+            'created_at' => $newsItem->created_at,
+            'updated_at' => $newsItem->updated_at,
+        ]);
+
+        DB::table('latest_news')->where('id', $id)->delete();
+
+        return response()->json([
+            'message' => 'News item archived successfully.',
+            'archived_id' => $id
+        ]);
+    }
+
+    public function restoreArchivedNew(Request $request)
+    {
+        $id = $request->input('id');
+
+        if (!$id) {
+            return response()->json(['message' => 'ID is required.'], 400);
+        }
+
+        $archivedNews = DB::table('archive_news')->where('id', $id)->first();
+
+        if (!$archivedNews) {
+            return response()->json(['message' => 'Archived news not found.'], 404);
+        }
+
+        // Insert back into latest_news
+        DB::table('latest_news')->insert([
+            'file' => $archivedNews->file,
+            'link' => $archivedNews->link,
+            'type' => $archivedNews->type,
+            'title' => $archivedNews->title,
+            'order' => $archivedNews->order,
+            'status' => $archivedNews->status,
+            'hindi_title' => $archivedNews->hindi_title,
+            'khasi_title' => $archivedNews->khasi_title,
+            'other_title' => $archivedNews->other_title,
+            'created_at' => $archivedNews->created_at,
+            'updated_at' => now(),
+            'user_id' => auth()->id() ?? 1, // Optional: set user_id if needed
+        ]);
+
+        // Delete from archive
+        DB::table('archive_news')->where('id', $id)->delete();
+
+        return response()->json([
+            'message' => 'Archived news restored to latest_news.',
+            'restored_id' => $id
+        ]);
+    }
+
+
+    // Internal method to archive old news based on archive duration setting
+    protected function archiveOldNewsByDuration()
+    {
+        $settings = DB::table('website_settings')->get();
+
+        $validSetting = $settings->first(function ($row) {
+            return !is_null($row->archieve_duration) && is_numeric($row->archieve_duration);
+        });
+
+        $archiveDuration = $validSetting->archieve_duration ?? null;
+
+        if ($archiveDuration === null) {
+            return response()->json(['message' => 'Archive duration setting is invalid or missing.'], 400);
+        }
+
+        $thresholdDate = Carbon::now()->subDays($archiveDuration);
+
+        $oldNews = DB::table('latest_news')
+            ->where('created_at', '<', $thresholdDate)
+            ->get();
+
+        if ($oldNews->isEmpty()) {
+            return response()->json([
+                'message' => 'No old news to archive.',
+                'archived_count' => 0
+            ]);
+        }
+
+        foreach ($oldNews as $newsItem) {
+            DB::table('archive_news')->insert([
+                'file' => $newsItem->file,
+                'link' => $newsItem->link,
+                'type' => $newsItem->type,
+                'title' => $newsItem->title,
+                'order' => $newsItem->order,
+                'status' => $newsItem->status,
+                'hindi_title' => $newsItem->hindi_title,
+                'khasi_title' => $newsItem->khasi_title,
+                'other_title' => $newsItem->other_title,
+                'created_at' => $newsItem->created_at,
+                'updated_at' => $newsItem->updated_at,
+            ]);
+        }
+
+        DB::table('latest_news')
+            ->where('created_at', '<', $thresholdDate)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Old news archived successfully.',
+            'archived_count' => $oldNews->count()
+        ]);
+    }
+
+
+
+
     public function approvedLatestNews(Request $request)
     {
         $request->validate([
