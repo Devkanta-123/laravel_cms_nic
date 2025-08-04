@@ -1,44 +1,70 @@
 <template>
     <div>
         <!-- <Loader v-if="isLoading" /> -->
-        <nav class="main-header navbar navbar_admin navbar-expand navbar-white navbar-light">
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/admin/dashboard" class="nav-link">Home</a>
+                </li>
+             
+            </ul>
+
+            <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
-                <!-- Messages Dropdown Menu -->
                 <!-- Notifications Dropdown Menu -->
-                <li class="nav-item dropdown" style="margin-right:230px;">
+                <li class="nav-item dropdown" style="margin-right: 230px;">
                     <a class="nav-link" data-toggle="dropdown" href="#">
                         <i class="fa fa-bell"></i>
+                        <span class="badge badge-warning navbar-badge">{{ activityLogData.length }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <span class="dropdown-item dropdown-header">{{ activityLogData.length }} Notifications</span>
+
                         <div class="dropdown-divider"></div>
+
+                        <!-- Notification Items -->
                         <a href="#" class="dropdown-item text-wrap"
                             v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
                             @click.prevent="goToActivityLog(activity.id)">
                 <li class="mb-1">
                     {{ activity.remarks.slice(0, 50) }}... by {{ activity.user_from_name }}
                 </li>
-                <span class="float-right text-muted text-sm">{{ formatRelativeTime(activity.created_at) }}</span>
+                <span class="float-right text-muted text-sm">
+                    {{ formatRelativeTime(activity.created_at) }}
+                </span>
                 </a>
 
-
                 <div class="dropdown-divider"></div>
-                <!-- <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a> -->
+
+                <!-- View All -->
                 <router-link class="dropdown-item dropdown-footer" :to="{ path: '/app/activitylog' }">
                     See All Notifications
                 </router-link>
     </div>
     </li>
+
+    <!-- Fullscreen Button -->
+    <li class="nav-item">
+        <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+            <i class="fas fa-expand-arrows-alt"></i>
+        </a>
+    </li>
     </ul>
+
     </nav>
     <aside class="main-sidebar  elevation-1">
 
-        <a href="index3.html" class="brand-link">
+        <a href="#" class="brand-link">
 
             <span class="brand-text font-weight-light"> &nbsp; &nbsp; &nbsp;{{ website }}</span>
         </a>
 
         <div class="sidebar">
-
+            
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
                     <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" class="img-circle elevation-2"
@@ -242,11 +268,11 @@
                             </p>
                         </router-link>
                     </li>
-                     <li class="nav-item"v-if="[1, 2].includes(role)"   >
+                    <li class="nav-item" v-if="[1, 2].includes(role)">
                         <router-link to="/app/auditlogs" active-class="active" class="nav-link">
                             <i class="nav-iconfas fas fa-user-shield"></i>
                             <p>
-                                Audit Log   
+                                Audit Log
                             </p>
                         </router-link>
                     </li>

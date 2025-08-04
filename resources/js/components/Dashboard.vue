@@ -13,7 +13,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>  
     <div class="content">
         <div class="container-fluid ">
             <div class="row">
@@ -181,10 +181,9 @@
                     </div>
                     <!-- /.card -->
 
-
                 </div>
 
-                 <div class="col-lg-3">
+                <div class="col-lg-3">
                     <div class="card">
                         <div class="card-header border-0">
                             <div class="d-flex justify-content-between">
@@ -244,13 +243,11 @@ const getDashboardData = async () => {
 
 const getAdminDashboardStatistics = async () => {
     try {
-        debugger;
         const response = await axios.get('/getAdminDashboardStatistics')
         const data = response.data
-
         loadBarChart(data.monthly_component_counts)
         loadPieChart(data.notifications_by_category)
-     loadContentStatus(response.data.content_status_data);
+        loadContentStatus(response.data.content_status_data);
 
     } catch (err) {
         console.error('Error loading dashboard data:', err)
@@ -335,7 +332,7 @@ const loadPieChart = (categoryData) => {
 const loadContentStatus = (ContentStatusData) => {
     const pieLabels = ContentStatusData.map(item => item.category_name);
     const pieValues = ContentStatusData.map(item => item.count);
-    const pieColors = ['#F3A26D', '#D2D0A0', '#71C0BB','#096B68']; // Approved, New, Rejected,Updated
+    const pieColors = ['#F3A26D', '#D2D0A0', '#71C0BB', '#096B68']; // Approved, New, Rejected,Updated
 
     const ctx = document.getElementById('contentStatus').getContext('2d');
     if (window.pieChartInstance) window.pieChartInstance.destroy();

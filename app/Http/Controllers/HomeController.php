@@ -1432,7 +1432,7 @@ class HomeController extends Controller
         DB::table('archive_news')->where('id', $id)->delete();
 
         return response()->json([
-            'message' => 'Archived news restored to latest_news.',
+            'message' => 'Archived news restored to Latest News.',
             'restored_id' => $id
         ]);
     }
@@ -2596,8 +2596,6 @@ class HomeController extends Controller
             ->join('category_master as cm', 'cm.id', '=', 'n.category_id')
             ->select('cm.category_name', DB::raw('COUNT(*) as count'))
             ->when($filterByUser, fn($q) => $q->where('n.user_id', $userId))
-            ->whereMonth('n.created_at', now()->month)
-            ->whereYear('n.created_at', now()->year)
             ->groupBy('cm.category_name')
             ->get();
 

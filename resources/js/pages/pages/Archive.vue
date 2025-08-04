@@ -52,9 +52,9 @@
                                                         <td>{{ formatDate(news.created_at) }}</td>
 
                                                         <td>
-                                                            <i class="fas fa-undo text-success"
+                                                            <button class="btn btn-success btn-xs"><i class="fas fa-undo"
                                                                 @click="restoreArchivedNew(news.id)"
-                                                                title="Restore"></i>
+                                                                title="Restore to Latest News"></i></button>
                                                         </td>
 
                                                     </tr>

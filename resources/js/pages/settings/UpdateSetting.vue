@@ -84,6 +84,71 @@
                                     </div>
                                 </div>
                             </div>
+
+
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Cache Area</h3>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Local Storage -->
+                                    <div class="form-group">
+                                        <strong>Local Storage</strong>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="form-check form-check-inline custom-check"
+                                                v-for="(value, key) in localStorageKeys" :key="'local-' + key">
+                                                <input class="form-check-input d-none" type="checkbox"
+                                                    :id="'local_' + key" :value="key"
+                                                    v-model="selectedCache.localStorage" />
+                                                <label class="form-check-label styled-checkbox" :for="'local_' + key">
+                                                    {{ key }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Session Storage -->
+                                    <!-- <div class="form-group">
+                                        <strong>Session Storage</strong>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="form-check form-check-inline custom-check"
+                                                v-for="(value, key) in sessionStorageKeys" :key="'session-' + key">
+                                                <input class="form-check-input d-none" type="checkbox"
+                                                    :id="'session_' + key" :value="key"
+                                                    v-model="selectedCache.sessionStorage" />
+                                                <label class="form-check-label styled-checkbox" :for="'session_' + key">
+                                                    {{ key }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div> -->
+
+                                    <!-- IndexedDB -->
+                                    <div class="form-group">
+                                        <strong>IndexedDB</strong>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="form-check form-check-inline custom-check"
+                                                v-for="name in indexedDBNames" :key="'idb-' + name">
+                                                <input class="form-check-input d-none" type="checkbox"
+                                                    :id="'idb_' + name" :value="name"
+                                                    v-model="selectedCache.indexedDB" />
+                                                <label class="form-check-label styled-checkbox" :for="'idb_' + name">
+                                                    {{ name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Buttons -->
+                                    <div class="mt-3">
+                                        <button class="btn btn-danger me-2" @click="clearSelected">Clear
+                                            Selected</button>
+                                        <button class="btn btn-secondary" @click="clearAllStorage">Clear All</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -110,6 +175,17 @@ const archieveDuration = ref(null)
 const languageName = ref(null)
 const languageData = ref(null)
 const activatelanguageData = ref(null)
+// Storage data
+const localStorageKeys = ref({});
+const sessionStorageKeys = ref({});
+const indexedDBNames = ref([]);
+
+// Selected checkboxes
+const selectedCache = ref({
+    localStorage: [],
+    sessionStorage: [],
+    indexedDB: []
+});
 
 const saveArchiveData = async () => {
     try {
@@ -138,7 +214,7 @@ const saveArchiveData = async () => {
 
 const saveLanguageData = async () => {
     try {
-        
+
         if (languageName.value === null) {
             toastr.error('Please enter a language')
             return
@@ -176,7 +252,7 @@ const getArchiveData = async () => {
 
 const getMasterLanguages = async () => {
     try {
-        
+
         const response = await axios.get('/api/getMasterLanguages')
         if (response.data) {
             languageData.value = response.data;
@@ -192,7 +268,7 @@ const isActivated = (languageId) => {
 };
 const activateLanguage = async (languageId, isChecked) => {
     try {
-        
+
         if (isChecked) {
             await axios.post('/api/saveArchiveData', { language_id: languageId });
             activatelanguageData.value.push({ language_id: languageId });
@@ -220,11 +296,80 @@ const getActivateLanguages = async () => {
     }
 }
 
+// Fetch all cache items
+const fetchCacheData = async () => {
+    // Get localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        localStorageKeys.value[key] = localStorage.getItem(key);
+    }
+
+    // Get sessionStorage
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        sessionStorageKeys.value[key] = sessionStorage.getItem(key);
+    }
+
+    // Get IndexedDB names (if supported)
+    if (indexedDB.databases) {
+        const dbs = await indexedDB.databases();
+        indexedDBNames.value = dbs.map(db => db.name).filter(Boolean);
+    } else {
+        console.warn('IndexedDB list not supported in this browser');
+    }
+};
+
+// Clear only selected
+const clearSelected = () => {
+    // Clear selected localStorage
+    selectedCache.value.localStorage.forEach(key => localStorage.removeItem(key));
+
+    // Clear selected sessionStorage
+    selectedCache.value.sessionStorage.forEach(key => sessionStorage.removeItem(key));
+
+    // Clear selected IndexedDB
+    selectedCache.value.indexedDB.forEach(name => {
+        indexedDB.deleteDatabase(name);
+    });
+
+    // Refresh lists
+    resetAndFetch();
+};
+
+// Clear all
+const clearAllStorage = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    if (indexedDB.databases) {
+        const dbs = await indexedDB.databases();
+        for (const db of dbs) {
+            if (db.name) {
+                indexedDB.deleteDatabase(db.name);
+            }
+        }
+    }
+
+    resetAndFetch();
+};
+
+const resetAndFetch = () => {
+    localStorageKeys.value = {};
+    sessionStorageKeys.value = {};
+    indexedDBNames.value = [];
+    selectedCache.value = {
+        localStorage: [],
+        sessionStorage: [],
+        indexedDB: []
+    };
+    fetchCacheData();
+};
 
 onMounted(() => {
     getArchiveData()
     getMasterLanguages()
     getActivateLanguages()
+    fetchCacheData()
 })
 
 </script>

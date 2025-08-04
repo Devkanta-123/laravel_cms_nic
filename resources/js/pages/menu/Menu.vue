@@ -109,18 +109,14 @@
                             <label for="hindi_name">Hindi Name</label>
 
                             <Field type="text" class="form-control" v-model="formValues.hindi_name" name="hindi_name"
-                                id="hindi_name" aria-describedby="hindi_nameHelp" placeholder="Enter full hindi_name"
-                                :class="{ 'is-invalid': errors.hindi_name }" />
-
-                            <span class="invalid-feedback">{{ errors.hindi_name }}</span>
+                                id="hindi_name" aria-describedby="hindi_nameHelp" placeholder="Enter full hindi_name" />
                         </div>
 
                         <div class="form-group">
                             <label for="khasi_name">Khasi Name</label>
 
                             <Field type="text" class="form-control" v-model="formValues.khasi_name" name="khasi_name"
-                                id="khasi_name" aria-describedby="khasi_nameHelp" placeholder="Enter full khasi_name"
-                                :class="{ 'is-invalid': errors.khasi_name }" />
+                                id="khasi_name" aria-describedby="khasi_nameHelp" placeholder="Enter full khasi_name" />
 
                             <span class="invalid-feedback">{{ errors.khasi_name }}</span>
                         </div>
@@ -230,7 +226,7 @@ const menus = ref([]);
 const sub_menus = ref([]);
 const menuTypes = ref([]);
 const editing = ref(false);
-const formValues = ref({ menu_name: '', hindi_name: '', khasi_name: '', menu_type: '', id: '', });
+const formValues = ref({ menu_name: '', menu_type: '', id: '', });
 const menuIdBeingDeleted = ref(null);
 const form = ref(null);
 const isLoading = ref(true);
@@ -323,7 +319,7 @@ const editUser = (menu) => {
 }
 
 const handleSubmit = (values, actions) => {
-
+    debugger;
     if (editing.value) {
         console.log("update");
         updateMenu(values.actions);
@@ -360,7 +356,7 @@ const editMenu = (menu) => {
     formValues.value = {
         id: menu.id,
         menu_name: menu.menu_name,
-        hindi_name: menu.hindi_name,
+        hindi_name: menu.hindi_name ?? 'N/A',
         khasi_name: menu.khasi_name ?? 'N/A',
         menu_type: menu.menu_master.id,
         order: menu.order,

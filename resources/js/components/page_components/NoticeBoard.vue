@@ -385,18 +385,14 @@ const getAllNotifications = async () => {
     try {
         console.log('Props:', props);
         const response = await axios.get('/get_notifications');
-
         let filteredData = response.data;
-
-        // Apply filtering only if menu > 1
-        if (props.menu > 1) {
+        // Apply filtering only if menu > 1 and menuName is NOT "Notice Board"
+        if (props.menu > 1 && props.menuName !== "Notice Board") { //load for all the others category such as NewsLetter,Tender etc
             filteredData = filteredData.filter(
                 item => item.category_name === props.menuName
             );
         }
-
         noticeboarddata.value = filteredData;
-
         await nextTick(); // Wait for DOM update
 
         // Reinitialize DataTable

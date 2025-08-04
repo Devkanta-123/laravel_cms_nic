@@ -186,6 +186,7 @@ import Content from '@/components/page_components/Content.vue';
 import FAQ from "../../components/page_components/FAQ.vue";
 import Map from "../../components/page_components/Map.vue";
 import Logo from "../../components/page_components/Logo.vue";
+import Feedback from "../../components/page_components/Feedback.vue";
 import Swal from 'sweetalert2';
 import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
@@ -251,6 +252,7 @@ const onBack = () => {
     router.push('/admin/pages')
 }
 const openModal = (section) => {
+    debugger;
     // selectedSection.value = section;
   selectedSection.value = section;
     modalTitle.value = section.page_section_name;
@@ -296,6 +298,9 @@ const openModal = (section) => {
             modalComponent.value = Logo;
             break;
 
+     case 'Feedback':
+            modalComponent.value = Feedback;
+            break;
 
 
         default:

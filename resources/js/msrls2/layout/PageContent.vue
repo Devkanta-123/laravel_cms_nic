@@ -615,6 +615,7 @@ const scrollToTop = () => {
 
 const fetchHeader = async () => {
   try {
+    debugger;
     const response = await axios.get('/get_website_description',);
     header.value = response.data;
   } catch (error) {

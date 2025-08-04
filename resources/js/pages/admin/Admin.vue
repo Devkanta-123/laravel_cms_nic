@@ -127,11 +127,9 @@ const availableRoles = ref([]);
 const filteredRoles = ref([]);
 const editing = ref(false);
 const formValues = ref({ name: '', email: '', id: '', password: '', roles: [] });
-
 const form = ref(null);
 let selectedRoleID = ref();
 const onRoleChange = (event) => {
-    debugger;
   selectedRoleID.value = parseInt(event.target.value);
 };
 
@@ -211,7 +209,6 @@ const handleSubmit = (values, actions) => {
 
 
     const createUser = async (values, { resetForm, setErrors }) => {
-        debugger;
     const payload = {
         name: values.name,
         email: values.email,
@@ -222,8 +219,6 @@ const handleSubmit = (values, actions) => {
         toastr.error("Password must be at least 8 characters for a valid preview");
         return;
     }
-
-
     try {
         await axios.post('/api/users', payload);
         resetForm();
@@ -246,17 +241,11 @@ const handleSubmit = (values, actions) => {
     };
 
 
-const updateUser = (values) => {
-    debugger;
-    
+const updateUser = (values) => {    
       const payload = {
       ...formValues.value,
     };
-    if (payload.password.length > 0 && payload.password.length < 8) {
-        toastr.error("Password must be at least 8 characters for a valid preview");
-        return;
-    }
-
+  
 
     axios.post('/api/update_users/' + formValues.value.id, formValues.value,payload)
         .then((response) => {

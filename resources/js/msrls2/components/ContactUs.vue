@@ -2,82 +2,16 @@
     <div class="col-lg-12">
         <div class="contact-map" v-html="iframeHtml"></div>
     </div>
-    <div class="row align-items-center">
-        <div class="col-lg-5">
-            <div class="contact__content">
-                <div class="section-title mb-35">
-                    <h2 class="title contactus">How can we help you?</h2>
-                </div>
-                <!-- <div class="contact__info">
-                    <ul class="list-wrap">
-                        <li>
-                            <div class="icon">
-                                <i class="flaticon-pin"></i>
-                            </div>
-                            <div class="content">
-                                <h4 class="title contactus">Address</h4>
-                                <p>{{ address }}</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="icon">
-                                <i class="flaticon-phone-call"></i>
-                            </div>
-                            <div class="content">
-                                <h4 class="title contactus">Phone</h4>
-                                <a :href="'tel:' + phone">{{ phone }}</a>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="icon">
-                                <i class="flaticon-mail"></i>
-                            </div>
-                            <div class="content">
-                                <h4 class="title contactus">E-mail</h4>
-                                <a :href="'mailto:' + email">{{ email }}</a>
-                            </div>
-                        </li>
-                    </ul>
-                </div> -->
-            </div>
-        </div>
-        <div class="col-lg-7">
-            <div class="contact__form-wrap">
-                <h2 class="title contactus">Give Us a Message</h2>
-                <p>Your email address will not be published. Required fields are marked *</p>
-                <form>
-                    <div class="form-grp">
-                        <textarea name="message" placeholder="Message"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-grp">
-                                <input type="text" name="name" placeholder="Name">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-grp">
-                                <input type="email" name="email" placeholder="Email">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-grp">
-                                <input type="number" name="phone" placeholder="Phone">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn">Submit post</button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <FeedBack>
+    </FeedBack>
+  
 
 </template>
 
 <script setup>
 import { ref, onMounted, defineProps } from 'vue';
 import axios from 'axios';
-
+import FeedBack from "../components/FeedBack.vue";
 const address = ref('');
 const phone = ref('');
 const email = ref('');

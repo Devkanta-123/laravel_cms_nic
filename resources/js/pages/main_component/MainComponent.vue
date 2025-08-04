@@ -151,7 +151,8 @@
                         <div class="form-group">
                             <label for="logo">Logo</label>
                             <input type="file" class="form-control" id="logo" @change="handleFileChange"
-                                accept="image/jpeg, image/png" :class="{ 'is-invalid': errors.logo }" />
+                                accept=".jpeg,.jpg,.png,.ico,image/jpeg,image/png,image/x-icon"
+                                :class="{ 'is-invalid': errors.logo }" />
                             <span class="invalid-feedback">{{ errors.logo }}</span>
                         </div>
 
@@ -233,9 +234,8 @@
                                 id="content" placeholder="Enter link" :class="{ 'is-invalid': errors.content }" />
                             <span class="invalid-feedback">{{ errors.content }}</span>
                             <label for="quicklink">Link </label>
-                            <Field type="text" class="form-control" v-model="formFooterValues.quicklink"
-                                name="link" id="link" placeholder="Enter Quick Link"
-                                :class="{ 'is-invalid': errors.quicklink }" />
+                            <Field type="text" class="form-control" v-model="formFooterValues.quicklink" name="link"
+                                id="link" placeholder="Enter Quick Link" :class="{ 'is-invalid': errors.quicklink }" />
                             <span class="invalid-feedback">{{ errors.quicklink }}</span>
 
                         </div>
@@ -299,6 +299,7 @@ const editingFooterItem = ref(false);
 
 
 const getComponentsDetails = () => {
+    debugger;
 
     axios.get('/api/getComponentsDetails')
         .then((response) => {
@@ -324,9 +325,7 @@ const getComponentsDetails = () => {
 
 const editComponent = (component) => {
     editing.value = true;
-
     if (component == 1) {
-
         formValues.value = {
             id: header.value.id,
             title: header.value.title,
@@ -381,7 +380,7 @@ const handleSubmit = (values, actions) => {
 };
 
 const handleFooterSubmit = (values, actions) => {
-    
+
     axios.post('/api/update_component/' + 2, formFooterValues.value, {
         headers: {
             'Content-Type': 'multipart/form-data'

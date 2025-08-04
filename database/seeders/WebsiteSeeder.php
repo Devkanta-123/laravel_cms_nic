@@ -16,7 +16,7 @@ class WebsiteSeeder extends Seeder
     {
         $page = [
             ['id' =>1,
-            'website_name' => 'Website Name',
+            'website_name' => 'WDev',
             'website_department' =>'Website Department',
             'website_short' =>'WB',
             'logo' =>'user.png',
