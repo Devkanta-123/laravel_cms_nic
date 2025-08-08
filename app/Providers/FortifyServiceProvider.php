@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Models\AuditLog;
 use Illuminate\Support\Facades\Hash;
 use Mews\Captcha\Facades\Captcha;
+use Illuminate\Support\Facades\Cache;
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
@@ -78,6 +79,23 @@ class FortifyServiceProvider extends ServiceProvider
             $ip = $request->ip();
             $agent = $request->userAgent();
 
+            // ✅ Validate CAPTCHA first
+            $captchaKey = $request->input('captcha_key');
+            $captchaAnswer = $request->input('captcha');
+
+            if (!$captchaKey || !$captchaAnswer) {
+                throw ValidationException::withMessages([
+                    'captcha' => ['CAPTCHA is required.'],
+                ]);
+            }
+
+            $expected = Cache::get('captcha_' . $captchaKey);
+            if ((int) $expected !== (int) $captchaAnswer) {
+                throw ValidationException::withMessages([
+                    'captcha' => ['CAPTCHA is incorrect.'],
+                ]);
+            }
+
             if ($user && Hash::check($request->password, $user->password)) {
                 if (!$alreadyLogged) {
                     AuditLog::create([
@@ -89,7 +107,7 @@ class FortifyServiceProvider extends ServiceProvider
                     ]);
                     $alreadyLogged = true;
                 }
-                return $user; // ✅ Must return to let Fortify continue
+                return $user;
             }
 
             if (!$alreadyLogged) {

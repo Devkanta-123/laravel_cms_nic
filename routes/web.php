@@ -17,6 +17,7 @@ use App\Http\Controllers\WhosWhoController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\CaptchaController;
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -85,7 +86,7 @@ Route::put('/approved_map', action: [MapController::class, 'approveMap']); //add
 Route::post('/rejected_map', action: [MapController::class, 'rejectedMap']); //added by dev on 27/06/25
 Route::post('/deleted_map', action: [MapController::class, 'deleteMap']); //added by dev on 27/06/25
 Route::get('/get_archivedata', action: [HomeController::class, 'getArchiveData']); //added by dev on 29/05/25
-Route::get('/generateCaptcha', [UserController::class, 'generateCaptcha']);
+Route::get('/generateCaptcha', [CaptchaController::class, 'generate']);
 Route::get('/api/getFeedBacks', [FeedbackController::class, 'getFeedBacks']);
 
 

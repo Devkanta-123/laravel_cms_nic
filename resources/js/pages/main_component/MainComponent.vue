@@ -159,6 +159,25 @@
                         <div class="form-group" v-if="formValues.logoUrl">
                             <img :src="formValues.logoUrl" alt="Logo Preview" style="max-width: 100%; height: auto;">
                         </div>
+
+                        <!-- Favicon Upload -->
+                        <div class="form-group">
+                            <label for="favicon">Favicon</label>
+                            <input type="file" class="form-control" id="favicon" @change="handleFaviconChange"
+                                accept=".ico,.png,.jpg,.jpeg,image/x-icon,image/png,image/jpeg"
+                                :class="{ 'is-invalid': errors.favicon }" />
+                            <span class="invalid-feedback">{{ errors.favicon }}</span>
+                        </div>
+
+                        <!-- Favicon Preview -->
+                        <!-- Inside Modal -->
+   <!-- <div v-show="formValues.faviconUrl">
+  <label for="favicon">Favicon Preview</label><br />
+  <p>Path: {{ formValues.faviconUrl }}</p>
+  <img :src="formValues.faviconUrl" style="width: 48px; height: 48px;" />
+</div> -->
+
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -290,38 +309,54 @@ const toastr = useToastr();
 const form = ref(null);
 const header = ref([]);
 const footer = ref([]);
-const formValues = ref({ title: '', short_form: '', logo: '', id: '', logoUrl: null, });
+const formValues = ref({
+    title: '',
+    short_form: '',
+    logoUrl: null,
+    logo: null,
+    faviconUrl: null,
+    favicon: null
+});
 const editing = ref(false);
 const footerValues = ref([]);
 const formFooterValues = ref({ id: '', type: '', content: '', link: '', logoUrl: null, order: '', quicklink: '' });
 const showFooterContent = ref(false);
 const editingFooterItem = ref(false);
 
-
 const getComponentsDetails = () => {
-    debugger;
-
     axios.get('/api/getComponentsDetails')
         .then((response) => {
+            const website = response.data.website || {};  // NOT an array
+            const footers = response.data.footer || [];
 
-            header.value = response.data[0][0];
+            if (!website || Object.keys(website).length === 0) {
+                console.warn('No website data found');
+                return;
+            }
 
-            formValues.value = {
-                id: header.value.id,
-                title: header.value.title,
-                short_form: header.value.website_short,
-                logo: header.value.logo,
-                quicklink: header.value.quicklink,
-                logoUrl: header.value.logo ? `/storage/${header.value.logo}` : null,
+            header.value = {
+                ...website,
+                favicon: website.favicon || null,
             };
 
-            footerValues.value = response.data[1];
+            formValues.value = {
+                id: website.id || null,
+                title: website.title || '',
+                short_form: website.website_short || '',
+                logo: website.logo || '',
+                quicklink: website.quicklink || '',
+                logoUrl: website.logo ? `/storage/${website.logo}` : null,
+                favicon: website.favicon || '',
+                faviconUrl: website.favicon ? `/storage/${website.favicon}` : null,
+            };
 
+            footerValues.value = footers;
         })
         .catch((error) => {
-            console.error('Error:', error);
+            console.error('Error fetching component details:', error);
         });
-}
+};
+
 
 const editComponent = (component) => {
     editing.value = true;
@@ -349,6 +384,15 @@ const handleFileChange = (event) => {
     }
 }
 
+
+const handleFaviconChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        formValues.value.favicon = file;
+        formValues.value.faviconUrl = URL.createObjectURL(file);
+    }
+}
+
 const handleLogoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -357,27 +401,32 @@ const handleLogoChange = (event) => {
     }
 }
 
-const handleSubmit = (values, actions) => {
+const handleSubmit = async (values, actions) => {
+    const formData = new FormData();
+    formData.append('title', formValues.value.title);
+    formData.append('short_form', formValues.value.short_form);
+    if (formValues.value.logo) {
+        formData.append('logo', formValues.value.logo);
+    }
+    if (formValues.value.favicon) {
+        formData.append('favicon', formValues.value.favicon);
+    }
 
-    axios.post('/api/update_component/' + 1, formValues.value, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
-        .then((response) => {
-
-            console.log(response.data);
-            getComponentsDetails();
-            $('#headerFormModal').modal('hide');
-            toastr.success('Header saved successfully');
-        }).catch((errors) => {
-            console.log(errors);
-        })
-        .finally(() => {
-            form.value.resetForm();
+    try {
+        await axios.post('/api/update_component/1', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
 
-};
+        $('#headerFormModal').modal('hide');
+        toastr.success('Header saved successfully');
+    } catch (error) {
+        console.error(error);
+    } finally {
+        actions.resetForm();
+    }
+};;
 
 const handleFooterSubmit = (values, actions) => {
 

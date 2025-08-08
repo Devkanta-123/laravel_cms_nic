@@ -79,6 +79,7 @@
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import { useToastr } from '../../toaster.js';
+import Swal from 'sweetalert2';
 const archiveData = ref();
 const toastr = useToastr();
 const getArchiveData = async () => {
@@ -114,20 +115,29 @@ const formatDate = (dateStr) => {
     });
 };
 
-
 const restoreArchivedNew = async (id) => {
+  const result = await Swal.fire({
+    title: 'Confirm Restore',
+    text: 'Are you sure you want to restore this news item?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, restore it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
     try {
-        const response = await axios.post('/restoreArchivedNew', { id })
-        toastr.success(response.data.message)
+      const response = await axios.post('/restoreArchivedNew', { id });
+      await getArchiveData();  // Refresh data after restore
+      await nextTick();
 
-        // Refresh archive data after restore
-        await getArchiveData()
+      Swal.fire('Restored!', response.data.message || 'News item has been restored.', 'success');
     } catch (error) {
-        console.error('Restore failed:', error)
-        toastr.error('Failed to restore news item.')
+      console.error('Restore failed:', error);
+      Swal.fire('Error!', 'Failed to restore news item.', 'error');
     }
-}
-
+  }
+};
 
 
 

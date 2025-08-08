@@ -9,7 +9,7 @@
                             <th>Added On</th>
                             <th>Phone</th>
                             <th>Email</th>
-                            <!-- Optional: <th>Message</th> -->
+                            <th>Message</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -18,7 +18,7 @@
                             <td>{{ formatDate(item.created_at) }}</td>
                             <td>{{ item.phone_no }}</td>
                             <td>{{ item.email || 'N/A' }}</td>
-                            <!-- <td>{{ item.message }}</td> -->
+                            <td>{{ item.message }}</td>
                         </tr>
                     </tbody>
                 </table>

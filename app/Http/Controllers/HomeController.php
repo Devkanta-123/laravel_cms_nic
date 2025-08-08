@@ -51,17 +51,19 @@ class HomeController extends Controller
         }
     }
 
-    public function getComponentsDetails()
-    {
+   public function getComponentsDetails()
+{
+    return response()->json([
+        'website' => Website::first(),
+        'footer' => Footer::orderBy('type')->get()
+    ]);
+}
 
-        return array(Website::all(), Footer::orderBy('type')->get());
-    }
 
     public function updateComponent(Request $request, $websiteId)
     {
 
-        if ($websiteId == 1) // HEADER id = 1
-        {
+        if ($websiteId == 1) {
             $website = Website::findOrFail($websiteId);
 
             if ($request->hasFile('logo')) {
@@ -74,6 +76,18 @@ class HomeController extends Controller
                 $filePath = $file->store($viewPath, 'public');
                 $website->logo = $filePath;
             }
+
+            if ($request->hasFile('favicon')) {
+                if ($website->favicon && Storage::disk('public')->exists($website->favicon)) {
+                    Storage::disk('public')->delete($website->favicon);
+                }
+                $faviconFile = $request->file('favicon');
+                $folderPath = ThemeHelper::getFolderPath();
+                $viewPath = $folderPath . '/header';
+                $faviconPath = $faviconFile->store($viewPath, 'public');
+                $website->favicon = $faviconPath;
+            }
+
             $website->title = $request->title;
             $website->website_short = $request->short_form;
             $website->save();

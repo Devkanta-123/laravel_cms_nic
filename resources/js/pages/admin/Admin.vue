@@ -74,7 +74,7 @@
 
                             <span class="invalid-feedback">{{ errors.name }}</span>
                         </div>
-
+                        <label for="role">Role</label>
                         <select v-model="formValues.roles" @change="onRoleChange" class="form-control">
                             <option disabled value="">--Select a role--</option>
                             <option v-for="role in filteredRoles" :key="role.id" :value="role.id">
@@ -113,7 +113,7 @@
 
 </template>
 <script setup>
-import { ref, onMounted, computed,nextTick} from "vue";
+import { ref, onMounted, computed, nextTick } from "vue";
 import axios from 'axios';
 import * as yup from 'yup';
 import { Form, Field, useSetFieldError } from 'vee-validate';
@@ -130,7 +130,7 @@ const formValues = ref({ name: '', email: '', id: '', password: '', roles: [] })
 const form = ref(null);
 let selectedRoleID = ref();
 const onRoleChange = (event) => {
-  selectedRoleID.value = parseInt(event.target.value);
+    selectedRoleID.value = parseInt(event.target.value);
 };
 
 const createUserschema = yup.object({
@@ -147,20 +147,20 @@ const editUserschema = yup.object({
 
 const currentSchema = computed(() => editing.value ? editUserschema : createUserschema);
 const initializeDataTable = () => {
-  $('#userTable').DataTable({
-    destroy: true, // important to allow re-initialization
-  });
+    $('#userTable').DataTable({
+        destroy: true, // important to allow re-initialization
+    });
 };
 const getUsers = async () => {
-  try {
-    const response = await axios.get('/api/get_users');
-    users.value = response.data;
+    try {
+        const response = await axios.get('/api/get_users');
+        users.value = response.data;
 
-    await nextTick(); // wait for DOM update
-    initializeDataTable();
-  } catch (error) {
-    console.error('Error:', error);
-  }
+        await nextTick(); // wait for DOM update
+        initializeDataTable();
+    } catch (error) {
+        console.error('Error:', error);
+    }
 };
 
 
@@ -208,7 +208,7 @@ const handleSubmit = (values, actions) => {
 };
 
 
-    const createUser = async (values, { resetForm, setErrors }) => {
+const createUser = async (values, { resetForm, setErrors }) => {
     const payload = {
         name: values.name,
         email: values.email,
@@ -233,21 +233,21 @@ const handleSubmit = (values, actions) => {
         toastr.success('User created successfully');
     } catch (error) {
         if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors);
+            setErrors(error.response.data.errors);
         } else {
-        console.error('Unexpected error:', error);
+            console.error('Unexpected error:', error);
         }
     }
+};
+
+
+const updateUser = (values) => {
+    const payload = {
+        ...formValues.value,
     };
 
 
-const updateUser = (values) => {    
-      const payload = {
-      ...formValues.value,
-    };
-  
-
-    axios.post('/api/update_users/' + formValues.value.id, formValues.value,payload)
+    axios.post('/api/update_users/' + formValues.value.id, formValues.value, payload)
         .then((response) => {
             const index = users.value.findIndex(user => user.id === response.data.id);
             users.value[index] = response.data;
@@ -284,8 +284,8 @@ const userDeleted = (userId) => {
 }
 
 onMounted(async () => {
-  await getUsers();
-   getRoles();
+    await getUsers();
+    getRoles();
     fetchUser();
 });
 </script>

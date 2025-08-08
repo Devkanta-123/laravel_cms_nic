@@ -137,7 +137,7 @@ const fetchPageContent = async () => {
         contactus.value = false;
         showWhosWho.value = false;
         contactUsData.value = null;
-        activeComponent.value = null;
+        activeComponent.value = undefined;
 
         let response;
 

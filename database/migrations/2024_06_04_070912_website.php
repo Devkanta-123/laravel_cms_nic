@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('website_department');
             $table->string('website_short');
             $table->string('logo');
+            $table->string('favicon')->nullable();
             $table->string('title');
             $table->text('description');
             $table->string('hindi_name')->nullable();

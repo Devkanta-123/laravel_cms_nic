@@ -10,7 +10,7 @@
     <meta name="folder-path" content="{{ $folderPath }}">
     
     {{-- Dynamically load favicon --}}
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $website[0]->logo) }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $website[0]->favicon) }}">
 
     <script>
         window.folderPath = "{{ $folderPath }}";

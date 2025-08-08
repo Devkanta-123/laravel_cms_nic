@@ -23,15 +23,25 @@
           </div>
 
           <!-- CAPTCHA -->
-          <!-- <div class="mb-3">
+          <div class="mb-3">
             <img :src="captchaImage" @click="loadCaptcha"
               style="cursor: pointer; border: 1px solid #ccc; border-radius: 4px; display: block; max-width: 100%; height: 50px;"
               alt="CAPTCHA" />
             <small class="form-text text-muted d-block">Click image to refresh CAPTCHA</small>
-            <input v-model="form.captcha" type="text" class="form-control mt-2" placeholder="Enter CAPTCHA"
-              required />
+
+            <!-- Input in small width using Bootstrap -->
+            <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
+              <input v-model="form.captcha" type="text" class="form-control form-control-sm" placeholder="Enter CAPTCHA"
+                required style="max-width: 120px;" />
+
+              <button type="button" class="btn btn-outline-secondary btn-sm" @click="speakCaptcha">
+                🔊
+              </button>
+            </div>
+
+
             <div v-if="captchaError" class="text-danger mt-1">{{ captchaError }}</div>
-          </div> -->
+          </div>
 
           <!-- Submit -->
           <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
@@ -62,24 +72,29 @@ const captchaImage = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
 const captchaError = ref('');
+const captchaText = ref('');
 
 // Debug Watch
 watchEffect(() => {
   console.log('🧪 Form state:', JSON.stringify(form.value, null, 2));
 });
 
+
+
 const loadCaptcha = async () => {
   try {
     const res = await axios.get('/generateCaptcha');
     captchaImage.value = res.data.captcha_img;
     form.value.captcha_key = res.data.captcha_key;
-    console.log('🔁 CAPTCHA loaded:', form.value.captcha_key);
+    captchaText.value = res.data.captcha_text; // ✅ Capture expression like "5 + 5"
   } catch (err) {
     console.error('Error loading CAPTCHA:', err);
   }
 };
 
+
 const handleSubmit = async () => {
+  debugger;
   loading.value = true;
   errorMessage.value = '';
   captchaError.value = '';
@@ -91,19 +106,16 @@ const handleSubmit = async () => {
     captcha_key: form.value.captcha_key
   };
 
-  console.log('🚀 Submitting payload:', JSON.stringify(payload, null, 2));
-
   try {
     const response = await axios.post('/login', payload);
     console.log('✅ Login response:', response);
-    fetchUser();
+    fetchUser(); // optional
   } catch (error) {
-    console.error('❌ Login error:', error.response);
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
       if (errors?.captcha) {
         captchaError.value = errors.captcha[0];
-        loadCaptcha(); // Refresh captcha
+        loadCaptcha(); // Refresh on fail
       } else {
         errorMessage.value = error.response.data.message || 'Login failed';
       }
@@ -134,6 +146,15 @@ const fetchUser = async () => {
     console.error('Failed to fetch user:', error);
   }
 };
+
+
+const speakCaptcha = () => {
+  debugger;
+  const expression = captchaText.value.replace('+', 'plus').replace('-', 'minus');
+  const msg = new SpeechSynthesisUtterance(`What is ${expression}`);
+  window.speechSynthesis.speak(msg);
+};
+
 
 onMounted(() => {
   loadCaptcha();

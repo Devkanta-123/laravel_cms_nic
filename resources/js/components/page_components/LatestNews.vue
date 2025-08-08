@@ -166,6 +166,7 @@ const selectedTab = ref('add') // Default to 'add' tab
 const toastr = useToastr();
 const isDataTableInitialized = ref(false) // Track if DataTable already initialized
 import ModalComponent from '../../pages/pages/ModalComponent.vue';
+import Swal from 'sweetalert2';
 const modalComponent = ref(null); // Component to load dynamically
 const props = defineProps({
   menu: String,
@@ -288,18 +289,29 @@ const deleteNews = (id) => {
 };
 
 const archiveSingleNews = async (id) => {
-  try {
-    const response = await axios.post('/archiveSingleNews', { id });
-    console.log('News archived:', response.data.message);
-    toastr.success(response.data.message);
-    await fetchData();  // Wait for fetchData to complete before continuing
-    await nextTick();
-  } catch (error) {
-    console.error('Error archiving news:', error);
-    toastr.error('An error occurred while archiving the news.');
+  const result = await Swal.fire({
+    title: 'Confirm Archive',
+    text: 'Are you sure you want to archive this news?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, archive it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await axios.post('/archiveSingleNews', { id });
+      console.log('News archived:', response.data.message);
+      await fetchData();  // Assuming this reloads the news list
+      await nextTick();
+
+      Swal.fire('Archived!', response.data.message || 'News has been archived.', 'success');
+    } catch (error) {
+      console.error('Error archiving news:', error);
+      Swal.fire('Error!', 'An error occurred while archiving the news.', 'error');
+    }
   }
 };
-
 
 const fetchData = async () => {
   try {
