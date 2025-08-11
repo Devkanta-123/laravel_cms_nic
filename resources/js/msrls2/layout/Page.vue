@@ -53,7 +53,7 @@
                                     </div>
 
                                     <div v-if="showWhosWho">
-                                        <WhosWho />
+                                        <WhosWho :data="whoswhoData" />
                                     </div>
 
                                     <div v-if="contactus">
@@ -76,7 +76,7 @@
 
 <script setup>
 import { ref, onMounted, inject, watch, provide, shallowRef } from 'vue';
-import { useRoute,useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import bgImage from '../assets/images/msrls.jpg';
 import Archive from '../components/Achive.vue';
@@ -103,14 +103,36 @@ const noticeboarddata = ref([]);
 const notificationdata = ref([]);
 const archivedata = ref([]);
 const contactUsData = ref(null);
-
+const whoswhoData = ref([])
 const showWhosWho = ref(false);
 const contactus = ref(false);
 const activeComponent = shallowRef(null);
 const refreshKey = ref(0);
 const isLoading = ref(true);
 const pageName = ref('');
+const cacheKey = 'whoswhoData'
+const timestampKey = 'whoswhoTimestamp'
+const cacheDuration = 1000 * 60 * 5 // 5 mins
+async function fetchWhosWho() {
+    const now = Date.now()
+    const cachedData = localStorage.getItem(cacheKey)
+    const cachedTimestamp = localStorage.getItem(timestampKey)
 
+    if (cachedData && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
+        console.log("Using cached WhosWho data")
+        whoswhoData.value = JSON.parse(cachedData)
+        return
+    }
+
+    try {
+        const response = await axios.get("/get_whoswho", { params: { flag: 'A' } })
+        whoswhoData.value = response.data || []
+        localStorage.setItem(cacheKey, JSON.stringify(response.data))
+        localStorage.setItem(timestampKey, now.toString())
+    } catch (error) {
+        console.error("Failed to fetch WhosWho data:", error)
+    }
+}
 const fetchPageContent = async () => {
     try {
         isLoading.value = true;
@@ -177,9 +199,9 @@ const fetchPageContent = async () => {
                 break;
 
             case 'WhosWho':
-                showWhosWho.value = true;
-                break;
-
+                await fetchWhosWho()
+                showWhosWho.value = true
+                break
             case 'Contact Us':
                 contactus.value = true;
                 response = await axios.get(`/get_page_content/${decryptedId}`);

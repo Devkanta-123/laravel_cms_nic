@@ -81,9 +81,12 @@ const closeModal = () => {
 };
 const props = defineProps(["person"]);
 
-const imageUrl = computed(() => {
-  return "/storage/" + props.person.profile_image.replace("public/", "");
-});
+const imageUrl = computed(() =>
+  props.person?.profile_image
+    ? "/storage/" + props.person.profile_image.replace("public/", "")
+    : "/default-profile.png"
+)
+
 
 const formattedEmail = computed(() => {
   return props.person.email ? props.person.email.replace("[dot]", ".").replace("[at]", "@") : "";

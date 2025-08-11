@@ -58,60 +58,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import axios from "axios";
+debugger;
+import { ref, watch, computed } from "vue";
 import WhosWhoCard from "../components/WhosWhoCard.vue";
+
+// Get the data from parent
+const props = defineProps({
+    data: {
+        type: Array,
+        default: () => []
+    }
+})
 
 const whoswhoData = ref([]);
 const stateLevel = ref([]);
 const districtLevel = ref([]);
 const blockLevel = ref([]);
 
-const cacheDuration = 10 * 60 * 1000; // 10 minutes
-const cacheKey = "whosWhoData";
-const timestampKey = "whosWhoDataTimestamp";
-
 const currentPage = ref(1);
 const itemsPerPage = 4;
-
-const fetchWhosWho = async () => {
-    const now = Date.now();
-    const cachedData = localStorage.getItem(cacheKey);
-    const cachedTimestamp = localStorage.getItem(timestampKey);
-
-    if (cachedData && cachedTimestamp && now - cachedTimestamp < cacheDuration) {
-        console.log("Using cached WhosWho data");
-        whoswhoData.value = JSON.parse(cachedData);
-        categorizeData();
-        return;
-    }
-
-    try {
-        const response = await axios.get("/get_whoswho",{params :{flag:'A'}});
-        whoswhoData.value = response.data;
-
-        localStorage.setItem(cacheKey, JSON.stringify(response.data));
-        localStorage.setItem(timestampKey, now.toString());
-
-        categorizeData();
-    } catch (error) {
-        console.error("Failed to fetch WhosWho data:", error);
-    }
-};
-
 const categorizeData = () => {
     stateLevel.value = whoswhoData.value.filter(person => person.level_id === 1);
     districtLevel.value = whoswhoData.value.filter(person => person.level_id === 2);
     blockLevel.value = whoswhoData.value.filter(person => person.level_id === 3);
 };
 
+// Categorize whenever data changes
+watch(
+    () => props.data,
+    (newVal) => {
+        whoswhoData.value = newVal || [];
+        categorizeData();
+    },
+    { immediate: true }
+);
+
+
 // Pagination logic
 const totalPages = computed(() => {
     const statePages = Math.ceil(stateLevel.value.length / itemsPerPage);
     const districtPages = Math.ceil(districtLevel.value.length / itemsPerPage);
     const blockPages = Math.ceil(blockLevel.value.length / itemsPerPage);
-
-    return Math.max(statePages, districtPages, blockPages); // Maximum required pages
+    return Math.max(statePages, districtPages, blockPages);
 });
 
 const paginatedStateLevel = computed(() => {
@@ -137,7 +125,4 @@ const changePage = (page) => {
         currentPage.value = page;
     }
 };
-
-
-onMounted(fetchWhosWho);
 </script>
