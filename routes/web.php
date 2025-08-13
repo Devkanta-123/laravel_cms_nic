@@ -88,6 +88,7 @@ Route::post('/deleted_map', action: [MapController::class, 'deleteMap']); //adde
 Route::get('/get_archivedata', action: [HomeController::class, 'getArchiveData']); //added by dev on 29/05/25
 Route::get('/generateCaptcha', [CaptchaController::class, 'generate']);
 Route::get('/api/getFeedBacks', [FeedbackController::class, 'getFeedBacks']);
+Route::post('/addFeedback', [FeedbackController::class, 'addFeedback']);
 
 
 
