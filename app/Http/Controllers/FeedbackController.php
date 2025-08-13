@@ -4,12 +4,25 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Feedback;
+use App\Helpers\HtmlSanitizer;
 
 class FeedbackController extends Controller
 {
     public function getFeedBacks()
     {
-        $feedbacks = Feedback::orderBy('created_at', 'desc')->get();
+        $feedbacks = Feedback::orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($feedback) {
+                return [
+                    'id'        => $feedback->id,
+                    'name'      => strip_tags($feedback->name),
+                    'phone_no'  => strip_tags($feedback->phone_no),
+                    'email'     => strip_tags($feedback->email),
+                    'message'   => strip_tags($feedback->message),
+                    'created_at' => $feedback->created_at,
+                    'updated_at' => $feedback->updated_at,
+                ];
+            });
 
         return response()->json($feedbacks);
     }
@@ -24,12 +37,17 @@ class FeedbackController extends Controller
             'message' => 'required|string',
         ]);
 
-        // ✅ Create feedback entry
+        // ✅ Sanitize all validated fields
+        $sanitized = array_map(function ($value) {
+            return HtmlSanitizer::sanitize($value ?? '');
+        }, $validated);
+
+        // ✅ Create feedback entry with sanitized data
         $feedback = Feedback::create([
-            'name'     => $validated['name'],
-            'phone_no' => $validated['phone'], 
-            'email'    => $validated['email'],
-            'message'  => $validated['message'],
+            'name'     => $sanitized['name'],
+            'phone_no' => $sanitized['phone'],
+            'email'    => $sanitized['email'],
+            'message'  => $sanitized['message'],
         ]);
 
         // ✅ Return JSON response to Vue
