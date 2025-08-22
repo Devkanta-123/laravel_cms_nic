@@ -30,8 +30,11 @@
                         <div class="blog__details-wrap">
                             <div class="blog__details-thumb" v-if="!activeComponent">
                                 <div class="blog-post-meta">
-                                    <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate"
-                                        style="color: #2A3335;"></div>
+                                    <!-- <div v-if="pageContent" v-html="pageContent" class="aos-init aos-animate"
+                                        style="color: #2A3335;"></div> -->
+                                    <div v-if="pageContent" v-html="pageContent" @click="handleEncryptedLinkClick"
+                                        class="aos-init aos-animate" style="color: #2A3335;"></div>
+
 
                                     <div v-else-if="gallerydata.length > 0">
                                         <PhotoGallery :galleries="gallerydata" />
@@ -87,6 +90,7 @@ import WhosWho from '../components/WhosWho.vue';
 import ContactUs from '../components/ContactUs.vue';
 import LeftMenu from './LeftMenu.vue';
 import { decrypt } from '../assets/js/cryptoUtil.js'
+import { encrypt } from '../assets/js/cryptoUtil.js'
 const route = useRoute();
 const router = useRouter();
 const isHome = ref(false);
@@ -135,6 +139,7 @@ async function fetchWhosWho() {
 }
 const fetchPageContent = async () => {
     try {
+        debugger;
         isLoading.value = true;
 
         const decryptedId = decrypt(route.params.id || '');
@@ -216,9 +221,23 @@ const fetchPageContent = async () => {
                 archivedata.value = response.data || [];
                 break;
 
+            // default:
+            //     response = await axios.get(`/get_page_content/${decryptedId}`);
+            //     pageContent.value = response.data?.content || '';
+            //     response = await axios.get(`/get_page_content/${decryptedId}`);
+            //     let rawContent = response.data?.content || '';
+            //     pageContent.value = replacePageLinksWithEncrypted(rawContent);
+
             default:
                 response = await axios.get(`/get_page_content/${decryptedId}`);
-                pageContent.value = response.data?.content || '';
+                let rawContent = response.data?.content || '';
+                pageContent.value = replacePageLinksWithEncrypted(rawContent);
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth' // optional for smooth animation
+                });
+                break;
+
         }
 
     } catch (error) {
@@ -228,6 +247,29 @@ const fetchPageContent = async () => {
         isLoading.value = false;
     }
 };
+
+
+function replacePageLinksWithEncrypted(content) {
+    return content.replace(
+        /<a\s+href="\/page\/(\d+)">([^<]+)<\/a>/g,
+        (match, id, text) => {
+            const encryptedId = encrypt(id)
+            // Add a data attribute so we can detect it in click handler
+            return `<a href="/page/${encryptedId}" data-encrypted-id="${encryptedId}">${text}</a>`
+        }
+    )
+}
+
+// Click handler to intercept link navigation
+function handleEncryptedLinkClick(event) {
+    const target = event.target.closest('a[data-encrypted-id]')
+    if (target) {
+        event.preventDefault()
+        const encryptedId = target.getAttribute('data-encrypted-id')
+        router.push({ name: 'Page', params: { id: encryptedId } })
+    }
+}
+
 
 // Watch for route param or language change
 watch(

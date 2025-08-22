@@ -51,13 +51,13 @@ class HomeController extends Controller
         }
     }
 
-   public function getComponentsDetails()
-{
-    return response()->json([
-        'website' => Website::first(),
-        'footer' => Footer::orderBy('type')->get()
-    ]);
-}
+    public function getComponentsDetails()
+    {
+        return response()->json([
+            'website' => Website::first(),
+            'footer' => Footer::orderBy('type')->get()
+        ]);
+    }
 
 
     public function updateComponent(Request $request, $websiteId)
@@ -2677,6 +2677,41 @@ class HomeController extends Controller
             ],
             'content_status_data' => $contentStatusData->values(),
         ]);
+    }
+
+    public function getCCDashboardStatistics()
+    {
+        
+    $user = Auth::user();
+
+    // List of your component tables
+    $components = [
+        'cards',
+        'carousel',
+        'faqs',
+        'gallery',
+        'latest_news',
+        'logo',
+        'map',
+        'notifications',
+        'paragraph',
+        'whos_who'
+    ];
+
+    $data = [];
+
+    foreach ($components as $component) {
+        $monthlyCounts = DB::table($component)
+            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as count")
+            ->where('user_id', $user->id)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $data[$component] = $monthlyCounts;
+    }
+
+    return response()->json($data);
     }
 
 

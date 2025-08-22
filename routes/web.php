@@ -33,7 +33,8 @@ Route::post('/rejectedSlide', [HomeController::class, 'rejectedSlide']); //for p
 Route::get('get_banner', [HomeController::class, 'getBanner']);
 Route::get('get_logo', [HomeController::class, 'getLogo']);
 Route::get('getDashboardData', [HomeController::class, 'getDashboardData']); //for Dashboard Count data 
-Route::get('getAdminDashboardStatistics', [HomeController::class, 'getAdminDashboardStatistics']); //for Dashboard statistic data 
+Route::get('getAdminDashboardStatistics', [HomeController::class, 'getAdminDashboardStatistics']); //for AdminDashboard statistic data 
+Route::get('getCCDashboardStatistics', [HomeController::class, 'getCCDashboardStatistics']); //for ContentCreatorDashboard statistic data 
 Route::post('addVisitCount', [HomeController::class, 'addVisitCount']); //for visit count 
 Route::get('getVisitorCount', [HomeController::class, 'getVisitorCount']); //fetch visit count 
 Route::put('approved_logo', [HomeController::class, 'approveLogo']);

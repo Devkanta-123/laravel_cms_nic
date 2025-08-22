@@ -8,9 +8,13 @@
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/admin/dashboard" class="nav-link">Home</a>
+                    <a :href="getDashboardLink(user?.role_id)" class="nav-link">
+                        Home
+                    </a>
+
+
                 </li>
-             
+
             </ul>
 
             <!-- Right navbar links -->
@@ -56,6 +60,7 @@
     </ul>
 
     </nav>
+    <br>
     <aside class="main-sidebar  elevation-1">
 
         <a href="#" class="brand-link">
@@ -64,7 +69,7 @@
         </a>
 
         <div class="sidebar">
-            
+
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
                     <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" class="img-circle elevation-2"
@@ -336,6 +341,19 @@ const { user, role, website } = useUser();
 const computedRole = computed(() => role.value);
 const isLoading = ref(true);
 const activityLogData = ref([])
+function getDashboardLink(roleId) {
+    switch (roleId) {
+        case 1:
+        case 2:
+            return '/admin/dashboard'
+        case 3:
+            return '/contentcreator/dashboard'
+        case 4:
+            return '/publisher/dashboard'
+        default:
+            return '/'
+    }
+}
 const logout = () => {
     axios.post('/logout')
         .then(response => {

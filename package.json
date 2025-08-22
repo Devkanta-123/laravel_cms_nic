@@ -20,6 +20,7 @@
         "@mayasabha/ckeditor4-vue3": "^1.0.8",
         "@zakerxa/vue-multiple-image-upload": "^1.0.10",
         "admin-lte": "3.2",
+        "apexcharts": "^5.3.3",
         "bootstrap4-toggle": "^3.6.1",
         "chart.js": "^4.5.0",
         "crypto-js": "^4.2.0",
@@ -34,6 +35,7 @@
         "vue": "^3.4.27",
         "vue-media-upload": "^2.2.4",
         "vue-router": "^4.3.2",
+        "vue3-apexcharts": "^1.8.0",
         "vue3-lazy": "^1.0.0-alpha.1",
         "vuex": "^4.1.0",
         "yup": "^1.4.0"

@@ -38,7 +38,6 @@
   </nav>
 
   <div class="container-fluid">
-
     <div class="row" v-if="role == 3">
       <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
         <div class="card card-statistics h-100">
@@ -119,6 +118,18 @@
             </p> -->
           </div>
         </div>
+
+      </div>
+      <!-- <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Component Trends</h3>
+        </div>
+        <div>
+          <apexchart type="area" height="350" :options="ccTrendOptions" :series="ccTrendSeries" />
+        </div>
+      </div> -->
+      <div class="card-body">
+          <apexchart type="area" height="350" :options="ccTrendOptions" :series="ccTrendSeries" />
       </div>
     </div>
     <!-- <div class="row">
@@ -216,11 +227,12 @@
         </div>
         <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
           <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
-            class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2" @click.prevent="goToActivityLog(activity.id)">
+            class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2"
+            @click.prevent="goToActivityLog(activity.id)">
             <div class="w-100 text-truncate">
               {{ activity.remarks.slice(0, 50) }}...
-              <span class="fw-bold" >by {{ activity.user_from_name
-                }}</span>
+              <span class="fw-bold">by {{ activity.user_from_name
+              }}</span>
             </div>
             <small class="text-muted align-self-end mt-1">
               {{ formatRelativeTime(activity.created_at) }}
@@ -239,22 +251,72 @@
 </template>
 
 <script setup>
-import { reactive, toRefs, onMounted, ref } from 'vue';
-import axios from 'axios';
+import { reactive, toRefs, onMounted, ref } from 'vue'
+import axios from 'axios'
 import { useRouter } from 'vue-router'
+import VueApexCharts from 'vue3-apexcharts'
+
 const router = useRouter()
 const role = ref(null)
 const email = ref('')
 const name = ref('')
 const showModal = ref(false)
+const activityLogData = ref([])
+
+// ✅ Register ApexCharts locally for <script setup>
+const apexchart = VueApexCharts
+
+// Chart series & options
+const ccTrendSeries = ref([])
+const ccTrendOptions = ref({
+  chart: {
+    type: 'area',
+    height: 350,
+    toolbar: { show: false },
+    zoom: { enabled: false }
+  },
+  colors: [
+    '#FF5733', // Red-Orange
+    '#33C1FF', // Sky Blue
+    '#28A745', // Green
+    '#FFC300', // Yellow
+    '#9B59B6', // Purple
+    '#E67E22', // Orange
+    '#1ABC9C', // Teal
+    '#E74C3C', // Red
+    '#3498DB', // Blue
+    '#F1C40F', // Gold
+    '#2ECC71', // Light Green
+    '#8E44AD'  // Dark Purple
+  ],
+  dataLabels: { enabled: false },
+  stroke: { curve: 'smooth', width: 2 },
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shadeIntensity: 1,
+      opacityFrom: 0.4,
+      opacityTo: 0,
+      stops: [0, 90, 100]
+    }
+  },
+  xaxis: {
+    categories: [],
+    labels: { rotate: -45 }
+  },
+  tooltip: {
+    x: { format: 'yyyy-MM' }
+  },
+  legend: { position: 'bottom' }
+})
+
+
 const fetchUser = async () => {
   const cachedUser = JSON.parse(sessionStorage.getItem('login_user_cache_data'))
   const now = new Date().getTime()
-
   const CACHE_DURATION = 15 * 60 * 1000 // 15 minutes
-  // Use cached user if valid
+
   if (cachedUser && now - cachedUser.timestamp < CACHE_DURATION) {
-    console.log('Loaded user from cache')
     role.value = cachedUser.role
     email.value = cachedUser.email
     name.value = cachedUser.name
@@ -278,45 +340,89 @@ const fetchUser = async () => {
 
     sessionStorage.setItem('user_data', JSON.stringify(userData))
     sessionStorage.setItem('login_user_cache_data', JSON.stringify(userData))
-
     return user.email
   } catch (error) {
     console.error('Failed to fetch user:', error)
     return null
   }
 }
+
 function goToActivityLog(id) {
   router.push({ path: '/app/activitylog', query: { id } })
 }
-const formatRelativeTime = (dateStr) => {
-  const now = new Date();
-  const then = new Date(dateStr);
-  const seconds = Math.floor((now - then) / 1000);
 
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} min${seconds < 120 ? '' : 's'} ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hour${seconds < 7200 ? '' : 's'} ago`;
-  return then.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-const activityLogData = ref([]);
+const formatRelativeTime = (dateStr) => {
+  const now = new Date()
+  const then = new Date(dateStr)
+  const seconds = Math.floor((now - then) / 1000)
+
+  if (seconds < 60) return 'Just now'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min${seconds < 120 ? '' : 's'} ago`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hour${seconds < 7200 ? '' : 's'} ago`
+  return then.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
 const getActivityLog = async () => {
   try {
-    const response = await axios.get('/api/get_archivitylog');
+    const response = await axios.get('/api/get_archivitylog')
     if (response.data && response.data.status === 'success') {
-      activityLogData.value = response.data.data;
+      activityLogData.value = response.data.data
     }
   } catch (error) {
-    toastr.error('Failed to fetch activity log.');
+    toastr.error('Failed to fetch activity log.')
   }
 }
+
+const getCCDashboardStatistics = async () => {
+  try {
+    const response = await axios.get('/getCCDashboardStatistics')
+    const data = response.data
+    console.log("CCData", data)
+    loadCCMonthlyTrends(data)
+  } catch (err) {
+    console.error('Error loading dashboard data:', err)
+  }
+}
+
+const loadCCMonthlyTrends = (trendData) => {
+  if (!trendData || typeof trendData !== 'object') return
+
+  // Get all months across all components
+  const allMonths = [
+    ...new Set(
+      Object.values(trendData)
+        .flatMap(arr => Array.isArray(arr) ? arr.map(item => item.month) : [])
+    )
+  ].sort()
+
+  const series = Object.keys(trendData).map(component => {
+    const dataArr = Array.isArray(trendData[component]) ? trendData[component] : []
+    const counts = allMonths.map(month => {
+      const record = dataArr.find(item => item.month === month)
+      return record ? record.count : 0
+    })
+    return { name: component, data: counts }
+  })
+
+  ccTrendSeries.value = series
+  ccTrendOptions.value = {
+    ...ccTrendOptions.value,
+    xaxis: { categories: allMonths }
+  }
+}
+
 function closeModal() {
   showModal.value = false
 }
+
 onMounted(async () => {
-  fetchUser();
-  getActivityLog();
-  const userEmail = await fetchUser() // wait for fetchUser to complete
+  fetchUser()
+  getActivityLog()
+  getCCDashboardStatistics()
+
+  const userEmail = await fetchUser()
   if (!userEmail) return
+
   const shownKey = `notificationShown_${userEmail}`
   const hasShown = sessionStorage.getItem(shownKey)
 
@@ -324,9 +430,10 @@ onMounted(async () => {
     showModal.value = true
     sessionStorage.setItem(shownKey, 'true')
   }
-});
-
+})
 </script>
+
+
 
 <style scoped>
 @import './assets/css/style.css';
