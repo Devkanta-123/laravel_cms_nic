@@ -2,6 +2,28 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
         integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
     <br>
+    <br>
+    <br>
+      <div class="content ml-6 mr-6">
+        <div class="container-fluid ">
+            <div class="row page-titles mx-0 mb-3">
+                <div class="col-sm-6 p-0">
+                    <div class="welcome-text">
+                        <h4 class="text-primary">Pages / {{ route.params.menuName }}</h4>
+                    </div>
+                </div>
+                <div class="col-sm-6 p-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <a href="#" @click="onBack()" class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="col-xl-12 mb-30">
         <div class="card card-statistics h-100">
             <div class="card-body">
@@ -11,9 +33,6 @@
                     <div class="fc-toolbar fc-header-toolbar">
                         <div class="fc-right mb-3">
                             <div class="fc-button-group">
-                                <button type="button"
-                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
-                                    @click="onBack()"> Back</button>
                                 <button type="button" :class="[
                                     'fc-month-button fc-button fc-state-default fc-corner-left',
                                     activeFlag === 'ALL' ? 'fc-state-active' : ''
@@ -160,7 +179,11 @@ const openModal = (imageSrc) => {
     showModal.value = true;
 }
 const onBack = () => {
-    router.push('/publisher/pages-form/1/Home')
+    if (window.history.length > 1) {
+        router.back();
+    } else {
+        router.push('/publisher/pages-form/1/Home/0')
+    }
 }
 const closeModal = () => {
     showModal.value = false;
@@ -235,9 +258,7 @@ const deleteDBImage = (slide, index) => {
 
 const fetchSlides = async () => {
     try {
-        const response = await axios.get('/get_carousel', {
-            params: { flag: 4 }
-        })
+        const response = await axios.get('/get_carousel')
         slides.value = response.data
         filteredslidesData.value = response.data;
         await nextTick() // wait until DOM is updated

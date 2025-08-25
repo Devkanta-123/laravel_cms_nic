@@ -1,6 +1,8 @@
 <template>
     <!-- <Loader v-if="isLoading" /> -->
     <br>
+    <br>
+    <br>
     <div class="content ml-4 mr-4">
         <div class="container-fluid ">
             <div class="row page-titles mx-0 mb-3">
@@ -208,7 +210,7 @@ const getPageSection = () => {
 const editMenu = (menu) => {
     router.push({
         name: 'PagesForm',
-        params: { menuId: menu.id, menuName: menu.menu_name,parentID:menu.parent }
+        params: { menuId: menu.id, menuName: menu.menu_name,parentID:menu.parent,filtermenuname: menu.menu_name}
     });
 };
 

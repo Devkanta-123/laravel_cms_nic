@@ -192,7 +192,7 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/save-content', [HomeController::class, 'saveContent']);
     Route::put('/api/update-content', [HomeController::class, 'updateContent']);
 
-    //Main Component: header and footer
+    //Main Component: header and get_carousel
 
     Route::get('/api/getComponentsDetails', [HomeController::class, 'getComponentsDetails']);
 

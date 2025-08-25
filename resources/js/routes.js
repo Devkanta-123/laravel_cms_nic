@@ -152,7 +152,7 @@ export default [
     },
 
     {
-        path: '/contentcreator/pages-form/:menuId/:menuName',
+        path: '/contentcreator/pages-form/:menuId/:menuName/:parentID',
         name: 'CCPagesForm',
         component: CCPagesForm,
         props: true
@@ -160,7 +160,7 @@ export default [
     },
     //FormsHandler for Content Creator
     {
-        path: '/contentcreator/pages-form/:menuId/:menuName/:page_section_id',
+        path: '/contentcreator/pages-form/:menuId/:menuName/:page_section_id/:filtermenu',
         name: 'CCFormsHandler',
         component: CCFormsHandler,
         props: true
@@ -183,7 +183,7 @@ export default [
     },
 
     {
-        path: '/publisher/pages-form/:menuId/:menuName',
+        path: '/publisher/pages-form/:menuId/:menuName/:parentID',
         name: 'PublisherPagesForm',
         component: PublisherPagesForm,
         props: true

@@ -99,7 +99,7 @@ const editMenu = (menu) => {
   debugger;
   router.push({
     name: 'PublisherPagesForm',
-    params: { menuId: menu.id, menuName: menu.menu_name, }
+    params: { menuId: menu.id, menuName: menu.menu_name, parentID: menu.parent }
   });
 };
 

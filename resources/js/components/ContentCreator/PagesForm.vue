@@ -1,23 +1,7 @@
 <template>
-    <br>  <br>
-  <br>
-    <div class="content ml-4 mr-4">
-        <div class="container-fluid ">
-            <div class="row page-titles mx-0 mb-3">
-                <div class="col-sm-6 p-0">
-                    <div class="welcome-text">
-                        <h4 class="text-primary">Pages / {{ props.menuName }}</h4>
-                    </div>
-                </div>
-                <div class="col-sm-6 p-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
-                    <ol class="">
-                        <li class="breadcrumb-item"><a href="">Pages</a></li>
-                        <li class="breadcrumb-item active "><a class="text-primary">{{ props.menuName }} </a></li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
+    <br> <br>
+    <br>
+   
     <div class="content ml-4 mr-4">
         <div class="container-fluid">
             <div class="row">
@@ -106,7 +90,9 @@ import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
 
-const props = defineProps(['menuId', 'menuName']);
+// const props = defineProps(['menuId', 'menuName']);
+const props = defineProps(['menuId', 'parentID', 'menuName']);
+const filterMenu = props.menuName;
 const allComponents = ref({});
 const pageSections = ref([]);
 const isModalOpen = ref(false);
@@ -115,17 +101,31 @@ const menu_id = ref('');
 const selectedSection = ref(null);
 const isLoading = ref(true);
 const toastr = useToastr();
-
+const menuName = ref('');
 const getPageDetails = () => {
-    
-    axios.post(`/api/get_page_details/${props.menuId}`)
-        .then((response) => {
-            pageSections.value = response.data
-            menu_id.value = props.menuId
-        })
-        .catch((error) => {
-            console.error('Error:', error)
-        })
+    if (props.parentID > 0) {
+        axios.post('/api/get_page_details/' + props.parentID)
+            .then((response) => {
+                pageSections.value = response.data;
+                menu_id.value = props.parentID;
+                menuName.value = props.menuName;
+                console.log("get_page_details data (using parentID)", response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    } else if (props.parentID !== 0) {
+        axios.post('/api/get_page_details/' + props.menuId)
+            .then((response) => {
+                pageSections.value = response.data;
+                menu_id.value = props.menuId;
+                menuName.value = props.menuName;
+                console.log("get_page_details data (using menuId)", response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
 }
 
 // Group the items into rows of 4
@@ -139,7 +139,6 @@ const groupedSections = computed(() => {
 })
 
 const getAllComponents = () => {
-    debugger;
     axios.get('/api/getAllComponents')
         .then(response => {
             allComponents.value = response.data;
@@ -158,7 +157,7 @@ const openPageSection = (section) => {
     debugger;
     router.push({
         name: 'CCFormsHandler',
-        params: { menuId: section.menu_id, menuName: section.page_section_name,page_section_id:section.page_section_id}
+        params: { menuId: section.menu_id, menuName: section.page_section_name, page_section_id: section.page_section_id, filtermenu: filterMenu }
     });
 }
 const addComponent = (component) => {

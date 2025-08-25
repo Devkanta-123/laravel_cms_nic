@@ -1,5 +1,7 @@
 <template> 
 <br>
+<br>
+<br>
     <div class="content ml-4 mr-4">
         <div class="container-fluid ">
             <div class="row page-titles mx-0 mb-3">
@@ -110,28 +112,42 @@ import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
 
-const props = defineProps(['menuId', 'menuName']);
+const props = defineProps(['menuId', 'parentID', 'menuName']);
 const allComponents = ref({});
 const pageSections = ref([]);
 const isModalOpen = ref(false);
 const modalTitle = ref('');
-const menu_id = ref('');
+const menu_id = ref(''); 
+const menuName = ref(''); 
 const selectedSection = ref(null);
 const isLoading = ref(true);
 const toastr = useToastr();
 
 const getPageDetails = () => {
-    
-    axios.post(`/api/get_page_details/${props.menuId}`)
-        .then((response) => {
-            pageSections.value = response.data
-            menu_id.value = props.menuId
-        })
-        .catch((error) => {
-            console.error('Error:', error)
-        })
+    if (props.parentID > 0) {
+        axios.post('/api/get_page_details/' + props.parentID)
+            .then((response) => {
+                pageSections.value = response.data;
+                menu_id.value = props.parentID;
+                menuName.value = props.menuName;
+                console.log("get_page_details data (using parentID)", response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    } else if (props.parentID !== 0) {
+        axios.post('/api/get_page_details/' + props.menuId)
+            .then((response) => {
+                pageSections.value = response.data;
+                menu_id.value = props.menuId;
+                menuName.value = props.menuName;
+                console.log("get_page_details data (using menuId)", response.data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
 }
-
 // Group the items into rows of 4
 const groupedSections = computed(() => {
     const chunkSize = 4
@@ -215,15 +231,15 @@ const deleteComponent = (component) => {
 };
 
 onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-    }, 500);
     getPageDetails();
     getAllComponents();
+
+    setTimeout(() => {
+        isLoading.value = false;
+        getPageDetails();
+        getAllComponents();
+    }, 3); //  3 milliseconds
 });
 
 </script>
 
-<style scoped>
-/* Add margin after every 4 cards (visually simulates row gap) */
-</style>

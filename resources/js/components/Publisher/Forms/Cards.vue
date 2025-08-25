@@ -1,5 +1,27 @@
 <template>
     <br>
+    <br>
+    <br>
+    <div class="content ml-6 mr-6">
+        <div class="container-fluid ">
+            <div class="row page-titles mx-0 mb-3">
+                <div class="col-sm-6 p-0">
+                    <div class="welcome-text">
+                        <h4 class="text-primary">Pages / {{ route.params.menuName }}</h4>
+                    </div>
+                </div>
+                <div class="col-sm-6 p-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <a href="#" @click="onBack()" class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div>
         <div class="col-xl-12 mb-30">
             <div class="card card-statistics h-100">
@@ -7,11 +29,8 @@
                     <h5 class="card-title pb-0 border-0">Cards </h5>
                     <!-- action group -->
                     <div class="table-responsive">
-                          <div class="fc-toolbar fc-header-toolbar">
+                        <div class="fc-toolbar fc-header-toolbar">
                             <div class="fc-right mb-3">
-                                <button type="button"
-                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
-                                        @click="onBack()"> Back</button>
                                 <div class="fc-button-group">
                                     <button type="button" :class="[
                                         'fc-month-button fc-button fc-state-default fc-corner-left',
@@ -50,7 +69,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(cards, index) in filteredCardData" :key="index">
-                                     <td>{{ index + 1 }}</td>
+                                    <td>{{ index + 1 }}</td>
                                     <td> <img class="img-fluid avatar-small" :src="`/storage/${cards.image}`"
                                             alt="Slide Image" @click="openModal(`/storage/${cards.image}`)"
                                             style="cursor: pointer;" />
@@ -167,7 +186,7 @@ const modalImage = ref('');
 const rejectedRemarks = ref('');
 const rejectedRemarksError = ref(false);
 const selectedCard = ref({})
-import { useRoute,useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const openModal = (imageSrc) => {
@@ -185,9 +204,19 @@ const rejectedModal = (card) => {
     rejectedRemarks.value = '';
     rejectedRemarksError.value = false;
 };
+// const onBack = () => {
+//     router.push('/publisher/pages-form/1/Home/0')
+// }
+
+
 const onBack = () => {
-    router.push('/publisher/pages-form/1/Home')
-}
+    if (window.history.length > 1) {
+        router.back();
+    } else {
+        router.push('/publisher/pages-form/1/Home/0')
+    }
+};
+
 const rejected = async () => {
     if (!rejectedRemarks.value.trim()) {
         rejectedRemarksError.value = true;
@@ -273,7 +302,7 @@ const getCards = async () => {
     try {
         const response = await axios.get("/get_cards");
         cardaData.value = response.data.data;
-        filteredCardData.value =response.data.data;
+        filteredCardData.value = response.data.data;
         await nextTick(); // Wait for DOM to update
         // Destroy and reinitialize DataTable
         if ($.fn.dataTable.isDataTable('#noticaboardTable')) {
@@ -292,9 +321,11 @@ const getCards = async () => {
 
 const approveCards = async (id, index) => {
     try {
-        const response = await axios.put('/approved_cards', { id ,
-             menu_id: route.params.menuId,
-            page_section_master_id: route.params.page_section_id});
+        const response = await axios.put('/approved_cards', {
+            id,
+            menu_id: route.params.menuId,
+            page_section_master_id: route.params.page_section_id
+        });
         if (response) {
             cardaData.value[index].flag = 'A'; // update UI immediately
             getCards();

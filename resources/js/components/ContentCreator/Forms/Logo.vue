@@ -2,7 +2,26 @@
   <br>
   <br>
   <br>
-
+ <div class="content ml-6 mr-6">
+        <div class="container-fluid ">
+            <div class="row page-titles mx-0 mb-3">
+                <div class="col-sm-6 p-0">
+                    <div class="welcome-text">
+                        <h4 class="text-primary">Pages / {{ route.params.menuName }}</h4>
+                    </div>
+                </div>
+                <div class="col-sm-6 p-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <a href="#" @click="onBack()" class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div>
         <div class="col-xl-12 mb-30">
             <!-- First Card (Carousel) -->
@@ -65,10 +84,6 @@
                         <div class="fc-toolbar fc-header-toolbar">
                             <div class="fc-right mb-3">
                                 <div class="fc-button-group">
-                                    <button type="button"
-                                        class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
-                                        @click="onBack()"> Back</button>
-
                                     <button type="button" :class="[
                                         'fc-month-button fc-button fc-state-default fc-corner-left',
                                         activeFlag === 'ALL' ? 'fc-state-active' : ''
@@ -293,7 +308,7 @@ const editLogo = async (logo) => {
 
 
 const onBack = () => {
-    router.push('/contentcreator/pages-form/1/Home')
+    router.push('/contentcreator/pages-form/1/Home/0')
 }
 // Filter handler
 const filterByFlag = async (flag) => {

@@ -1,5 +1,7 @@
 <template>
     <br>
+    <br>
+    <br>
     <div class="content ml-4 mr-4">
         <div class="container-fluid ">
             <div class="row page-titles mx-0 mb-3">
@@ -85,7 +87,6 @@
                                 <th>Type</th>
                                 <th>Content</th>
                                 <th class="text-center">Order</th>
-                                <th>URL</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -94,7 +95,6 @@
                                 <td width="10%">{{ item.type }}</td>
                                 <td width="20%">{{ item.content }}</td>
                                 <td width="10%" class="text-center">{{ item.order }}</td>
-                                <td width="35%">{{ item.link }}</td>
                                 <td width="15%">
                                     <a href="#" @click.prevent="editSavedValue(index)"
                                         class="btn btn-primary shadow btn-xs  me-1"><i

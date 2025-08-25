@@ -1,6 +1,8 @@
 <template>
     <!-- <Loader v-if="isLoading" /> -->
     <br>
+    <br>
+    <br>
     <div class="content ml-4 mr-4">
         <div class="container-fluid ">
             <div class="row page-titles mx-0 mb-3">
@@ -204,6 +206,7 @@ const selectedSection = ref(null);
 const isLoading = ref(true);
 const toastr = useToastr();
 const getPageDetails = () => {
+    debugger;
     if (props.parentID > 0) {
         axios.post('/api/get_page_details/' + props.parentID)
             .then((response) => {
@@ -362,6 +365,7 @@ const addComponent = (component) => {
 
 // 🔥 DELETE COMPONENT LOGIC
 const deleteComponent = async (component) => {
+    debugger;
     const usedInDetails = pageSections.value.some(section =>
         section.menu_id === component.menu_id
     );

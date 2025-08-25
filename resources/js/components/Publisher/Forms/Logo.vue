@@ -1,39 +1,59 @@
 <template>
+    <br>
+    <br>
+    <br>
+    <div class="content ml-6 mr-6">
+        <div class="container-fluid ">
+            <div class="row page-titles mx-0 mb-3">
+                <div class="col-sm-6 p-0">
+                    <div class="welcome-text">
+                        <h4 class="text-primary">Pages / {{ route.params.menuName }}</h4>
+                    </div>
+                </div>
+                <div class="col-sm-6 p-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <a href="#" @click="onBack()" class="btn btn-primary btn-sm pl-3 pr-3 pt-2 pb-2">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="col-xl-12 mb-30">
         <div class="card card-statistics h-100">
             <div class="card-body">
                 <h5 class="card-title pb-0 border-0">Logo</h5>
                 <!-- action group -->
                 <div class="table-responsive">
-                       <div class="fc-toolbar fc-header-toolbar">
-                            <div class="fc-right mb-3">
-                                <div class="fc-button-group">
-                                     <button type="button"
-                                    class="fc-month-button fc-button fc-state-default fc-corner-left fc-state-active"
-                                    @click="onBack()"> Back</button>
-                                    <button type="button" :class="[
-                                        'fc-month-button fc-button fc-state-default fc-corner-left',
-                                        activeFlag === 'ALL' ? 'fc-state-active' : ''
-                                    ]" @click="filterByFlag('ALL')">All</button>
+                    <div class="fc-toolbar fc-header-toolbar">
+                        <div class="fc-right mb-3">
+                            <div class="fc-button-group">
+                                <button type="button" :class="[
+                                    'fc-month-button fc-button fc-state-default fc-corner-left',
+                                    activeFlag === 'ALL' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('ALL')">All</button>
 
-                                    <button type="button" :class="[
-                                        'fc-month-button fc-button fc-state-default fc-corner-left',
-                                        activeFlag === 'A' ? 'fc-state-active' : ''
-                                    ]" @click="filterByFlag('A')">Approved</button>
+                                <button type="button" :class="[
+                                    'fc-month-button fc-button fc-state-default fc-corner-left',
+                                    activeFlag === 'A' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('A')">Approved</button>
 
-                                    <button type="button" :class="[
-                                        'fc-agendaWeek-button fc-button fc-state-default',
-                                        activeFlag === 'R' ? 'fc-state-active' : ''
-                                    ]" @click="filterByFlag('R')">Rejected</button>
+                                <button type="button" :class="[
+                                    'fc-agendaWeek-button fc-button fc-state-default',
+                                    activeFlag === 'R' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('R')">Rejected</button>
 
-                                    <button type="button" :class="[
-                                        'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
-                                        activeFlag === 'PENDING' ? 'fc-state-active' : ''
-                                    ]" @click="filterByFlag('PENDING')">Pending</button>
+                                <button type="button" :class="[
+                                    'fc-agendaDay-button fc-button fc-state-default fc-corner-right',
+                                    activeFlag === 'PENDING' ? 'fc-state-active' : ''
+                                ]" @click="filterByFlag('PENDING')">Pending</button>
 
-                                </div>
                             </div>
                         </div>
+                    </div>
                     <table class="table center-aligned-table mb-0" id="logoTable">
                         <thead>
                             <tr class="text-dark">
@@ -47,7 +67,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(logo, index) in filteredLogoData" :key="index">
-                                <td>{{ index + 1}}</td>
+                                <td>{{ index + 1 }}</td>
                                 <td>
                                     <img class="img-fluid avatar-small" :src="`/storage/${logo.image}`"
                                         @click="openModal(`/storage/${logo.image}`)" style="cursor: pointer;"
@@ -147,7 +167,7 @@
     </div>
 </template>
 <script setup>
-import { useRoute,useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 import { ref, onMounted, nextTick } from 'vue';
@@ -209,8 +229,9 @@ const fetchLogo = async () => {
     }
 };
 
+
 const onBack = () => {
-    router.push('/publisher/pages-form/1/Home')
+    router.push('/publisher/pages-form/1/Home/0')
 }
 // Filter handler
 const filterByFlag = async (flag) => {
