@@ -3,12 +3,12 @@
     <h5>Description <small>(English)</small></h5>
     <ckeditor v-model="editorContent" :config="editorConfig"></ckeditor>
 
-    <div class="mb-3">
+    <!-- <div class="mb-3">
       <label for="fileInput" class="form-label">Image/File</label>
       <input type="file" id="fileInput" class="form-control" ref="fileInput"
         accept=".pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .png, .jpg, .jpeg" multiple />
       <div v-if="errors.file" class="text-danger">{{ errors.file }}</div>
-    </div>
+    </div> -->
 
     <br>
     <button @click="saveContent" class="btn btn-success">Save Content</button>
@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, reactive, onMounted } from 'vue';
+import { ref, defineProps, reactive, onMounted ,computed} from 'vue';
 import axios from 'axios';
 import { component as ckeditor } from '@mayasabha/ckeditor4-vue3';
 import { useToastr } from '../../toaster.js';
@@ -64,21 +64,24 @@ const props = defineProps({
 //   }
 // };
 
-
 const saveContent = async () => {
   try {
-    debugger;
-
     const formData = new FormData();
 
     if (paraID.value) {
       formData.append("id", paraID.value);
     }
 
-    // Sanitize CKEditor content
+    // ✅ Sanitize CKEditor content (just return a plain string)
     const sanitizedContent = DOMPurify.sanitize(editorContent.value, {
-      ALLOWED_TAGS: ['p', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li', 'br','img'],
-      ALLOWED_ATTR: ['href']
+      ALLOWED_TAGS: [
+        "p", "b", "i", "u", "a", "ul", "ol", "li", "br", "img",
+        "h1", "h2", "h3", "h4", "h5", "h6"
+      ],
+      ALLOWED_ATTR: [
+        "href", "src", "alt", "title", "width", "height"
+      ],
+      RETURN_TRUSTED_TYPE: false
     });
 
     formData.append("content", sanitizedContent);
@@ -104,6 +107,10 @@ const saveContent = async () => {
     }
   }
 };
+
+
+
+
 const fetchPageContent = async () => {
   try {
     const response = await axios.get(`/get_page_content/${props.menu}`);

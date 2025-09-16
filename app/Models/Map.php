@@ -10,5 +10,17 @@ class Map extends Model
     use HasFactory;
     protected $table = 'map';
 
-    protected $fillable = ['id','iframe', 'user_id','role_id','flag','rejected_remarks','publisher_id','application_id'];
+    protected $fillable = [
+        'id',
+        'lat',
+        'lng',
+        'zoom',
+        'place_name',
+        'user_id',
+        'role_id',
+        'flag',
+        'rejected_remarks',
+        'publisher_id',
+        'application_id'
+    ];
 }

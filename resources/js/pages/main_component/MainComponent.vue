@@ -57,6 +57,15 @@
                                             class="fas fa-pencil-alt"></i></a>
                                 </td>
                             </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Banner</td>
+                                <td class="text-center">
+                                    <a href="#" @click.prevent="editComponent(3)"
+                                        class="btn btn-primary shadow btn-xs  me-1"> <i
+                                            class="fas fa-pencil-alt"></i></a>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -171,7 +180,7 @@
 
                         <!-- Favicon Preview -->
                         <!-- Inside Modal -->
-   <!-- <div v-show="formValues.faviconUrl">
+                        <!-- <div v-show="formValues.faviconUrl">
   <label for="favicon">Favicon Preview</label><br />
   <p>Path: {{ formValues.faviconUrl }}</p>
   <img :src="formValues.faviconUrl" style="width: 48px; height: 48px;" />
@@ -296,6 +305,46 @@
         </div>
     </div>
 
+    <!-- Banner Modal -->
+    <div class="modal fade" id="bannerFormModal" data-backdrop="static" tabindex="-1" role="dialog"
+        aria-labelledby="bannerFormModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">
+                        <span v-if="editing"> Edit Banner</span>
+                        <span v-else> Add Banner</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <Form ref="form" @submit="handleBannerSubmit" v-slot="{ errors }" :initial-values="bannerformValues">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="banner">Banner Image</label>
+                            <input type="file" class="form-control" id="image" @change="handleBannerFileChange"
+                                accept=".jpeg,.jpg,.png,.ico,image/jpeg,image/png,image/x-icon"
+                                :class="{ 'is-invalid': errors.image }" />
+                            <span class="invalid-feedback">{{ errors.image }}</span>
+                        </div>
+
+                        <div class="form-group" v-if="bannerformValues.image">
+                            <img :src="bannerformValues.image" alt="Banner Preview"
+                                style="max-width: 100%; height: auto;">
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </Form>
+            </div>
+        </div>
+    </div>
+    <!-- Ends here -->
+
 </template>
 <script setup>
 import { ref, onMounted, computed } from "vue";
@@ -316,6 +365,12 @@ const formValues = ref({
     logo: null,
     faviconUrl: null,
     favicon: null
+});
+
+const bannerformValues = ref({
+    image: null, // preview URL
+    file: null,  // actual file
+    menu_id: 1
 });
 const editing = ref(false);
 const footerValues = ref([]);
@@ -357,8 +412,20 @@ const getComponentsDetails = () => {
         });
 };
 
-
+const fetchBanner = async () => {
+    try {
+        const response = await axios.get("/get_banner");
+        if (response.data && response.data.length > 0) {
+            // Take the first banner
+            const firstBanner = response.data[0];
+            bannerformValues.value.image = `/storage/${firstBanner.image}`;
+        }
+    } catch (error) {
+        console.error("Failed to fetch banner:", error);
+    }
+};
 const editComponent = (component) => {
+    debugger;
     editing.value = true;
     if (component == 1) {
         formValues.value = {
@@ -371,8 +438,11 @@ const editComponent = (component) => {
 
         $('#headerFormModal').modal('show');
     }
-    else {
+    else if (component == 2) {
         showFooterContent.value = !showFooterContent.value;
+    }
+    else if (component == 3) {
+        $('#bannerFormModal').modal('show');
     }
 }
 
@@ -448,6 +518,42 @@ const handleFooterSubmit = (values, actions) => {
 
 };
 
+const handleBannerFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        bannerformValues.value.file = file;
+        bannerformValues.value.image = URL.createObjectURL(file); // preview
+    }
+};
+
+const handleBannerSubmit = async () => {
+    try {
+        debugger;
+        if (!bannerformValues.value.file) {
+            toastr.warning("Please select an image first.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", bannerformValues.value.file);
+
+        const response = await axios.post("/api/upload_banner", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
+
+        console.log("Upload Success:", response.data);
+        toastr.success("Banner uploaded successfully!");
+        fetchBanner();
+        // Reset form
+        bannerformValues.value = { image: null, file: null };
+    } catch (error) {
+        console.error("Upload Error:", error);
+        toastr.danger("Failed to upload banner.");
+    }
+};
+
 const openFooterModal = () => {
     editingFooterItem.value = false;
     formFooterValues.value = { id: '', type: '', content: '', link: '', logoUrl: null, order: '' };
@@ -482,6 +588,8 @@ const deleteSavedValue = (index) => {
 
 onMounted(() => {
     getComponentsDetails();
+    fetchBanner();
+
 });
 
 </script>

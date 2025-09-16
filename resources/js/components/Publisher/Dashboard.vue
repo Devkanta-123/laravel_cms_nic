@@ -1,6 +1,4 @@
 <template>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    crossorigin="anonymous" />
   <nav class="admin-header navbar navbar-default col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
     <!-- logo -->
     <div class="text-start navbar-brand-wrapper">
@@ -69,7 +67,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-danger">
-                  <i class="fa fa-layer-group highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-layer-group highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -89,7 +87,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-warning">
-                  <i class="fa fa-newspaper highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-newspaper highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -112,7 +110,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
-                  <i class="fa fa-clipboard highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-clipboard highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -132,7 +130,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
-                  <i class="fa fa-image highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-image highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -152,7 +150,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
-                  <i class="fa fa-file-text  highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-file-text  highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -175,7 +173,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-danger">
-                  <i class="fa fa-users highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-users highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -195,7 +193,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-warning">
-                  <i class="fa fa-globe highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-globe highlight-icon" aria-hidden="true"></i>
 
                 </span>
               </div>
@@ -215,7 +213,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
-                  <i class="fa fa-map-marker highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-map-marker highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -237,7 +235,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
-                  <i class="fa fa-question-circle highlight-icon" aria-hidden="true"></i> FAQs
+                  <i class="fas fa-question-circle highlight-icon" aria-hidden="true"></i> FAQs
                 </span>
               </div>
               <div class="float-end text-end">
@@ -445,26 +443,4 @@ onMounted(async () => {
 
 <style scoped>
 @import './assets/css/style.css';
-
-.modal.top-right .modal-dialog {
-  position: fixed;
-  top: 0;
-  right: 0;
-  margin: 1rem;
-  width: 350px;
-  transform: none !important;
-}
-
-.modal.fade {
-  transition: opacity 0.3s linear;
-}
-
-.modal.show {
-  display: block;
-  opacity: 1;
-}
-
-.modal.d-block {
-  display: block !important;
-}
 </style>

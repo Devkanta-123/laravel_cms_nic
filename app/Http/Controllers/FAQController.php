@@ -168,11 +168,7 @@ class FAQController extends Controller
 
         $faq->update([
             'english_title_question' => $request->english_question,
-            'english_answer' => $request->english_answer,
-            'hindi_title_question' => $request->hindi_question,
-            'hindi_answer' => $request->hindi_answer,
-            'khasi_title_question' => $request->khasi_question,
-            'khasi_answer' => $request->khasi_answer,
+            'english_answer' => $request->english_answer,          
             'order' => $faq->order,
             'menu_id' => $request->menu_id,
             'page_section_master_id' => $request->page_section_master_id,

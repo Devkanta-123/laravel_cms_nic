@@ -17887,3 +17887,7 @@ blockquote p {
     line-height: 1;
     border-radius: 3px;
 }
+
+.breadcrumb-item a {
+    color: white !important;
+}

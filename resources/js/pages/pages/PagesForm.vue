@@ -53,36 +53,63 @@
                                     </div>
                                     <div class="card-body table-responsive">
                                         <div class="form-group ui-sortable" id="pageComponentContainer">
-
-                                            <!-- Show message if no components are found -->
                                             <p v-if="pageSections.length === 0" class="text-center text-muted">
                                                 No components found under this menu.
                                             </p>
-                                            <!-- Loop through sections if available -->
-                                            <template v-else v-for="(section) in pageSections" :key="section.id">
-                                                <div class="col-lg-12 me-element-item mb-2">
-                                                    <div class="icon-bx-wraper left style-1 m-b30">
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="icon-lg me-2">
-                                                                <!-- <img :src="`/storage/${section.icon}`" alt="Image"> -->
+                                            <p v-else class="mb-3">Drag &nbsp;&nbsp;<i
+                                                    class="fas fa-grip-vertical"></i>&nbsp;&nbsp; to change order</p>
+
+                                            <!-- Draggable wrapper -->
+                                            <draggable v-model="pageSections" @start="onDragStart" @end="onDragEnd"
+                                                item-key="id" handle=".drag-handle" ghost-class="vuedraggable-space"
+                                                chosen-class="sortable-chosen" drag-class="sortable-drag"
+                                                :options="{ forceFallback: true }">
+
+
+
+
+
+                                                <template #item="{ element }">
+                                                    <div class="col-lg-12 me-element-item mb-2">
+                                                        <div
+                                                            class="d-flex align-items-center p-3 bg-white shadow-sm rounded position-relative">
+
+                                                            <!-- Drag Handle (Order Box) -->
+                                                            <div
+                                                                class="drag-handle d-flex align-items-center justify-content-center me-3">
+                                                                <i class="fas fa-grip-vertical"></i>
                                                             </div>
-                                                            <p class="m-b15"><strong>{{ section.page_section_name
-                                                                    }}</strong></p>
-                                                        </div>
-                                                        <div class="icon-content">
-                                                            <a href="#" @click="openModal(section)"
-                                                                class="Me-EditElement btn btn-primary shadow btn-xs sharp me-1">
-                                                                <i class="fas fa-pencil-alt"></i>
-                                                            </a>
-                                                            <a href="javascript:void(0);"
-                                                                @click="deleteComponent(section)"
-                                                                class="ME-DeleteElement btn btn-danger shadow btn-xs sharp me-1">
-                                                                <i class="fa fa-trash"></i>
-                                                            </a>
+
+                                                            <!-- Component Name -->
+                                                            <div class="flex-grow-1">
+                                                                <p class="m-0 fw-bold">{{ element.page_section_name }}
+                                                                </p>
+                                                            </div>
+
+                                                            <!-- Edit/Delete -->
+                                                            <div class="d-flex">
+                                                                <a href="#" @click="openModal(element)"
+                                                                    class="Me-EditElement btn btn-primary shadow btn-xs sharp me-1">
+                                                                    <i class="fas fa-pencil-alt"></i>
+                                                                </a>
+                                                                <a href="javascript:void(0);"
+                                                                    @click="deleteComponent(element)"
+                                                                    class="ME-DeleteElement btn btn-danger shadow btn-xs sharp me-1">
+                                                                    <i class="fa fa-times"></i>
+                                                                </a>
+
+                                                                <a @click="goToComponentData(element.page_section_name)"
+                                                                    class="btn btn-success btn-sm"
+                                                                    style="cursor: pointer;">
+                                                                    <i class="fa fa-list"></i>
+                                                                </a>
+
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </template>
+                                                </template>
+                                            </draggable>
+
 
                                         </div>
                                     </div>
@@ -165,8 +192,8 @@
             </div>
         </div>
     </div>
-        <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection"  :menuName="menuName"
-            :menu="menu_id" @close="isModalOpen = false" />
+    <ModalComponent :isOpen="isModalOpen" :title="modalTitle" :component="modalComponent" :section="selectedSection"
+        :menuName="menuName" :menu="menu_id" @close="isModalOpen = false" />
 </template>
 
 <script setup>
@@ -174,6 +201,7 @@
 import { ref, onMounted, } from "vue";
 import axios from 'axios';
 import { useRouter } from 'vue-router'
+import draggable from 'vuedraggable'
 const router = useRouter()
 import ModalComponent from './ModalComponent.vue';
 import SlidesManager from '../../components/page_components/SlidesManager.vue';
@@ -194,7 +222,7 @@ import WhosWho from "../../components/page_components/WhosWho.vue";
 import Loader from '../../components/Loader.vue';
 import { useToastr } from '../../toaster.js';
 
-const props = defineProps(['menuId','parentID','menuName']);
+const props = defineProps(['menuId', 'parentID', 'menuName']);
 const allComponents = ref({});
 const pageSections = ref([]);
 const isModalOpen = ref(false);
@@ -257,7 +285,7 @@ const onBack = () => {
 const openModal = (section) => {
     debugger;
     // selectedSection.value = section;
-  selectedSection.value = section;
+    selectedSection.value = section;
     modalTitle.value = section.page_section_name;
     switch (section.page_section_name) {
         case 'Carousel':
@@ -301,7 +329,7 @@ const openModal = (section) => {
             modalComponent.value = Logo;
             break;
 
-     case 'Feedback':
+        case 'Feedback':
             modalComponent.value = Feedback;
             break;
 
@@ -402,6 +430,46 @@ const deleteComponent = async (component) => {
         }
     }
 };
+
+const onDragEnd = () => {
+    debugger;
+    // Recalculate order locally
+    pageSections.value.forEach((section, index) => {
+        section.order = index + 1;
+    });
+
+    // Send updated order to backend
+    axios.post('/api/update-component-order', {
+        sections: pageSections.value.map((s, index) => ({
+            id: s.id,          // <-- page_sections table PK
+            order: index + 1   // <-- new order
+        }))
+    }).then(() => {
+        toastr.success('Order updated successfully');
+    }).catch(error => {
+        console.error('Error updating order:', error);
+        toastr.error('Failed to update order');
+    });
+};
+
+const onDragStart = (evt) => {
+    // Force the ghost/mirror to be solid
+    const ghost = document.querySelector('.sortable-drag');
+    if (ghost) {
+        ghost.style.opacity = '1';
+        ghost.style.background = '#fff';
+        ghost.style.boxShadow = '0 6px 18px rgba(0,0,0,0.2)';
+    }
+};
+
+
+const goToComponentData = (sectionName) => {
+    router.push({
+        name: 'ComponentView',
+        params: { componentName: sectionName }
+    });
+};
+
 
 
 onMounted(() => {

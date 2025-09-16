@@ -115,6 +115,8 @@ Route::middleware(('auth'))->group(function () {
     Route::post('/api/delete_user/{user}', [UserController::class, 'destroy']);
 
     Route::post('/api/change_role/{user}', [UserController::class, 'change_role']);
+    Route::post('/api/update-component-order', [HomeController::class, 'updateOrder']);
+    
 
     //THEMES
 

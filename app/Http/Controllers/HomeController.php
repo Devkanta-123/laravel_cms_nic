@@ -29,6 +29,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helpers\HtmlSanitizer;
+use Illuminate\Support\Facades\File;
 
 class HomeController extends Controller
 {
@@ -572,21 +573,38 @@ class HomeController extends Controller
     public function uploadBanner(Request $request)
     {
         $request->validate([
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Adjust max file size as needed
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:20480',
+
         ]);
 
-        $images = $request->images;
         $menu_id = $request->menu_id;
+        $uploadedImage = null;
 
-        // Handle file upload
-        $uploadedImages = [];
-        if ($request->hasFile('images')) {
+        // Ensure "banner" directory exists
+        $bannerPath = storage_path('app/public/banner');
+        if (!File::exists($bannerPath)) {
+            File::makeDirectory($bannerPath, 0755, true); // recursive mkdir
+        }
 
-            $filename = $images[0]->getClientOriginalName();
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = time() . '_' . $image->getClientOriginalName();
 
-            $path = $images[0]->store('banner', 'public'); // Store in /public/storage/slides directory
-            $uploadedImages[] = $filename;
+            // ✅ Find the latest/only banner for this menu_id
+            $oldBanner = Banner::where('menu_id', $menu_id)->first();
 
+            if ($oldBanner) {
+                // Delete old image file from storage
+                if (Storage::disk('public')->exists($oldBanner->image)) {
+                    Storage::disk('public')->delete($oldBanner->image);
+                }
+                // Delete old record
+                $oldBanner->delete();
+            }
+
+            // Store new file in /storage/app/public/banner
+            $path = $image->storeAs('banner', $filename, 'public');
+            $uploadedImage = $filename;
 
             Banner::create([
                 'image' => $path,
@@ -594,7 +612,10 @@ class HomeController extends Controller
             ]);
         }
 
-        return response()->json(['message' => 'Banner uploaded successfully', 'filenames' => $uploadedImages]);
+        return response()->json([
+            'message' => 'Banner uploaded successfully',
+            'filename' => $uploadedImage
+        ]);
     }
 
     public function deleteBanner(Request $request)
@@ -1024,9 +1045,6 @@ class HomeController extends Controller
                 'type' => $type,
                 'order' => '1',
                 'status' => 1,
-                'hindi_title' => $request->titleH,
-                'khasi_title' => $request->titleK,
-                'other_title' => $request->titleO,
                 'page' => $request->page,
                 'pagename' => $request->pagename,
                 'pagemenuid' => $request->pagemenuid,
@@ -1159,12 +1177,6 @@ class HomeController extends Controller
                 'status' => 1,
                 'menu_id' => $request->menu ?? 1,
                 'page_section_id' => $request->page_section ?? 1,
-                'hindi_title' => $request->hindi_title,
-                'khasi_title' => $request->khasi_title,
-                'other_title' => $request->other_title,
-                'hindi_description' => $request->hindi_description,
-                'khasi_description' => $request->khasi_description,
-                'other_description' => $request->other_description,
                 'flag' => $flag,
                 'user_id' => $user->id,
                 'role_id' => $user->role_id,
@@ -1381,7 +1393,7 @@ class HomeController extends Controller
 
 
 
-    public  function archiveSingleNews(Request $request)
+    public function archiveSingleNews(Request $request)
     {
         $id = $request->input('id');
         $newsItem = DB::table('latest_news')->where('id', $id)->first();
@@ -1821,13 +1833,21 @@ class HomeController extends Controller
                     'u.name as addedby',
                     'cs.id',
                     'cs.rejected_remarks',
-                    'u2.name as approver'
+                    'u2.name as approver',
+                    'cs.role_id'
                 );
 
+            // For role_id 3 (content creator) or 4 (publisher)
             if ($user->role_id == 3) {
-                $query->where('cs.user_id', $user->id);
+                $query->where(function ($q) use ($user) {
+                    $q->where('cs.user_id', $user->id)
+                        ->orWhere('cs.role_id', 2); // admin records are also visible
+                });
             } elseif ($user->role_id == 4) {
-                $query->where('cs.publisher_id', $user->id);
+                $query->where(function ($q) use ($user) {
+                    $q->where('cs.publisher_id', $user->id)
+                        ->orWhere('cs.role_id', 2); // admin records are also visible
+                });
             }
 
             return $query->get();
@@ -1836,6 +1856,7 @@ class HomeController extends Controller
         // Case 3: Default (admin or other roles) - return all carousel records
         return Carousel::all();
     }
+
 
 
     // public function approveCarousel(Request $request)
@@ -2681,37 +2702,37 @@ class HomeController extends Controller
 
     public function getCCDashboardStatistics()
     {
-        
-    $user = Auth::user();
 
-    // List of your component tables
-    $components = [
-        'cards',
-        'carousel',
-        'faqs',
-        'gallery',
-        'latest_news',
-        'logo',
-        'map',
-        'notifications',
-        'paragraph',
-        'whos_who'
-    ];
+        $user = Auth::user();
 
-    $data = [];
+        // List of your component tables
+        $components = [
+            'cards',
+            'carousel',
+            'faqs',
+            'gallery',
+            'latest_news',
+            'logo',
+            'map',
+            'notifications',
+            'paragraph',
+            'whos_who'
+        ];
 
-    foreach ($components as $component) {
-        $monthlyCounts = DB::table($component)
-            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as count")
-            ->where('user_id', $user->id)
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+        $data = [];
 
-        $data[$component] = $monthlyCounts;
-    }
+        foreach ($components as $component) {
+            $monthlyCounts = DB::table($component)
+                ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as count")
+                ->where('user_id', $user->id)
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
 
-    return response()->json($data);
+            $data[$component] = $monthlyCounts;
+        }
+
+        return response()->json($data);
     }
 
 
@@ -2774,5 +2795,17 @@ class HomeController extends Controller
     {
         $data = DB::table('archive_news')->get();
         return response()->json($data);
+    }
+
+
+    public function updateOrder(Request $request)
+    {
+        foreach ($request->sections as $section) {
+            DB::table('page_section')
+                ->where('id', $section['id'])
+                ->update(['order' => $section['order']]);
+        }
+
+        return response()->json(['message' => 'Order updated']);
     }
 }

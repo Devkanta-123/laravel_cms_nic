@@ -1,23 +1,6 @@
 <template>
-  <!-- <div class="row">
-    <div class="col-12">
-      <p class="news-label">Latest News:</p>
-      <div
-        class="swiper-container brand-active swiper-container-initialized swiper-container-horizontal swiper-container-pointer-events">
-        <ul class="list-wrap">
-        
-          <li v-for="(item, index) in newsData" :key="item.id">
-            <a href="#" @click.prevent="openNews(item)" style="color: #014E4E;">
-              {{ getLatestNewsTitle(item) }}
-            </a>
-            <span v-if="index < newsData.length - 1"> | </span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div> -->
   <div class="bg-img position-absolute top-0 bottom-0 start-0 end-0 z-0 "></div>
-  <div class="container position-relative z-1">
+  <div class="container position-relative z-1 ms-4">
     <div class="row justify-content-center">
       <div class="col-xl-6 col-lg-8">
         <div class="section-title text-center mb-40 tg-heading-subheading animation-style3">
@@ -27,25 +10,28 @@
     </div>
 
     <div class="position-relative">
-      <div class="row justify-content-center">
-        <div v-for="(item, index) in paginatedNews" :key="item.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-8">
-          <div class="services-item shine-animate-item">
-            <div class="services-thumb">
+      <div class="row justify-content-center g-2">
+        <div v-for="(item, index) in paginatedNews" :key="item.id" class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+
+          <div class="card h-100 text-center p-2">
+            <div class="card-img-top">
               <a href="#" class="shine-animate" target="_blank">
-                <img :src="logo" alt="News Image" />
+                <img :src="logo" alt="News Image" class="img-fluid rounded" />
               </a>
             </div>
-            <div class="services-content">
-              <div class="icon">
-                <i class="fa-solid fa-newspaper"></i>
+            <div class="card-body p-2">
+              <div class="icon mb-1">
+                <i class="fa-solid fa-newspaper fa-sm"></i>
               </div>
-              <h4 class="services__top-title">
-                <a href="#" @click.prevent="openNews(item)">
-                  {{ getLatestNewsTitle(item) }}
+              <h6 class="services__top">
+                <a href="#" @click.prevent="openNews(item)" class="stretched-link text-decoration-none"
+                  :title="getLatestNewsTitle(item)">
+                  {{ truncateTitle(getLatestNewsTitle(item)) }}
                 </a>
-              </h4>
+              </h6>
             </div>
           </div>
+
         </div>
       </div>
       <div class="project__nav-wrap">
@@ -58,12 +44,12 @@
           <i class="fa fa-chevron-right"></i>
         </div>
       </div>
-      <router-link :to="{ name: 'Page', params: { id: encrypt( 73 )}, query: { page_name: encrypt('Archive Data')} }" class="btn" data-aos="fade-up"
-        data-aos-delay="600">
+      <router-link :to="{ name: 'Page', params: { id: encrypt(73) }, query: { page_name: encrypt('Archive Data') } }"
+        class="btn" data-aos="fade-up" data-aos-delay="600">
         See Archive data
       </router-link>
 
-       
+
 
     </div>
   </div>
@@ -153,6 +139,13 @@ const getLatestNewsTitle = (newsItem) => {
   }
 };
 
+
+const truncateTitle = (title, length = 50) => {
+  if (!title) return '';
+  return title.length > length ? title.slice(0, length) + '...' : title;
+};
+
+
 // Method to open the news item based on its type (link or file)
 const openNews = (item) => {
   if (item.link) {
@@ -169,4 +162,5 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

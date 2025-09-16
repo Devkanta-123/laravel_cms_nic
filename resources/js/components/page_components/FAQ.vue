@@ -15,38 +15,20 @@
             <div class="card p-4 shadow-sm">
                 <div class="row align-items-start">
                     <!-- English Section -->
-                    <div class="col-md-7">
+                    <div class="col-md-12">
                         <div class="mb-3">
                             <label class="form-label">
-                                English Title <span class="text-danger">*</span>
+                                English Question <span class="text-danger">*</span>
                             </label>
                             <input type="text" class="form-control" placeholder="English Title"
                                 v-model="formData.english_question" />
+                                   <label class="form-label">
+                                English Answer <span class="text-danger">*</span>
+                            </label>
                             <textarea class="form-control mt-2" v-model="formData.english_answer" rows="2"
                                 placeholder="English Answer"></textarea>
                         </div>
-                    </div>
-                    <!-- More Languages -->
-                    <div class="col-md-5">
-                        <p>More Languages</p>
-                        <div class="advanced-fields">
-                            <div class="mb-3">
-                                <label class="form-label">Hindi Question</label>
-                                <input type="text" class="form-control" placeholder="Hindi Question"
-                                    v-model="formData.hindi_question" />
-                                <textarea class="form-control mt-2" rows="2" v-model="formData.hindi_answer"
-                                    placeholder="Hindi Answer"></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Khasi Question</label>
-                                <input type="text" class="form-control" placeholder="Khasi Question"
-                                    v-model="formData.khasi_question" />
-                                <textarea class="form-control mt-2" rows="2" v-model="formData.khasi_answer"
-                                    placeholder="Khasi Answer"></textarea>
-                            </div>
-                        </div>
-                    </div>
+                    </div>            
                 </div>
 
                 <!-- Submit Button -->
@@ -64,10 +46,6 @@
                                     <th>SL.NO</th>
                                     <th>English Question</th>
                                     <th>English Answer</th>
-                                    <th>Hindi Question</th>
-                                    <th>Hindi Answer</th>
-                                    <th>Khasi Question</th>
-                                    <th>Khasi Answer</th>
                                     <th>Added By</th>
                                     <th>Added On</th>
                                     <th>Status</th>
@@ -79,10 +57,6 @@
                                     <td>{{ index + 1 }}</td>
                                     <td>{{ faq.english_title_question || 'N/A' }}</td>
                                     <td>{{ faq.english_answer || 'N/A' }}</td>
-                                    <td>{{ faq.hindi_title_question || 'N/A' }}</td>
-                                    <td>{{ faq.hindi_answer || 'N/A' }}</td>
-                                    <td>{{ faq.khasi_title_question || 'N/A' }}</td>
-                                    <td>{{ faq.khasi_answer || 'N/A' }}</td>
                                     <td>{{ faq.addedby || 'N/A' }}</td>
                                     <td>{{ formatDate(faq.created_at) }}</td>
                                     <td>
@@ -141,37 +115,12 @@
                                 <input type="text" class="form-control" placeholder="English Question"
                                     v-model="formData.english_question" required />
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Hindi Question</label>
-                                <input type="text" class="form-control" placeholder="Hindi Question"
-                                    v-model="formData.hindi_question" />
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Khasi Question</label>
-                                <input type="text" class="form-control" placeholder="Khasi Question"
-                                    v-model="formData.khasi_question" />
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-3">
+                              <div class="col-md-3">
                                 <label class="form-label">English Answer<span class="text-danger">*</span></label>
                                 <textarea class="form-control" rows="2" placeholder="English Answer"
                                     v-model="formData.english_answer" required></textarea>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Hindi Answer</label>
-                                <textarea class="form-control" rows="2" placeholder="Hindi Answer"
-                                    v-model="formData.hindi_answer"></textarea>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Khasi Answer</label>
-                                <textarea class="form-control" rows="2" placeholder="Khasi Answer"
-                                    v-model="formData.khasi_answer"></textarea>
-                            </div>
-
                         </div>
-
                         <div class="modal-footer mt-4">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 @click="resetForm">Close</button>
@@ -237,10 +186,6 @@ const submitData = async () => {
     const dataToSend = {
         english_question: formData.english_question,
         english_answer: formData.english_answer,
-        hindi_question: formData.hindi_question,
-        hindi_answer: formData.hindi_answer,
-        khasi_question: formData.khasi_question,
-        khasi_answer: formData.khasi_answer,
         menu_id: menu_id,
         page_section_master_id: page_section_id
     };
@@ -301,11 +246,7 @@ const updateFAQ = (faq) => {
     isEditMode.value = true
     currentFAQId.value = faq.id
     formData.english_question = faq.english_title_question || ''
-    formData.hindi_question = faq.hindi_title_question || ''
-    formData.khasi_question = faq.khasi_title_question || ''
     formData.english_answer = faq.english_answer || ''
-    formData.hindi_answer = faq.hindi_answer || ''
-    formData.khasi_answer = faq.khasi_answer || ''
     formData.order = faq.order || ''
     $('#faqeditModal').modal('show')
 }

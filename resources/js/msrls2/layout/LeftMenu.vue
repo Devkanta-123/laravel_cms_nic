@@ -9,25 +9,46 @@
                 </router-link>
             </h4>
             <div class="sidebar__cat-list marquee-container">
-                <ul class="list-wrap marquee-content">
-                    <!-- First copy -->
-                    <li v-for="notice in noticeBoardData" :key="'a' + notice.id">
-                        <a :href="`/storage/${notice.file}`" target="_blank" rel="noopener noreferrer">
-                            <i class="flaticon-arrow-button"></i>
-                            {{ notice.title }} ({{ formatDate(notice.date) }})
-                        </a>
-                        <span v-if="isNewNotice(notice.date)" class="new-badge">New</span>
+                <ul class="list-unstyled marquee-content">
+                    <li v-for="notice in noticeBoardData" :key="'a' + notice.id" class="card shadow-sm border-0 mb-3">
+                        <div class="card-body p-3">
+                            <a :href="`/storage/${notice.file}`" target="_blank" rel="noopener noreferrer"
+                                class="fw-semibold text-decoration-none d-block">
+                                <i class="flaticon-arrow-button me-2"></i> {{ notice.title }}
+                            </a>
+
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">
+                                    <i class="fa fa-calendar me-1"></i> {{ formatDate(notice.date) }}
+                                </small>
+                                <span v-if="isNewNotice(notice.date)" class="badge bg-danger">
+                                    New
+                                </span>
+                            </div>
+                        </div>
                     </li>
-                    <!-- Duplicate copy for smooth looping -->
-                    <li v-for="notice in noticeBoardData" :key="'b' + notice.id">
-                        <a :href="`/storage/${notice.file}`" target="_blank" rel="noopener noreferrer">
-                            <i class="flaticon-arrow-button"></i>
-                            {{ notice.title }} ({{ formatDate(notice.date) }})
-                        </a>
-                        <span v-if="isNewNotice(notice.date)" class="new-badge">New</span>
+
+                    <!-- Duplicate for smooth loop -->
+                    <li v-for="notice in noticeBoardData" :key="'b' + notice.id" class="card shadow-sm border-0 mb-3">
+                        <div class="card-body p-3">
+                            <a :href="`/storage/${notice.file}`" target="_blank" rel="noopener noreferrer"
+                                class="fw-semibold text-decoration-none d-block">
+                                <i class="flaticon-arrow-button me-2"></i> {{ notice.title }}
+                            </a>
+
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">
+                                    <i class="fa fa-calendar me-1"></i> {{ formatDate(notice.date) }}
+                                </small>
+                                <span v-if="isNewNotice(notice.date)" class="badge bg-danger">
+                                    New
+                                </span>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>
+
         </div>
     </aside>
 </template>

@@ -20,9 +20,6 @@ return new class extends Migration
             $table->string('meta_keywords')->nullable();
             $table->string('order');
             $table->tinyInteger('status');
-            $table->string('hindi_title')->nullable();
-            $table->string('khasi_title')->nullable();
-            $table->string('other_title')->nullable();
             $table->string('rejected_remarks')->nullable();
             $table->unsignedBigInteger('publisher_id')->nullable();
             $table->string('application_id')->nullable();

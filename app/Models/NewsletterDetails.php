@@ -14,8 +14,6 @@ class NewsletterDetails extends Model
         'menu_id',
         'page_section_id',
         'english_title',
-        'hindi_title',
-        'khasi_title',
         'fromdate',
         'todate',
         'filepath',

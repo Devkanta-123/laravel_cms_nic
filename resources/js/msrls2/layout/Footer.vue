@@ -80,7 +80,7 @@
                     </ul>
                   </div>
                   <br>
-                  <p class="mb-0 me-2">Total Visitors: {{ visitorCount }}</p>
+                  <p class="mb-0 me-2">Total Visit : {{ visitorCount }}</p>
                   <a href="#"> Last Updated on : </a>
                 </div>
               </div>

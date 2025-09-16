@@ -15,65 +15,49 @@
         <div class="card p-4 shadow-sm">
           <!-- <h4 class="mb-4 text-primary">Add New Card</h4> -->
           <form @submit.prevent="addCard" enctype="multipart/form-data">
-            <div class="row">
-              <!-- Left Column: Basic Info -->
-              <div class="col-md-7">
-                <div class="mb-3">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-7 mb-3">
                   <label class="form-label">Card Title <span class="text-danger">*</span></label>
                   <input type="text" v-model="newCard.card_title" class="form-control" placeholder="Enter Card Title"
                     required>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label">Card Description</label>
-                  <textarea v-model="newCard.card_description" class="form-control" rows="2"
-                    placeholder="Enter Card Description"></textarea>
-                </div>
-                <div class="mb-3">
+                <div class="col-md-5 mb-3">
                   <label class="form-label">Card Logo</label>
                   <input type="file" @change="handleFileChange" class="form-control" accept="image/*">
                 </div>
-                <div class="mb-3">
-                  <label class="form-label">Link to another page</label>
+              </div>
+
+              <div class="row">
+                <div class="col-md-7 mb-3">
+                  <label class="form-label">Card Description</label>
+                  <textarea v-model="newCard.card_description" class="form-control" rows="2"
+                    placeholder="Enter Description"></textarea>
+                </div>
+                <div class="col-md-5 mb-3">
+                  <label class="form-label">Link to Another Page</label>
                   <select class="form-control" v-model="newCard.more_link">
-                    <option value="" disabled selected>Select the page menu</option>
+                    <option value="" disabled>Select the page menu</option>
                     <option v-for="pagemenu in pagemenudata" :key="pagemenu.id" :value="pagemenu.id">
                       {{ pagemenu.menu_name }}
                     </option>
                   </select>
                 </div>
-                <div class="mb-3">
+              </div>
+
+              <div class="row">
+                <div class="col-md-7 mb-3">
                   <label class="form-label">External Link</label>
                   <input type="text" v-model="newCard.ex_link" class="form-control" placeholder="Enter Link (optional)">
                 </div>
-                <div class="mb-3">
-                  <label class="form-label">Card Sort Order<span class="text-danger">*</span></label>
+                <div class="col-md-5 mb-3">
+                  <label class="form-label">Card Sort Order <span class="text-danger">*</span></label>
                   <input type="number" v-model="newCard.order" class="form-control" placeholder="Enter Order Number"
                     required>
                 </div>
               </div>
-
-              <!-- Right Column: Advanced Info (Toggle) -->
-              <div class="col-md-5">
-                <p>More Languages</p>
-                <div class="advanced-fields ">
-                  <div class="mb-3">
-                    <label class="form-label">Hindi Title</label>
-                    <input type="text" v-model="newCard.hindi_title" class="form-control" placeholder="Hindi Title">
-                    <textarea v-model="newCard.hindi_description" class="form-control mt-2" rows="2"
-                      placeholder="Hindi Description"></textarea>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Khasi Title</label>
-                    <input type="text" v-model="newCard.khasi_title" class="form-control" placeholder="Khasi Title">
-                    <textarea v-model="newCard.khasi_description" class="form-control mt-2" rows="2"
-                      placeholder="Khasi Description"></textarea>
-                  </div>
-
-
-                </div>
-              </div>
             </div>
+
 
             <button type="submit" class="btn btn-primary mt-4 w-100">Add Card</button>
           </form>
@@ -149,7 +133,7 @@
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 const route = useRoute();
-import { ref, defineProps, onMounted,nextTick} from 'vue';
+import { ref, defineProps, onMounted, nextTick } from 'vue';
 import { useToastr } from '../../toaster.js';
 import axios from 'axios';
 const pagemenudata = ref([]); // Store fetched categories
@@ -178,13 +162,7 @@ const newCard = ref({
   image: null,
   more_link: '',
   ex_link: '',
-  order: '',
-  hindi_title: '',
-  khasi_title: '',
-  other_title: '',
-  hindi_description: '',
-  khasi_description: '',
-  other_description: ''
+  order: ''
 });
 
 const handleFileChange = (event) => {
@@ -215,13 +193,7 @@ const addCard = async () => {
       image: null,
       more_link: '',
       ex_link: '',
-      order: '',
-      hindi_title: '',
-      khasi_title: '',
-      other_title: '',
-      hindi_description: '',
-      khasi_description: '',
-      other_description: ''
+      order: ''
     };
 
     // Re-fetch items to update table

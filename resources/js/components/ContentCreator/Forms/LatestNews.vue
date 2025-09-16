@@ -37,21 +37,21 @@
                                     <input type="text" id="englishTitle" class="form-control" v-model="title"
                                         placeholder="English Title" required>
                                 </div>
-                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
-                                    <label class="form-label" for="khasiTitle">Khasi Title</label>
-                                    <input type="text" id="khasiTitle" class="form-control" v-model="titleK"
-                                        placeholder="Khasi Title">
-                                </div>
-                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
-                                    <label class="form-label" for="hindiTitle">Hindi Title</label>
-                                    <input type="text" id="hindiTitle" class="form-control" v-model="titleH"
-                                        placeholder="Hindi Title">
+                                 <div class="col-4">
+                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
+                                        <option value="" disabled>Select the Publisher</option>
+                                        <option v-for="publisher in publisherData" :key="publisher.id"
+                                            :value="publisher.id">
+                                            {{ publisher.name }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
 
                             <div class="row">
-                                <!-- Checkbox Switch -->
-                                <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
+                                 <div class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
                                     <div class="form-group mb-3">
                                         <div class="checkbox checbox-switch switch-primary">
                                             <label>
@@ -61,9 +61,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <!-- File Upload (Shown only when showLinkInput is false) -->
+                                <!-- Checkbox Switch -->
+                               <!-- File Upload (Shown only when showLinkInput is false) -->
                                 <div v-show="!showLinkInput" class="col-sm-4 col-xl-4 col-xxl-4 mb-4">
                                     <label class="form-label" for="fileInput">File Upload</label>
                                     <input type="file" id="fileInput" class="form-control" @change="handleFileChange"
@@ -76,18 +75,10 @@
                                     <input type="text" id="linkInput" class="form-control" v-model="link"
                                         placeholder="Enter URL" autocomplete="off">
                                 </div>
-                                <div class="col-4">
-                                    <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select my-1 me-sm-2" v-model="selectedPublisher">
-                                        <option value="" disabled>Select the Publisher</option>
-                                        <option v-for="publisher in publisherData" :key="publisher.id"
-                                            :value="publisher.id">
-                                            {{ publisher.name }}
-                                        </option>
-                                    </select>
-                                </div>
+                               
                             </div>
+                          
+                               
                         </div>
 
                         <!-- Save Button -->
@@ -215,8 +206,6 @@ const showLinkInput = ref(false)
 const file = ref(null)
 const link = ref('')
 const title = ref('')
-const titleK = ref('')
-const titleH = ref('')
 const latestnews = ref([]);
 const filteredLatestNewsData = ref([]);
 const activeFlag = ref('ALL'); // Default to 'ALL'
@@ -345,10 +334,7 @@ const saveLatestNews = () => {
     } else {
         formData.append('file', file.value);
     }
-
     formData.append('title', title.value);
-    formData.append('titleK', titleK.value);
-    formData.append('titleH', titleH.value);
     formData.append("menu_id", route.params.menuId);
     formData.append("page_section_master_id", route.params.page_section_id);
     formData.append("publisher_id", selectedPublisher.value);
@@ -374,8 +360,6 @@ const saveLatestNews = () => {
             // Step 4: Fetch new data
             await fetchLatestNews();
             title.value = '';
-            titleK.value = '';
-            titleH.value = '';
             link.value = '';
             file.value = null;
             showLinkInput.value = false; // or true, based on your toggle

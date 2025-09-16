@@ -11,15 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('logo', function (Blueprint $table) {
-            $table->id();
-            $table->string('image');
-            $table->integer('menu_id');
-            $table->string('rejected_remarks'); // Store one file path per row
-            $table->unsignedBigInteger('publisher_id'); // Store one file path per row
-            $table->string('application_id', 30)->nullable();
-            $table->timestamps();
-        });
+       Schema::create('logo', function (Blueprint $table) {
+    $table->id(); // bigint NOT NULL
+    $table->string('image', 255); // character varying(255) NOT NULL
+    $table->integer('menu_id');   // integer NOT NULL
+
+    $table->timestamp('created_at')->nullable();
+    $table->timestamp('updated_at')->nullable();
+
+    $table->unsignedBigInteger('user_id')->nullable();  // bigint
+    $table->char('flag', 1)->default('N');              // character(1) DEFAULT 'N'
+    $table->smallInteger('role_id')->nullable();        // smallint
+    $table->string('rejected_remarks')->nullable();     // character varying
+    $table->integer('publisher_id')->nullable();        // integer
+    $table->string('application_id')->nullable();       // character varying
+});
+
     }
 
     /**

@@ -22,12 +22,6 @@ return new class extends Migration {
             $table->string('meta_keywords');
             $table->string('order');
             $table->smallInteger('status');
-            $table->string('hindi_name')->nullable();
-            $table->string('khasi_name')->nullable();
-            $table->string('other_name')->nullable();
-            $table->string('hindi_description')->nullable();
-            $table->string('khasi_description')->nullable();
-            $table->string('other_description')->nullable();
             $table->string('rejected_remarks')->nullable();
             $table->unsignedBigInteger('publisher_id')->nullable();
             $table->string('application_id')->nullable();

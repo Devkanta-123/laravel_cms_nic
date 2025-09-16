@@ -59,12 +59,8 @@
                             <thead>
                                 <tr class="text-dark">
                                     <th>SL.NO</th>
-                                    <th>English Question</th>
-                                    <th>English Answer</th>
-                                    <th>Hindi Question</th>
-                                    <th>Hindi Answer</th>
-                                    <th>Khasi Question</th>
-                                    <th>Khasi Answer</th>
+                                    <th>Question</th>
+                                    <th>Answer</th>
                                     <th>Added By</th>
                                     <th>Added On</th>
                                     <th>Status</th>
@@ -76,10 +72,6 @@
                                     <td>{{ index + 1 }}</td>
                                     <td>{{ faq.english_title_question || 'N/A' }}</td>
                                     <td>{{ faq.english_answer || 'N/A' }}</td>
-                                    <td>{{ faq.hindi_title_question || 'N/A' }}</td>
-                                    <td>{{ faq.hindi_answer || 'N/A' }}</td>
-                                    <td>{{ faq.khasi_title_question || 'N/A' }}</td>
-                                    <td>{{ faq.khasi_answer || 'N/A' }}</td>
                                     <td>{{ faq.addedby || 'N/A' }}</td>
                                     <td>{{ formatDate(faq.created_at) }}</td>
                                     <td>
@@ -118,8 +110,6 @@
                                 </tr>
                             </tbody>
                         </table>
-
-
                     </div>
                 </div>
             </div>

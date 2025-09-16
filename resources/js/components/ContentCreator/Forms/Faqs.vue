@@ -33,42 +33,18 @@
                         <div class="content clearfix">
                             <div class="row">
                                 <div class="col-md-3">
-                                    <label class="form-label">English Question<span class="text-danger">
+                                    <label class="form-label">Question<span class="text-danger">
                                             *</span></label>
-                                    <input type="text" class="form-control" placeholder="English Question"
+                                    <input type="text" class="form-control" placeholder="Question"
                                         v-model="formData.english_question" />
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Hindi Question</label>
-                                    <input type="text" class="form-control" placeholder="Hindi Question"
-                                        v-model="formData.hindi_question" />
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">Khasi Question</label>
-                                    <input type="text" class="form-control" placeholder="Khasi Question"
-                                        v-model="formData.khasi_question" />
-                                    <!-- <textarea class="form-control mt-2" v-model="formData.english_answer" rows="2"
-                                            placeholder="English Answer"></textarea> -->
-                                </div>
-                             
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <label class="form-label">English Answer<span class="text-danger"> *</span></label>
+                               <div class="col-md-3">
+                                    <label class="form-label">Answer<span class="text-danger"> *</span></label>
                                     <textarea class="form-control mt-2" v-model="formData.english_answer" rows="2"
-                                        placeholder="English Answer"></textarea>
+                                        placeholder="Answer"></textarea>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Hindi Answer</label>
-                                    <textarea class="form-control mt-2" rows="2" v-model="formData.hindi_answer"
-                                        placeholder="Hindi Answer"></textarea>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Khasi Description</label>
-                                    <textarea class="form-control mt-2" rows="2" v-model="formData.khasi_answer"
-                                        placeholder="Khasi Answer"></textarea>
-                                </div>
+                               
+                             
                             </div>
                             <div class="col-4">
                                 <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
@@ -133,12 +109,8 @@
                             <thead>
                                 <tr class="text-dark">
                                     <th>SL.NO</th>
-                                    <th>English Question</th>
-                                    <th>English Answer</th>
-                                    <!-- <th>Hindi Question</th>
-                                    <th>Hindi Answer</th>
-                                    <th>Khasi Question</th>
-                                    <th>Khasi Answer</th> -->
+                                    <th>Question</th>
+                                    <th>Answer</th>
                                     <th>Added By</th>
                                     <th>Added On</th>
                                     <th>Status</th>
@@ -212,19 +184,14 @@
                     <form @submit.prevent="submitData">
                         <div class="row">
                             <div class="col-md-3">
-                                <label class="form-label">English Question<span class="text-danger">*</span></label>
+                                <label class="form-label">Question<span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" placeholder="English Question"
                                     v-model="formData.english_question" required />
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Hindi Question</label>
-                                <input type="text" class="form-control" placeholder="Hindi Question"
-                                    v-model="formData.hindi_question" />
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Khasi Question</label>
-                                <input type="text" class="form-control" placeholder="Khasi Question"
-                                    v-model="formData.khasi_question" />
+                                <label class="form-label">Answer<span class="text-danger">*</span></label>
+                                <textarea class="form-control" rows="2" placeholder="English Answer"
+                                    v-model="formData.english_answer" required></textarea>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Order<span class="text-danger">*</span></label>
@@ -234,21 +201,6 @@
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-md-3">
-                                <label class="form-label">English Answer<span class="text-danger">*</span></label>
-                                <textarea class="form-control" rows="2" placeholder="English Answer"
-                                    v-model="formData.english_answer" required></textarea>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Hindi Answer</label>
-                                <textarea class="form-control" rows="2" placeholder="Hindi Answer"
-                                    v-model="formData.hindi_answer"></textarea>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Khasi Answer</label>
-                                <textarea class="form-control" rows="2" placeholder="Khasi Answer"
-                                    v-model="formData.khasi_answer"></textarea>
-                            </div>
                             <div class="col-md-3">
                                 <label class="form-label">Publisher<span class="text-danger">*</span></label>
                                 <select class="form-control" v-model="selectedPublisher" required>

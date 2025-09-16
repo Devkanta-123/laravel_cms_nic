@@ -1,6 +1,5 @@
 <template>
     <br><br>
-
   <br>
    <div class="content ml-6 mr-6">
         <div class="container-fluid ">
@@ -60,29 +59,7 @@
                                     </div>
 
                                 </div>
-                                <div class="row">
-                                    <p>More Languages</p>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Hindi Title</label>
-                                        <input type="text" v-model="newCard.hindi_title" class="form-control"
-                                            placeholder="Hindi Title">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Hindi Description</label>
-                                        <textarea v-model="newCard.hindi_description" class="form-control mt-2" rows="2"
-                                            placeholder="Hindi Description"></textarea>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Khasi Title</label>
-                                        <input type="text" v-model="newCard.khasi_title" class="form-control"
-                                            placeholder="Khasi Title">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Khasi Description</label>
-                                        <textarea v-model="newCard.khasi_description" class="form-control mt-2" rows="2"
-                                            placeholder="Khasi Description"></textarea>
-                                    </div>
-                                </div>
+                             
                                 <div class="col-4">
                                     <label class="form-label my-1 me-2" for="inlineFormSelectPref">Publisher <span
                                             class="text-danger">*</span></label>
@@ -108,7 +85,6 @@
                     </div>
                 </form>
             </div>
-
         </div>
 
         <div class="col-xl-12 mb-30">

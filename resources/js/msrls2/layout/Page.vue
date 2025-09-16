@@ -8,10 +8,11 @@
                     <div class="breadcrumb__content">
                         <h6 class="title text-white">{{ decrypt(route.query.page_name || '') }}</h6>
                         <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item active text-white">
-                                    <router-link to="/page/1">Home</router-link>
-                                </li>
+                            <ol class="breadcrumb-item active text-white">
+                               <li class="breadcrumb-item">
+  <router-link to="/page/1" class="text-white">Home</router-link>
+</li>
+
                                 <li class="breadcrumb-item active text-white" aria-current="page">{{
                                     decrypt(route.query.page_name || '') }}</li>
                             </ol>
@@ -81,7 +82,8 @@
 import { ref, onMounted, inject, watch, provide, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import bgImage from '../assets/images/msrls.jpg';
+const bgImageDefault = new URL("../assets/images/msrls.jpg", import.meta.url).href;
+const bgImage = ref(null);;
 import Archive from '../components/Achive.vue';
 import PhotoGallery from '../components/PhotoGallery.vue';
 import NoticeBoard from '../components/NoticeBoard.vue';
@@ -114,6 +116,9 @@ const activeComponent = shallowRef(null);
 const refreshKey = ref(0);
 const isLoading = ref(true);
 const pageName = ref('');
+const BANNER_CACHE_KEY = "bannerCacheImage";
+const BANNER_CACHE_TIME_KEY = "bannerCacheTime";
+const BANNER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const cacheKey = 'whoswhoData'
 const timestampKey = 'whoswhoTimestamp'
 const cacheDuration = 1000 * 60 * 5 // 5 mins
@@ -249,6 +254,39 @@ const fetchPageContent = async () => {
 };
 
 
+const fetchBanner = async () => {
+    try {
+        const cachedBanner = localStorage.getItem(BANNER_CACHE_KEY);
+        const cachedTime = localStorage.getItem(BANNER_CACHE_TIME_KEY);
+
+        if (cachedBanner && cachedTime && (Date.now() - cachedTime < BANNER_CACHE_TTL)) {
+            bgImage.value = cachedBanner;
+            console.log("Loaded banner from cache:", cachedBanner);
+            return;
+        }
+
+        const response = await axios.get("/get_banner");
+        if (response.data && response.data.length > 0) {
+            const firstBanner = response.data[0];
+
+            // Encode only the filename part
+            const parts = firstBanner.image.split("/");
+            const filename = encodeURIComponent(parts.pop());
+            const finalUrl = `/storage/${parts.join("/")}/${filename}`;
+
+            // Save in ref
+            bgImage.value = finalUrl;
+
+            // Store in cache with timestamp
+            localStorage.setItem(BANNER_CACHE_KEY, finalUrl);
+            localStorage.setItem(BANNER_CACHE_TIME_KEY, Date.now().toString());
+
+            console.log("Fetched new banner:", finalUrl);
+        }
+    } catch (error) {
+        console.error("Failed to fetch banner:", error);
+    }
+};
 function replacePageLinksWithEncrypted(content) {
     return content.replace(
         /<a\s+href="\/page\/(\d+)">([^<]+)<\/a>/g,
@@ -282,6 +320,7 @@ watch(
 );
 onMounted(() => {
     fetchPageContent();
+    fetchBanner();
 });
 </script>
 
@@ -289,4 +328,5 @@ onMounted(() => {
 .content {
     padding: 20px;
 }
+
 </style>

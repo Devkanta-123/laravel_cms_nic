@@ -20,8 +20,6 @@ class Paragraph extends Model
         'hindi_title',
         'khasi_title',
         'description',
-        'hindi_description',
-        'khasi_description',
         'new_description',
         'status',
         'flag',

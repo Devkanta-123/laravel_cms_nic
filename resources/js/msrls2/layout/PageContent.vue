@@ -258,11 +258,23 @@
         </div>
       </section>
 
-      <!-- Latest news -->
-
+      <!-- Latest news  and Lre-->
       <section class="services-area services-bg position-relative mt-n2" v-if="currentId == '1' && isCarouselLoaded">
-        <LatestNews :language="language" />
+        <div class="blog__inner-wrap">
+          <div class="row">
+            <div class="col-md-8">
+              <LatestNews :language="language" />
+            </div>
+            <div class="col-md-4">
+              <LeftMenu />
+            </div>
+          </div>
+        </div>
       </section>
+
+
+
+
       <section id="about" class="about-area pt-120 pb-120 mt-n9" v-if="currentId == '1'">
         <div class="container">
           <div class="row align-items-center">
@@ -467,6 +479,7 @@ import '../assets/css/main.css';
 import '../assets/js/swiper-bundle.js';
 import '../assets/css/swiper-bundle.css';
 import aboutus from '@/assets/images/aboutus.png';
+import LeftMenu from './LeftMenu.vue';
 // Track if visit has already been counted in this session
 const visitLogged = ref(false)
 const visitCount = ref(0);
@@ -479,6 +492,7 @@ const isLoading = ref(true);
 const route = useRoute();
 const menuFontSize = ref(14); // Example font size
 const homepragraphdata = ref([]);
+const pageSectionData = ref([]);
 const isMobileMenuOpen = ref(false)
 const windowWidth = ref(window.innerWidth);
 const activatelanguageData = ref();
@@ -615,13 +629,30 @@ const scrollToTop = () => {
 
 const fetchHeader = async () => {
   try {
-    debugger;
     const response = await axios.get('/get_website_description',);
     header.value = response.data;
   } catch (error) {
     console.error('Failed to fetch header:', error);
   }
 };
+
+
+
+
+
+const getPageDetails = async () => {
+  try {
+    debugger;
+    const response = await axios.post('/api/get_page_details/' + currentId.value)
+    if (response.data) {
+      pageSectionData.value = response.data
+      console.log("Home data" , response.data);
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 
 const getMenuItemName = (item) => {
 
@@ -724,6 +755,7 @@ onMounted(async () => {
       fetchHeader(),
       fetchPageContent(),
       fetchFAQs(),
+      getPageDetails(),
       getActivateLanguages()
     ])
 

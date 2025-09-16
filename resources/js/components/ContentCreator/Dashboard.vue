@@ -1,9 +1,4 @@
 <template>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    crossorigin="anonymous" />
-
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Poppins:200,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900">
   <nav class="admin-header navbar navbar-default col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
     <!-- logo -->
     <div class="text-start navbar-brand-wrapper">
@@ -45,7 +40,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-success">
-                  <i class="fa fa-users highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-users highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -65,7 +60,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-danger">
-                  <i class="fa fa-clipboard-list highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-clipboard-list highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -85,7 +80,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-warning">
-                  <i class="fa fa-exclamation-circle highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-exclamation-circle highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -105,7 +100,7 @@
             <div class="clearfix">
               <div class="float-start">
                 <span class="text-primary">
-                  <i class="fa fa-envelope highlight-icon" aria-hidden="true"></i>
+                  <i class="fas fa-envelope highlight-icon" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="float-end text-end">
@@ -380,7 +375,6 @@ const getCCDashboardStatistics = async () => {
     console.log("CCData", data)
     loadCCMonthlyTrends(data)
   } catch (err) {
-    console.error('Error loading dashboard data:', err)
   }
 }
 
@@ -395,6 +389,13 @@ const loadCCMonthlyTrends = (trendData) => {
     )
   ].sort()
 
+  // Format months to readable names
+  const formattedMonths = allMonths.map(m => {
+    const date = new Date(m) // assumes `m` is YYYY-MM or YYYY-MM-DD
+    return date.toLocaleString('default', { month: 'short', year: 'numeric' }) 
+    // e.g., "Jan 2025"
+  })
+
   const series = Object.keys(trendData).map(component => {
     const dataArr = Array.isArray(trendData[component]) ? trendData[component] : []
     const counts = allMonths.map(month => {
@@ -407,7 +408,7 @@ const loadCCMonthlyTrends = (trendData) => {
   ccTrendSeries.value = series
   ccTrendOptions.value = {
     ...ccTrendOptions.value,
-    xaxis: { categories: allMonths }
+    xaxis: { categories: formattedMonths }
   }
 }
 

@@ -18,9 +18,6 @@ return new class extends Migration
             $table->bigInteger('page_section_id');
             $table->tinyInteger('order')->default(1);
             $table->tinyInteger('status')->default('1');
-            $table->string('hindi_name')->nullable();
-            $table->string('khasi_name')->nullable();
-            $table->string('other_name')->nullable();
             $table->timestamps();
         });
     }

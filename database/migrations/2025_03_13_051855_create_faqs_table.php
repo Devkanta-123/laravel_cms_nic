@@ -13,11 +13,7 @@ return new class extends Migration {
         Schema::create('faqs', function (Blueprint $table) {
             $table->id(); // Primary key (auto-increment)
             $table->string('english_title_question'); // English title question
-            $table->string('hindi_title_question'); // Hindi title question
-            $table->string('khasi_title_question'); // Khasi title question
             $table->text('english_answer'); // English answer
-            $table->text('hindi_answer'); // Hindi answer
-            $table->text('khasi_answer'); // Khasi answer
             $table->integer('order')->default(0); // Order of display
             $table->string('rejected_remarks')->nullable();
             $table->unsignedBigInteger('publisher_id')->nullable();

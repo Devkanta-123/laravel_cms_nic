@@ -1,7 +1,4 @@
 <template>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
-        integrity="sha384-DyZ88mC6Up2uqS4h/Kfw5nqKx1pG2eU6R7tZLz1kcfk5iZ3Vf0dUSbNjs2a2g/Og" crossorigin="anonymous">
-
     <br>
     <br>
     <br>
@@ -42,7 +39,7 @@
                         <table class="table center-aligned-table mb-0" id="MapTable">
                             <thead>
                                 <tr class="text-dark">
-                                    <th>Iframe</th>
+                                    <th>Map</th>
                                     <th>Added On</th>
                                     <th>Added By</th>
                                     <th>Status</th>

@@ -14,76 +14,91 @@ use App\Models\User;
 class MapController extends Controller
 {
     //
-    public function index()
-    {
-    }
+    public function index() {}
     public function storeMapData(Request $request)
     {
         $request->validate([
-            'iframe' => 'required|string'
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'zoom' => 'nullable|integer|min:1|max:20',
+            'place_name' => 'nullable|string',
+            'publisher_id' => 'nullable|integer',
+            'menu_id' => 'required',
+            'page_section_master_id' => 'required'
         ]);
 
-        // Check if a map record exists, then update, otherwise create
-        $map = Map::first();
-        $user = Auth::user(); // This will get the authenticated user
+        $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
+
         $publisher = User::find($request->publisher_id);
-        //before submit check roleid and set flag value
+
         // Determine flag based on role_id
-        if ($user->role_id == 2) { //if admin upload 
-            $flag = 'A';
-        } elseif ($user->role_id == 3) { //if contentcreator upload
-            $flag = 'N';
-        }
+        $flag = ($user->role_id == 2) ? 'A' : 'N';
+
+        $map = Map::first(); // get the first record
+
         if ($map) {
+            // Update existing record
             $map->update([
-                'iframe' => $request->iframe,
-                'flag' => 'U'
+                'lat'         => $request->lat,
+                'lng'         => $request->lng,
+                'zoom'        => $request->zoom ?? 14,
+                'place_name'  => $request->place_name,
+                'flag'        => 'U',
+                'publisher_id' => $request->publisher_id ?? $map->publisher_id
             ]);
+
             $userTo = User::find($map->user_id);
+
             AppTrack::create([
-                'menu_id' => $request->menu_id,
-                'page_section_master_id' => $request->page_section_master_id,
-                'user_from' => $user->id,
-                'user_from_name' => $user->name,
-                'user_to' => $map->user_id,
-                'user_to_name' => $userTo ? $userTo->name : null,
-                'remarks' => 'Map updated: ' . $map->iframe,
-                'action' => 'Updated',
-                'flag' => 'U',
-                'application_id' => $map->application_id
+                'menu_id'                 => $request->menu_id,
+                'page_section_master_id'  => $request->page_section_master_id,
+                'user_from'               => $user->id,
+                'user_from_name'          => $user->name,
+                'user_to'                 => $map->user_id,
+                'user_to_name'            => $userTo ? $userTo->name : null,
+                'remarks'                 => 'Map updated: ' . $map->lat . ',' . $map->lng,
+                'action'                  => 'Updated',
+                'flag'                    => 'U',
+                'application_id'          => $map->application_id
             ]);
         } else {
+            // Create new record if none exists
             $applicationId = 'MAP' . now()->format('YmdHis');
+
             $map = Map::create([
-                'iframe' => $request->iframe,
-                'flag' => $flag,
-                'user_id' => $user->id,
-                'role_id' => $user->role_id,
+                'lat'          => $request->lat,
+                'lng'          => $request->lng,
+                'zoom'         => $request->zoom ?? 14,
+                'place_name'   => $request->place_name,
+                'flag'         => $flag,
+                'user_id'      => $user->id,
                 'application_id' => $applicationId,
                 'publisher_id' => $request->publisher_id ?? null
             ]);
+
             AppTrack::create([
-                'application_id' => $applicationId,
-                'menu_id' => $request->menu_id,
-                'page_section_master_id' => $request->page_section_master_id,
-                'user_from' => $user->id,
-                'user_from_name' => $user->name,
-                'user_to' => $request->publisher_id,
-                'user_to_name' => $publisher ? $publisher->name : null,
-                'remarks' => 'Map submitted: ' . $request->iframe,
-                'flag' => $flag,
-                'action' => 'Add',
+                'application_id'          => $applicationId,
+                'menu_id'                 => $request->menu_id,
+                'page_section_master_id'  => $request->page_section_master_id,
+                'user_from'               => $user->id,
+                'user_from_name'          => $user->name,
+                'user_to'                 => $request->publisher_id,
+                'user_to_name'            => $publisher ? $publisher->name : null,
+                'remarks'                 => 'Map created: ' . $request->lat . ',' . $request->lng,
+                'flag'                    => $flag,
+                'action'                  => 'Add',
             ]);
         }
 
         return response()->json([
-            'message' => 'Map data saved successfully!',
+            'message' => $map ? 'Map data saved successfully!' : 'Error saving map data',
             'data' => $map
         ], 200);
     }
+
 
     public function getMapData(Request $request)
     {

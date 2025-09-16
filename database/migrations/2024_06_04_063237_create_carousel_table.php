@@ -20,9 +20,6 @@ return new class extends Migration
             $table->string('alt');
             $table->integer('order');
             $table->tinyInteger('status');
-            $table->string('hindi_title')->nullable();
-            $table->string('khasi_title')->nullable();
-            $table->string('other_title')->nullable();
             $table->string('rejected_remarks'); // Store one file path per row
             $table->unsignedBigInteger('publisher_id'); // Store one file path per row
             $table->string('application_id', 30)->nullable();
