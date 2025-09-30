@@ -460,8 +460,9 @@ class HomeController extends Controller
     public function uploadCarousel(Request $request)
     {
         $request->validate([
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:20480' // 20MB
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048' // 2MB
         ]);
+
 
         $user = Auth::user();
         if (!$user) {
@@ -1500,9 +1501,6 @@ class HomeController extends Controller
                 'title' => $newsItem->title,
                 'order' => $newsItem->order,
                 'status' => $newsItem->status,
-                'hindi_title' => $newsItem->hindi_title,
-                'khasi_title' => $newsItem->khasi_title,
-                'other_title' => $newsItem->other_title,
                 'created_at' => $newsItem->created_at,
                 'updated_at' => $newsItem->updated_at,
             ]);
@@ -2734,6 +2732,43 @@ class HomeController extends Controller
 
         return response()->json($data);
     }
+    public function getPublisherDashboardStatistics()
+    {
+
+        $user = Auth::user();
+
+        // List of your component tables
+        $components = [
+            'cards',
+            'carousel',
+            'faqs',
+            'gallery',
+            'latest_news',
+            'logo',
+            'map',
+            'notifications',
+            'paragraph',
+            'whos_who'
+        ];
+
+        $data = [];
+
+        foreach ($components as $component) {
+            $monthlyCounts = DB::table($component)
+                ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as count")
+                ->where('publisher_id', $user->id)
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            $data[$component] = $monthlyCounts;
+        }
+
+        return response()->json($data);
+    }
+
+
+
 
 
     public function addVisitCount()

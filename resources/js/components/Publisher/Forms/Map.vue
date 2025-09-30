@@ -2,7 +2,7 @@
     <br>
     <br>
     <br>
-  <div class="content ml-6 mr-6">
+    <div class="content ml-6 mr-6">
         <div class="container-fluid ">
             <div class="row page-titles mx-0 mb-3">
                 <div class="col-sm-6 p-0">
@@ -32,7 +32,7 @@
                         <div class="fc-toolbar fc-header-toolbar">
                             <div class="fc-right mb-3">
                                 <div class="fc-button-group">
-                                  
+
                                 </div>
                             </div>
                         </div>
@@ -53,11 +53,7 @@
                                             alt="Slide Image" @click="openModal(`/storage/${slide.image}`)"
                                             style="cursor: pointer;"> -->
 
-                                        <div class="embed-responsive embed-responsive-16by9">
-                                            <div class="embed-responsive-item" v-html="map.iframe" aria-readonly="">
-                                            </div>
-                                        </div>
-
+                                        <div id="map" class="map" style="width:400px; height:300px;"></div>
                                     </td>
 
                                     <td>{{ formatDate(map.created_at) }}</td>
@@ -159,15 +155,25 @@ import axios from 'axios';
 const MapData = ref();
 import { useToastr } from '../../../toaster.js';
 const toastr = useToastr();
-import { useRoute,useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
+import Map from "ol/Map.js";
+import View from "ol/View.js";
+import TileLayer from "ol/layer/Tile.js";
+import OSM from "ol/source/OSM.js";
+import { fromLonLat } from "ol/proj.js";
+import Feature from "ol/Feature.js";
+import Point from "ol/geom/Point.js";
+import VectorSource from "ol/source/Vector.js";
+import VectorLayer from "ol/layer/Vector.js";
+import { Icon, Style, Text, Fill, Stroke } from "ol/style.js";
 // Reactive state
 let formData = ref({
     iframe: ""
 });
-	
-	const onBack = () => {
+
+const onBack = () => {
     if (window.history.length > 1) {
         router.back();
     } else {
@@ -187,15 +193,11 @@ const rejectedRemarksError = ref(false);
 const selectedMap = ref({}) // To store the clicked notice
 const getMaps = async () => {
     try {
+        debugger;
         const response = await axios.get('/get_contactus');
-        MapData.value = response.data;
-        console.log("MapData" + response.data);
-        const data = response.data
-        if (Array.isArray(data) && data.length > 0) {
-            formData.value.iframe = data[0].iframe || ''
-        }
+        MapData.value = response.data[0];
+        console.log("MapData" + response.data[0]);
         await nextTick(); // Wait for DOM to update
-
         // Destroy and reinitialize DataTable
         if ($.fn.dataTable.isDataTable('#MapTable')) {
             $('#MapTable').DataTable().destroy();
@@ -204,13 +206,54 @@ const getMaps = async () => {
             responsive: true,
             pageLength: 10,
         });
-
+        initMap(formData.lat, formData.lng, formData.place_name);
     }
     catch (error) {
         console.error('Error:', error?.response?.data);
 
     }
 };
+
+const initMap = (lat, lon, placeName) => {
+    const map = new Map({
+        target: "map",
+        layers: [new TileLayer({ source: new OSM() })],
+        view: new View({
+            center: fromLonLat([lon, lat]),
+            zoom: 17,
+        }),
+    });
+
+    const feature = new Feature({
+        geometry: new Point(fromLonLat([lon, lat])),
+        name: placeName,
+        lon,
+        lat,
+    });
+
+    feature.setStyle(
+        new Style({
+            image: new Icon({
+                anchor: [0.5, 1],
+                src: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+                scale: 0.05,
+            }),
+            text: new Text({
+                text: placeName,
+                offsetY: -25,
+                font: "14px Calibri,sans-serif",
+                fill: new Fill({ color: "#000" }),
+                stroke: new Stroke({ color: "#fff", width: 2 }),
+            }),
+        })
+    );
+
+    const vectorLayer = new VectorLayer({
+        source: new VectorSource({ features: [feature] }),
+    });
+    map.addLayer(vectorLayer);
+};
+
 
 const approveMap = async (id, index) => {
     try {

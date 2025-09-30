@@ -169,7 +169,7 @@
                         </router-link>
                     </li>
 
-                    <li class="nav-item" v-if="role == 2">
+                    <li class="nav-item" v-if="role == 1">
                         <router-link to="/admin/page_section_master" active-class="active" class="nav-link">
                             <i class="nav-icon fas fa-list"></i>
                             <p>

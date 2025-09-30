@@ -94,7 +94,6 @@ const loadCaptcha = async () => {
 
 
 const handleSubmit = async () => {
-  debugger;
   loading.value = true;
   errorMessage.value = '';
   captchaError.value = '';

@@ -9,9 +9,9 @@
                         <h6 class="title text-white">{{ decrypt(route.query.page_name || '') }}</h6>
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb-item active text-white">
-                               <li class="breadcrumb-item">
-  <router-link to="/page/1" class="text-white">Home</router-link>
-</li>
+                                <li class="breadcrumb-item">
+                                    <router-link to="/page/1" class="text-white">Home</router-link>
+                                </li>
 
                                 <li class="breadcrumb-item active text-white" aria-current="page">{{
                                     decrypt(route.query.page_name || '') }}</li>
@@ -328,5 +328,4 @@ onMounted(() => {
 .content {
     padding: 20px;
 }
-
 </style>

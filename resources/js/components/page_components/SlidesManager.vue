@@ -16,7 +16,7 @@
 						<div class="col-md-12 mb-2 mb-md-3 " id="">
               <div class="card">
                   <div class="top">
-                      Drag Images to Upload
+                      Drag Images to Upload <span class="text-danger">(max 2MB)</span>
                   </div>
           
                   <div class="drag-area" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop">
@@ -121,12 +121,35 @@ const onDrop = (e) => {
 
 
 const uploadImages = () => {
+  if (!images.value || images.value.length === 0) {
+    toastr.error('Please select at least one image before uploading.');
+    return;
+  }
+
+  // ✅ File size and type validation
+  const maxSize = 2 * 1024 * 1024; // 2MB
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
+
+  for (let img of images.value) {
+    if (!allowedTypes.includes(img.file.type)) {
+      toastr.error(`File "${img.name}" is not a valid image type.`);
+      return;
+    }
+    if (img.file.size > maxSize) {
+      toastr.error(`File "${img.name}" exceeds 2MB limit.`);
+      return;
+    }
+  }
+
   const formData = new FormData();
   images.value.forEach((image) => {
     formData.append('images[]', image.file, image.name);
-    formData.append("menu_id", route.params.menuId);
-    formData.append("page_section_master_id", props.section.page_section_id);
   });
+
+  // Append common fields once
+  formData.append("menu_id", route.params.menuId);
+  formData.append("page_section_master_id", props.section.page_section_id);
+
   axios.post('/api/upload_carousel', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
@@ -140,8 +163,10 @@ const uploadImages = () => {
   })
   .catch(error => {
     console.error('Error uploading images:', error);
+    toastr.error("Failed to upload images.");
   });
 };
+
 
 const deleteDBImage = (slide, index) => {
   axios.post('/api/delete_slide', {

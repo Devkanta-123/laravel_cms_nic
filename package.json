@@ -30,7 +30,7 @@
         "datatables.net-dt": "^2.3.2",
         "dompurify": "^3.2.6",
         "i": "^0.3.7",
-        "idb": "^8.0.2",
+        "idb": "^8.0.3",
         "jquery": "^3.7.1",
         "leaflet": "^1.9.4",
         "maplibre-gl": "^5.7.0",

@@ -38,288 +38,194 @@
     </ul>
   </nav>
 
-  <div class="container-fluid ms-3" v-if="role == 4">
-    <div class="row">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Carousel', page_section_id: 1 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-success">
-                  <i class="fas fa-sliders-h highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Carousel</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.carousel.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.carousel.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.carousel.rejected }}</p>
-              </div>
+ <div class="container-fluid ms-3" v-if="role == 4">
+  <div class="row">
+    <div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+      <div class="card card-statistics h-100">
+        <div class="card-body"
+          @click="openPageSection({ menu_id: 1, page_section_name: 'Carousel', page_section_id: 1 })">
+          <div class="clearfix">
+            <div class="float-start">
+              <span class="text-success">
+                <i class="fas fa-sliders-h highlight-icon" aria-hidden="true"></i>
+              </span>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Cards', page_section_id: 4 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-danger">
-                  <i class="fas fa-layer-group highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Cards</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.cards.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.cards.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.cards.rejected }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Latest News', page_section_id: 2 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-warning">
-                  <i class="fas fa-newspaper highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Latest News</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.latest_news.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.latest_news.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.latest_news.rejected }}</p>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Notice Board', page_section_id: 6 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-primary">
-                  <i class="fas fa-clipboard highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Notice Board</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.notice_board.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.notice_board.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.notice_board.rejected }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Gallery', page_section_id: 5 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-primary">
-                  <i class="fas fa-image highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Gallery</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.gallery.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.gallery.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.gallery.rejected }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Paragraph', page_section_id: 7 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-primary">
-                  <i class="fas fa-file-text  highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Paragraph</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.paragraph.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.paragraph.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.paragraph.rejected}}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <div class="row">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'WhosWho', page_section_id: 9 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-danger">
-                  <i class="fas fa-users highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Whos Who</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.whos_who.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.whos_who.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.whos_who.rejected }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body"
-            @click="openPageSection({ menu_id: 1, page_section_name: 'Logo', page_section_id: 11 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-warning">
-                  <i class="fas fa-globe highlight-icon" aria-hidden="true"></i>
-
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Logo</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.logo.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.logo.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.logo.rejected }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'Map', page_section_id: 10 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-success">
-                  <i class="fas fa-map-marker highlight-icon" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">Map</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.map.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.map.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.map.rejected }}</p>
-              </div>
+            <div class="float-end text-end">
+              <p class="card-text text-dark">Carousel</p>
+              <p class="card-text text-dark">Pending : {{ dashboardData.carousel.pending }}</p>
+              <p class="card-text text-dark">Approved : {{ dashboardData.carousel.approved }}</p>
+              <p class="card-text text-dark">Rejected : {{ dashboardData.carousel.rejected }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-xl-3 col-lg-6 col-md-6 mb-20">
-        <div class="card card-statistics h-100">
-          <div class="card-body" @click="openPageSection({ menu_id: 1, page_section_name: 'FAQ', page_section_id: 8 })">
-            <div class="clearfix">
-              <div class="float-start">
-                <span class="text-success">
-                  <i class="fas fa-question-circle highlight-icon" aria-hidden="true"></i> FAQs
-                </span>
-              </div>
-              <div class="float-end text-end">
-                <p class="card-text text-dark">FAQs</p>
-                <p class="card-text text-dark">Pending : {{ dashboardData.faqs.pending }}</p>
-                <p class="card-text text-dark">Approved : {{ dashboardData.faqs.approved }}</p>
-                <p class="card-text text-dark">Rejected : {{ dashboardData.faqs.rejected }}</p>
-              </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+      <div class="card card-statistics h-100">
+        <div class="card-body"
+          @click="openPageSection({ menu_id: 1, page_section_name: 'Cards', page_section_id: 4 })">
+          <div class="clearfix">
+            <div class="float-start">
+              <span class="text-danger">
+                <i class="fas fa-layer-group highlight-icon" aria-hidden="true"></i>
+              </span>
+            </div>
+            <div class="float-end text-end">
+              <p class="card-text text-dark">Cards</p>
+              <p class="card-text text-dark">Pending : {{ dashboardData.cards.pending }}</p>
+              <p class="card-text text-dark">Approved : {{ dashboardData.cards.approved }}</p>
+              <p class="card-text text-dark">Rejected : {{ dashboardData.cards.rejected }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- <div class="modal fade show d-block top-right" v-if="showModal" tabindex="-1" role="dialog"
-      aria-labelledby="notificationModalLabel" aria-modal="true">
-      <div class="modal-dialog">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-warning">
-            <h5 class="modal-title" id="notificationModalLabel">Recent Activities</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
-          </div>
-          <div class="modal-body">
-            <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
-              class="dropdown-item d-flex justify-content-between align-items-start flex-column border-bottom pb-2 mb-2">
-              <div class="w-100 text-truncate">
-                {{ activity.remarks.slice(0, 50) }}...
-                <span class="fw-bold">by {{ activity.user_from_name }}</span>
-              </div>
-              <small class="text-muted align-self-end mt-1">
-                {{ formatRelativeTime(activity.created_at) }}
-              </small>
+
+    <div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+      <div class="card card-statistics h-100">
+        <div class="card-body"
+          @click="openPageSection({ menu_id: 1, page_section_name: 'Latest News', page_section_id: 2 })">
+          <div class="clearfix">
+            <div class="float-start">
+              <span class="text-warning">
+                <i class="fas fa-newspaper highlight-icon" aria-hidden="true"></i>
+              </span>
             </div>
-
-            <router-link class="dropdown-item text-center fw-semibold" :to="{ path: '/app/activitylog' }">
-              View All
-            </router-link>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-sm btn-light" @click="closeModal">
-              Dismiss
-            </button>
+            <div class="float-end text-end">
+              <p class="card-text text-dark">Latest News</p>
+              <p class="card-text text-dark">Pending : {{ dashboardData.latest_news.pending }}</p>
+              <p class="card-text text-dark">Approved : {{ dashboardData.latest_news.approved }}</p>
+              <p class="card-text text-dark">Rejected : {{ dashboardData.latest_news.rejected }}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div> -->
-    <!-- Bootstrap Modal Structure -->
-    <div class="modal fade show d-block" v-if="showModal" id="notificationModal" tabindex="-1" role="dialog"
-      aria-labelledby="notificationModalLabel" aria-modal="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-warning text-white">
-            <h5 class="modal-title" id="notificationModalLabel">Notifications</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
-          </div>
-          <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
-            <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
-              class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2"
-              @click.prevent="goToActivityLog(activity.id)">
-              <div class="w-100 text-truncate">
-                {{ activity.remarks.slice(0, 50) }}...
-                <span class="fw-bold">by {{ activity.user_from_name }}</span>
-              </div>
-              <small class="text-muted align-self-end mt-1">
-                {{ formatRelativeTime(activity.created_at) }}
-              </small>
+    </div>
+
+    <div class="col-xl-3 col-lg-3 col-md-6 mb-20">
+      <div class="card card-statistics h-100">
+        <div class="card-body"
+          @click="openPageSection({ menu_id: 1, page_section_name: 'Notice Board', page_section_id: 6 })">
+          <div class="clearfix">
+            <div class="float-start">
+              <span class="text-primary">
+                <i class="fas fa-clipboard highlight-icon" aria-hidden="true"></i>
+              </span>
             </div>
-            <router-link class="dropdown-item text-center fw-semibold" :to="{ path: '/app/activitylog' }">
-              View All
-            </router-link>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+            <div class="float-end text-end">
+              <p class="card-text text-dark">Notice Board</p>
+              <p class="card-text text-dark">Pending : {{ dashboardData.notice_board.pending }}</p>
+              <p class="card-text text-dark">Approved : {{ dashboardData.notice_board.approved }}</p>
+              <p class="card-text text-dark">Rejected : {{ dashboardData.notice_board.rejected }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Next row -->
+  <div class="row">
+    <div class="col-xl-3 col-lg-3 col-md-6 mb-20" v-for="(item, key) in [
+        {name:'Gallery', icon:'fas fa-image', color:'text-primary', data: dashboardData.gallery, id:5},
+        {name:'Paragraph', icon:'fas fa-file-text', color:'text-primary', data: dashboardData.paragraph, id:7},
+        {name:'Whos Who', icon:'fas fa-users', color:'text-danger', data: dashboardData.whos_who, id:9},
+        {name:'Logo', icon:'fas fa-globe', color:'text-warning', data: dashboardData.logo, id:11}
+      ]" :key="key">
+      <div class="card card-statistics h-100">
+        <div class="card-body"
+          @click="openPageSection({ menu_id: 1, page_section_name: item.name, page_section_id: item.id })">
+          <div class="clearfix">
+            <div class="float-start">
+              <span :class="item.color">
+                <i :class="item.icon + ' highlight-icon'" aria-hidden="true"></i>
+              </span>
+            </div>
+            <div class="float-end text-end">
+              <p class="card-text text-dark">{{ item.name }}</p>
+              <p class="card-text text-dark">Pending : {{ item.data.pending }}</p>
+              <p class="card-text text-dark">Approved : {{ item.data.approved }}</p>
+              <p class="card-text text-dark">Rejected : {{ item.data.rejected }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next row -->
+  <div class="row">
+    <div class="col-xl-3 col-lg-3 col-md-6 mb-20" v-for="(item, key) in [
+        {name:'Map', icon:'fas fa-map-marker', color:'text-success', data: dashboardData.map, id:10},
+        {name:'FAQs', icon:'fas fa-question-circle', color:'text-success', data: dashboardData.faqs, id:8}
+      ]" :key="key">
+      <div class="card card-statistics h-100">
+        <div class="card-body"
+          @click="openPageSection({ menu_id: 1, page_section_name: item.name, page_section_id: item.id })">
+          <div class="clearfix">
+            <div class="float-start">
+              <span :class="item.color">
+                <i :class="item.icon + ' highlight-icon'" aria-hidden="true"></i>
+              </span>
+            </div>
+            <div class="float-end text-end">
+              <p class="card-text text-dark">{{ item.name }}</p>
+              <p class="card-text text-dark">Pending : {{ item.data.pending }}</p>
+              <p class="card-text text-dark">Approved : {{ item.data.approved }}</p>
+              <p class="card-text text-dark">Rejected : {{ item.data.rejected }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card-body">
+    <apexchart type="area" height="350" :options="ccTrendOptions" :series="ccTrendSeries" />
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade show d-block" v-if="showModal" id="notificationModal" tabindex="-1" role="dialog"
+    aria-labelledby="notificationModalLabel" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title" id="notificationModalLabel">Notifications</h5>
+          <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
+        </div>
+        <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
+          <div v-for="(activity, index) in activityLogData.slice(0, 5)" :key="index"
+            class="dropdown-item d-flex flex-column border-bottom pb-2 mb-2"
+            @click.prevent="goToActivityLog(activity.id)">
+            <div class="w-100 text-truncate">
+              {{ activity.remarks.slice(0, 50) }}...
+              <span class="fw-bold">by {{ activity.user_from_name }}</span>
+            </div>
+            <small class="text-muted align-self-end mt-1">
+              {{ formatRelativeTime(activity.created_at) }}
+            </small>
+          </div>
+          <router-link class="dropdown-item text-center fw-semibold" :to="{ path: '/app/activitylog' }">
+            View All
+          </router-link>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import VueApexCharts from 'vue3-apexcharts'
 const router = useRouter()
 const role = ref(null)
 const email = ref('')
@@ -331,6 +237,52 @@ const dashboardData = ref({
   carousel: { approved: 0, pending: 0 },
   latest_news: { approved: 0, pending: 0 },
   notice_board: { approved: 0, pending: 0 }
+})
+// ✅ Register ApexCharts locally for <script setup>
+const apexchart = VueApexCharts
+
+// Chart series & options
+const ccTrendSeries = ref([])
+const ccTrendOptions = ref({
+  chart: {
+    type: 'area',
+    height: 350,
+    toolbar: { show: false },
+    zoom: { enabled: false }
+  },
+  colors: [
+    '#FF5733', // Red-Orange
+    '#33C1FF', // Sky Blue
+    '#28A745', // Green
+    '#FFC300', // Yellow
+    '#9B59B6', // Purple
+    '#E67E22', // Orange
+    '#1ABC9C', // Teal
+    '#E74C3C', // Red
+    '#3498DB', // Blue
+    '#F1C40F', // Gold
+    '#2ECC71', // Light Green
+    '#8E44AD'  // Dark Purple
+  ],
+  dataLabels: { enabled: false },
+  stroke: { curve: 'smooth', width: 2 },
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shadeIntensity: 1,
+      opacityFrom: 0.4,
+      opacityTo: 0,
+      stops: [0, 90, 100]
+    }
+  },
+  xaxis: {
+    categories: [],
+    labels: { rotate: -45 }
+  },
+  tooltip: {
+    x: { format: 'yyyy-MM' }
+  },
+  legend: { position: 'bottom' }
 })
 
 const activityLogData = ref([])
@@ -376,7 +328,6 @@ const fetchUser = async () => {
 
   // Use cached user if valid
   if (cachedUser && now - cachedUser.timestamp < CACHE_DURATION) {
-    console.log('Loaded user from cache')
     role.value = cachedUser.role
     email.value = cachedUser.email
     name.value = cachedUser.name
@@ -413,7 +364,6 @@ const getDashboardData = async () => {
     debugger;
     const response = await axios.get('/getDashboardData')
     dashboardData.value = response.data
-    console.log(response.data);
   } catch (error) {
     console.error('Failed to fetch DashboardData:', error)
   }
@@ -425,9 +375,55 @@ function closeModal() {
 function goToActivityLog(id) {
   router.push({ path: '/app/activitylog', query: { id } })
 }
+
+const getPublisherDashboardStatistics = async () => {
+  try {
+    debugger;
+    const response = await axios.get('/getPublisherDashboardStatistics')
+    const data = response.data
+    loadPublisherMonthlyTrends(data)
+  } catch (err) {
+  }
+}
+
+const loadPublisherMonthlyTrends = (trendData) => {
+  if (!trendData || typeof trendData !== 'object') return
+
+  // Get all months across all components
+  const allMonths = [
+    ...new Set(
+      Object.values(trendData)
+        .flatMap(arr => Array.isArray(arr) ? arr.map(item => item.month) : [])
+    )
+  ].sort()
+
+  // Format months to readable names
+  const formattedMonths = allMonths.map(m => {
+    const date = new Date(m) // assumes `m` is YYYY-MM or YYYY-MM-DD
+    return date.toLocaleString('default', { month: 'short', year: 'numeric' }) 
+    // e.g., "Jan 2025"
+  })
+
+  const series = Object.keys(trendData).map(component => {
+    const dataArr = Array.isArray(trendData[component]) ? trendData[component] : []
+    const counts = allMonths.map(month => {
+      const record = dataArr.find(item => item.month === month)
+      return record ? record.count : 0
+    })
+    return { name: component, data: counts }
+  })
+
+  ccTrendSeries.value = series
+  ccTrendOptions.value = {
+    ...ccTrendOptions.value,
+    xaxis: { categories: formattedMonths }
+  }
+}
+
 onMounted(async () => {
   getDashboardData()
   getActivityLog()
+  getPublisherDashboardStatistics()
   const userEmail = await fetchUser() // wait for fetchUser to complete
   if (!userEmail) return
   const shownKey = `notificationShown_${userEmail}`

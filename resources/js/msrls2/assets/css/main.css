@@ -17891,3 +17891,42 @@ blockquote p {
 .breadcrumb-item a {
     color: white !important;
 }
+
+.ccmap {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    /* large screens */
+    height: 400px;
+    margin: 0 auto;
+}
+
+
+/* Tablets */
+
+@media (max-width: 992px) {
+    .ccmap {
+        max-width: 700px;
+        height: 350px;
+    }
+}
+
+
+/* Mobiles (landscape) */
+
+@media (max-width: 768px) {
+    .ccmap {
+        max-width: 100%;
+        height: 300px;
+    }
+}
+
+
+/* Small mobiles (portrait) */
+
+@media (max-width: 480px) {
+    .ccmap {
+        max-width: 100%;
+        height: 250px;
+    }
+}

@@ -33,7 +33,7 @@
                             <div class="row">
                                 <div class="col-6">
                                     <section class="body current" aria-hidden="false">
-                                        <label for="uName">Image</label>
+                                        <label for="uName">Image <span class="text-danger">(max 2MB)</span></label>
                                         <input type="file" name="file" ref="fileInput" multiple @change="onFileSelect"
                                             class="form-control" required>
                                         <div v-if="images.length" class="mt-3 d-flex flex-wrap gap-2">
@@ -268,22 +268,33 @@ const getAllPublisher = async () => {
 const uploadImages = () => {
     // Check if images array is empty or contains invalid entries
     if (!images.value || images.value.length === 0 || images.value.every(img => !img || !img.file)) {
-        toastr.error('Please select at least one  image before uploading.');
+        toastr.error('Please select at least one image before uploading.');
         return;
     }
+
     if (!selectedPublisher.value) {
         toastr.error("Please select a publisher.");
         return false;
     }
 
+    // ✅ File size check (2MB = 2 * 1024 * 1024 bytes)
+    const maxSize = 2 * 1024 * 1024; 
+    for (let img of images.value) {
+        if (img.file && img.file.size > maxSize) {
+            toastr.error(`File "${img.name}" exceeds 2MB limit.`);
+            return;
+        }
+    }
+
     const formData = new FormData();
     images.value.forEach((image) => {
         formData.append('images[]', image.file, image.name);
-        formData.append("menu_id", route.params.menuId);
-        formData.append("page_section_master_id", route.params.page_section_id);
-        formData.append("publisher_id", selectedPublisher.value);
-
     });
+
+    // append common fields once (not inside loop)
+    formData.append("menu_id", route.params.menuId);
+    formData.append("page_section_master_id", route.params.page_section_id);
+    formData.append("publisher_id", selectedPublisher.value);
 
     axios.post('/api/upload_carousel', formData, {
         headers: {
@@ -301,6 +312,7 @@ const uploadImages = () => {
         })
         .catch(error => {
             console.error('Error uploading images:', error);
+            toastr.error("Failed to upload images.");
         });
 };
 
